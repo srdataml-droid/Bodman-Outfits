@@ -823,3 +823,44 @@ and a recommendation (two roles, because its failure mode is a permission
 error rather than silent full access) are written up in
 `docs/architecture.md`. It needs new connection strings, so it needs an owner
 decision and new `.env` variables rather than an edit from me.
+
+---
+
+## 2026-08-03 — Admin self-service credential changes
+
+**Decision:** `POST /api/auth/change-password` and
+`POST /api/auth/change-email`, both guarded and both rate-limited on the same
+5/60s budget as login. Added `GET /api/auth/me` alongside them so a dashboard
+can check session validity without probing a data endpoint.
+
+**Current password is required even though the caller already holds a valid
+session.** A session cookie proves "this browser was logged in at some point",
+not "this is the account owner right now". Without the password check, a
+stolen cookie or an unattended browser would be enough to change the password
+and permanently lock the real owner out. The extra prompt is the difference
+between losing a session and losing the account.
+
+**Password change revokes every other session but keeps the caller's.**
+If the reason for changing a password is that something leaked, leaving the
+other sessions alive defeats the point. Keeping the caller's own session
+means changing your password does not log you out of the screen you are
+standing in front of. Email change deliberately revokes nothing, because it
+does not invalidate the credential sessions were established against.
+
+**12-character minimum treated as a security control, not a business
+policy**, so it was set here rather than escalated as an owner decision. It
+is above the NIST floor and below the length of the generated bootstrap
+password, so it constrains nobody in practice.
+
+**Verified end-to-end against the real database, ten checks:** wrong current
+password rejected (401), too-short password rejected (400), unauthenticated
+call rejected (401), correct change accepted (200), caller session still
+valid (200), other device's session revoked (401), old password rejected at
+login (401), new password accepted (401 -> 200), plus the equivalent
+malformed/incorrect/correct sequence for email including `/me` reflecting the
+new address.
+
+**Credentials were then restored to the documented values** and that restore
+was confirmed at the database level with `bcrypt.compare`, so
+`docs/admin-access.local.md` remains accurate and nobody is locked out. The
+temporary verification password no longer validates.

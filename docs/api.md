@@ -181,10 +181,30 @@ interface LoginRequest {
   (`prisma/bootstrap-admin.ts`) upserts by email, so it's safe to re-run
   after rotating the password.
 
-**Not yet built:** password reset/change flow, login attempt lockout beyond
-the per-IP rate limit, session listing/revocation UI, audit logging of admin
-actions. None of these block closing the deployment blocker above; revisit
-if/when `apps/admin` is built.
+### Self-service credential management (added 2026-08-03)
+
+- `POST /api/auth/change-password` (admin) — body
+  `{ currentPassword, newPassword }`. Requires the current password **in
+  addition to** a valid session: a stolen or left-open session should not be
+  enough to take permanent ownership of the account. New password must be at
+  least 12 characters and different from the current one. On success, every
+  **other** session for that admin is deleted; the calling session survives,
+  so changing a password does not log you out of the screen you are using.
+- `POST /api/auth/change-email` (admin) — body
+  `{ currentPassword, newEmail }`. Same current-password requirement.
+  Returns `409` if the address belongs to another admin. Sessions are
+  deliberately left intact: an email change does not invalidate the
+  credential sessions were established against.
+- `GET /api/auth/me` (admin) — returns `{ id, email }`. Lets a dashboard
+  render "signed in as ..." and check session validity without probing a
+  data endpoint.
+- All three are guarded by `AdminAuthGuard`. The two mutating routes are
+  rate-limited on the same 5/60s/IP budget as login, since they accept a
+  password and are therefore as attractive a guessing target as login itself.
+
+**Not yet built:** password *reset* (forgotten password, which needs an email
+delivery decision), login attempt lockout beyond the per-IP rate limit,
+session listing/revocation UI, and audit logging of admin actions.
 
 ## Approved Contract Addition — Appointment Requests
 

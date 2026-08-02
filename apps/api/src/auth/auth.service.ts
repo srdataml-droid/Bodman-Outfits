@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from "crypto";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
-import type { LoginDto } from "./auth.schema";
+import type { ChangeEmailDto, ChangePasswordDto, LoginDto } from "./auth.schema";
 import { SESSION_TTL_MS } from "./session-cookie";
 
 export interface AdminIdentity {
@@ -62,5 +62,52 @@ export class AuthService {
       return null;
     }
     return { id: session.admin.id, email: session.admin.email };
+  }
+
+  // Both self-service changes below re-verify the current password even
+  // though the caller already holds a valid session. A stolen or
+  // left-open session should not be enough to take permanent ownership of
+  // the account by rotating its credentials.
+  async changePassword(adminId: string, currentSessionToken: string, input: ChangePasswordDto): Promise<void> {
+    const admin = await this.prisma.admin.findUnique({ where: { id: adminId } });
+    if (!admin || !(await bcrypt.compare(input.currentPassword, admin.passwordHash))) {
+      throw new UnauthorizedException("Current password is incorrect");
+    }
+
+    const passwordHash = await bcrypt.hash(input.newPassword, 12);
+
+    // Rotating the password revokes every other session. Deleting all of
+    // them and keeping only the caller's is deliberate: if the reason for
+    // the change is that a session leaked, leaving the other sessions alive
+    // would defeat the entire point. The caller keeps their own session so
+    // that changing a password does not log you out of the screen you are
+    // standing in front of.
+    await this.prisma.$transaction([
+      this.prisma.admin.update({ where: { id: adminId }, data: { passwordHash } }),
+      this.prisma.adminSession.deleteMany({
+        where: { adminId, NOT: { tokenHash: hashToken(currentSessionToken) } },
+      }),
+    ]);
+  }
+
+  async changeEmail(adminId: string, input: ChangeEmailDto): Promise<{ email: string }> {
+    const admin = await this.prisma.admin.findUnique({ where: { id: adminId } });
+    if (!admin || !(await bcrypt.compare(input.currentPassword, admin.passwordHash))) {
+      throw new UnauthorizedException("Current password is incorrect");
+    }
+
+    const existing = await this.prisma.admin.findUnique({ where: { email: input.newEmail } });
+    if (existing && existing.id !== adminId) {
+      throw new ConflictException("That email address is already in use");
+    }
+
+    // Sessions are intentionally left intact. An email change does not
+    // invalidate the credential that sessions were established against, so
+    // there is nothing to revoke.
+    const updated = await this.prisma.admin.update({
+      where: { id: adminId },
+      data: { email: input.newEmail },
+    });
+    return { email: updated.email };
   }
 }
