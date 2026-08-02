@@ -678,3 +678,96 @@ entities, and any hint of a turnaround range, which remains unconfirmed in
 `prisma db seed` would also write the `ShopSettings` singleton, which is a
 separate business decision about publishing shop identity that has been
 asked about and not yet answered. Flagged rather than run.
+
+---
+
+## 2026-08-02 — Seeded the real database (approved), and what that did and did not publish
+
+**Decision:** Ran `prisma db seed` against the real Supabase database on
+explicit approval, framed by the user as fixing a live bug rather than
+publishing business facts: `GET /api/shop-settings` was returning 500
+because the singleton row did not exist.
+
+**What is now live:** `shopName`, `whatsappNumber`, `cityCountry` and
+`tagline` (all previously confirmed), plus the four rewritten FAQ entries.
+
+**What deliberately stayed empty, and was verified afterwards rather than
+assumed:** `phone`, `email`, `address`, `hoursWeekday`, `hoursSaturday`,
+`hoursSunday`, `pricingNote` are all empty strings and `depositPercentage`
+is `0`. Confirmed field by field with a throwaway script after seeding. The
+seed uses `update: {}` on upsert, so re-running it will never overwrite a
+value the owner later sets by hand.
+
+**Verified through the running stack, not just the database:**
+`GET /api/shop-settings` now returns 200 with real data, `GET /api/faqs`
+returns the four rewritten answers, `/faq` renders them, and the WhatsApp
+links now resolve to `wa.me/2347061313517` (they had been silently omitting
+themselves while the fetch failed).
+
+**Incidental fix found while verifying:** the FAQ page's own intro copy
+contained two em-dashes. The earlier rewrite covered the seeded answers only,
+not the page chrome around them.
+
+---
+
+## 2026-08-02 — Deleted legacy off-brand imagery, kept formal-wear.png
+
+**Decision:** Deleted `bridal.png`, `lounge-wear.png` and `native-wear.png`
+(4.4 MB). Confirmed zero references across all `.ts`/`.tsx`/`.css`/`.json`
+sources before deleting, and re-ran the build afterwards.
+
+**Kept `formal-wear.png`** despite it being from the same legacy set: it is
+still referenced by `apps/web/app/about/page.tsx`. Deleting it would have
+broken that page.
+
+**Still present and unreferenced, not deleted:** the twelve
+`apps/web/public/images/home/*.jpg` files (4.0 MB) are also referenced
+nowhere. They were outside the scope of what was approved, so they were
+reported rather than removed.
+
+---
+
+## 2026-08-02 — Enquiry endpoint built as its own entity
+
+**Decision:** Built `Enquiry` + `POST /api/enquiries` (public,
+rate-limited) and `GET /api/enquiries` (admin-guarded), separate from
+`Appointment`, per the proposal previously recorded in `docs/api.md`.
+
+**`subject` is a plain String, not a Postgres enum.** The existing form's
+wire value `custom-request` contains a hyphen, which is not a legal Postgres
+enum identifier. A native enum would therefore need `@map` plus a two-way
+translation layer between the stored value and the wire value, and the only
+thing gained over the Zod allowlist already guarding that boundary would be
+a duplicate of the same constraint in a second place. Same conclusion as
+`Appointment.category` for a different underlying reason, and both are
+documented as such rather than left to look like an unexamined default.
+
+**`status` has exactly two values** (`unread`, `replied`), because that is
+all the confirmed behaviour requires. No triage, archival or priority
+workflow was invented, and `status` is never accepted from client input.
+
+**Verified end-to-end against the real database**, not only typechecked:
+unauthenticated `GET` returns 401, public `POST` returns 201, a malformed
+payload returns 400 naming all three invalid fields, the admin `GET` returns
+the row with `phone: ""` correctly stored as `null` and the hyphenated
+subject preserved, and the sixth rapid submission returns 429. All four
+verification rows were deleted afterwards, leaving the table empty for real
+customers.
+
+---
+
+## 2026-08-02 — Committed to a branch rather than directly to master
+
+**Decision:** Created `feat/enquiries-and-seed` and committed the four
+checkpoints there rather than onto `master`.
+
+**Why:** Standing guidance is not to commit directly to a default branch.
+The repository has no remote, so nothing here is published and merging is a
+single command (`git checkout master && git merge feat/enquiries-and-seed`).
+Flagged rather than done silently, since the request said "commit as you go"
+without specifying a branch and the commits will not appear on `master`
+until merged.
+
+**Checked before the first commit, not assumed:** `.env` and
+`docs/admin-access.local.md` are both matched by `.gitignore`, neither is
+tracked, and neither appears anywhere in commit history.

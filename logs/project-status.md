@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-02 (Appointments backend + home page process narrative)
+Last updated: 2026-08-02 (database seeded, enquiries endpoint, legacy assets removed)
 
 This is a living snapshot of what's actually built and working, verified by
 reading the code — not aspirational. Update it whenever a feature moves
@@ -18,7 +18,7 @@ file is a summary/index, not a replacement for those.
 | Category (`/catalogue/[category]`) | Done | Hardcoded — `lib/garments.ts` | No |
 | Item detail (`/catalogue/[category]/[item]`) | Done | Hardcoded — `lib/garments.ts` | No |
 | About (`/about`) | Done | Static JSX | No |
-| Contact (`/contact`) | Partial | WhatsApp link: real (`lib/shop-settings.ts`). Enquiry form: simulated, no backend | Partial |
+| Contact (`/contact`) | Done | WhatsApp link: real. Enquiry form: **real `POST /api/enquiries`** | Yes |
 | FAQ (`/faq`) | Done | Real — fetches `GET /api/faqs` (`lib/faq-data.ts`) | Yes |
 | Appointment (`/appointment`) | Done | WhatsApp link: real. Booking form: **real `POST /api/appointments`** | Yes |
 
@@ -27,7 +27,7 @@ file is a summary/index, not a replacement for those.
 | Capability | Status |
 |---|---|
 | Order submission | Missing — no `Order` model, no code anywhere |
-| Custom design request | Missing — no `CustomRequest` model, no code anywhere |
+| Custom design request | Missing — no `CustomRequest` model. (Note: the contact form's `custom-request` subject captures intent as a message only, not a structured request.) |
 | Consultation/appointment submission | **Done** — `POST /api/appointments` (public, rate-limited), `GET /api/appointments` (admin-guarded). Verified end-to-end against the real database. |
 | Payment/deposit collection | Missing — no Paystack integration anywhere |
 | Order status tracking | Missing — no order entity to track |
@@ -41,6 +41,7 @@ file is a summary/index, not a replacement for those.
 | `faq/` | Done — GET only, no writes | None needed (read-only public content, no write endpoints exist to guard) |
 | `auth/` | Done — login/logout, session cookie, rate-limited | `POST /api/auth/login` public, `POST /api/auth/logout` admin |
 | `appointments/` | Done | `POST` public + rate-limited, `GET` **admin-guarded** |
+| `enquiries/` | Done | `POST` public + rate-limited, `GET` **admin-guarded** |
 | `prisma/` | Done (infra, not a route) | N/A |
 
 No Order or CustomRequest modules exist yet. No `apps/admin` dashboard yet
@@ -108,18 +109,21 @@ table in `logs/decisions.md`. Contract detail in `docs/api.md`,
 
 ## Known blockers / open items (continued)
 
-8. **`Faq` also has 0 rows**, so `/faq` shows its unavailable state and the
-   rewritten FAQ copy is not live. `prisma db seed` publishes both it and
-   `ShopSettings` (blocker 7). **Asked, not yet answered** — publishing shop
-   identity is a business decision.
-9. **Contact enquiry form is still simulated.** It needs its own endpoint,
-   not the appointments one; reasoning and a concrete proposed contract are
-   in `docs/api.md` under "Contact Enquiries".
-10. **Unreferenced legacy imagery**: `bridal.png`, `lounge-wear.png`,
-   `native-wear.png` (~4.5 MB) are off-brand per the 2026-08-01 decision and
-   no longer referenced anywhere. Not deleted, because this project is not a
-   git repository and deletion would be irreversible. Safe to remove once
-   confirmed.
+**No admin UI exists for any of this data.** Appointments and enquiries can
+be submitted by customers and read by an authenticated admin over the API,
+but there is still no `apps/admin`, and no endpoint yet to confirm/decline an
+appointment or mark an enquiry replied. Submissions currently accumulate with
+no workflow to act on them.
+
+8. **Real shop details still unconfirmed** and therefore still empty in the
+   database: address, opening hours, phone, email, pricing note, deposit
+   percentage. These are business facts pending the owner, not bugs.
+9. ~~Contact enquiry form simulated.~~ Resolved 2026-08-02 — real
+   `POST /api/enquiries`, built as its own entity. Contract in `docs/api.md`.
+10. ~~Unreferenced off-brand catalogue imagery.~~ Deleted 2026-08-02 (4.4 MB).
+    **Still outstanding:** the twelve `apps/web/public/images/home/*.jpg`
+    files (4.0 MB) are also unreferenced; reported but not deleted, as they
+    were outside the approved scope.
 11. **Motion not visually verified.** Structure, layout, reveal state and
     final computed styles were verified in a real browser, but the animation
     itself could not be: IntersectionObserver never fired and CSS transitions
