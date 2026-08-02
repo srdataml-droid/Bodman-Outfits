@@ -102,6 +102,45 @@ model Appointment {
   @@index([createdAt])
 }
 
+// Contact-page enquiries. A deliberately separate entity from Appointment,
+// not a shared "submission" table: the two forms collect different required
+// fields and mean different things (an appointment is a scheduling request
+// with a confirm/decline workflow, an enquiry is a message awaiting a
+// reply). Full comparison in docs/api.md.
+//
+// Only two states, because that is all the confirmed behaviour supports:
+// an enquiry has either been replied to or it has not. No triage or
+// archival workflow is invented here.
+enum EnquiryStatus {
+  unread
+  replied
+}
+
+model Enquiry {
+  id    String  @id @default(cuid())
+  name  String
+  // Required here, unlike on Appointment where phone is the required
+  // channel. This mirrors the existing contact form exactly rather than
+  // standardising the two forms against each other.
+  email   String
+  phone   String?
+  // Plain String rather than a Postgres enum. The wire values come from the
+  // existing form and include "custom-request", whose hyphen is not a legal
+  // Postgres enum identifier. A native enum would therefore need @map plus a
+  // translation layer in both directions, and the only thing gained over the
+  // Zod allowlist that already guards this boundary would be a second copy
+  // of the same constraint. Same call as Appointment.category, for a
+  // different reason.
+  subject String
+  message String
+  status  EnquiryStatus @default(unread)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  // Admin lists newest-first.
+  @@index([createdAt])
+}
+
 // The only authenticated role in this platform (AGENTS.md — Confirmed
 // Product Policies). Real email+password login, never a PIN or hard-coded
 // bypass. passwordHash is a bcrypt hash — never store or return plaintext.

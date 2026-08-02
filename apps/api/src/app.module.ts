@@ -3,6 +3,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { AppointmentsModule } from "./appointments/appointments.module";
 import { AuthModule } from "./auth/auth.module";
+import { EnquiriesModule } from "./enquiries/enquiries.module";
 import { FaqModule } from "./faq/faq.module";
 import { HealthController } from "./health.controller";
 import { ShopSettingsModule } from "./shop-settings/shop-settings.module";
@@ -16,6 +17,7 @@ import { ShopSettingsModule } from "./shop-settings/shop-settings.module";
     ShopSettingsModule,
     FaqModule,
     AppointmentsModule,
+    EnquiriesModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

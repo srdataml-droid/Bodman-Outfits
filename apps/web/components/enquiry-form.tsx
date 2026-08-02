@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { submitEnquiry, type EnquiryRequest, type SubmitOutcome } from "../lib/enquiries";
 
 const subjectOptions = [
   { value: "bespoke", label: "Bespoke Suit / Corporate Order" },
@@ -11,17 +12,47 @@ const subjectOptions = [
 
 type SubmitState = "idle" | "submitting" | "sent";
 
+type FailureReason = Extract<SubmitOutcome, { ok: false }>["reason"];
+
+// Distinct wording per failure. A single generic message would leave the
+// customer unsure whether the atelier actually received their message, which
+// is the only thing they need to know.
+const failureMessages: Record<FailureReason, string> = {
+  invalid: "Please check the details above and try again.",
+  "rate-limited": "That's a few messages in quick succession. Please wait a moment, then try again.",
+  unavailable:
+    "We couldn't send that just now, so it has not reached us. Please try again, or reach us on WhatsApp.",
+};
+
 export function EnquiryForm(): React.ReactElement {
   const [status, setStatus] = useState<SubmitState>("idle");
+  const [error, setError] = useState<FailureReason | null>(null);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     const form = event.currentTarget;
+    const data = new FormData(form);
+
+    const request: EnquiryRequest = {
+      name: String(data.get("name") ?? ""),
+      email: String(data.get("email") ?? ""),
+      phone: String(data.get("phone") ?? ""),
+      subject: data.get("subject") as EnquiryRequest["subject"],
+      message: String(data.get("message") ?? ""),
+    };
+
     setStatus("submitting");
-    window.setTimeout(() => {
+    setError(null);
+    const outcome = await submitEnquiry(request);
+
+    if (outcome.ok) {
       setStatus("sent");
       form.reset();
-    }, 900);
+      return;
+    }
+    // Stay on the filled-in form so nothing the customer typed is lost.
+    setStatus("idle");
+    setError(outcome.reason);
   }
 
   if (status === "sent") {
@@ -46,7 +77,21 @@ export function EnquiryForm(): React.ReactElement {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 rounded-2xl border border-[rgb(210_180_140_/_40%)] bg-white p-6 md:p-10">
+    <form
+      onSubmit={(event) => {
+        void handleSubmit(event);
+      }}
+      className="space-y-8 rounded-2xl border border-[rgb(210_180_140_/_40%)] bg-white p-6 md:p-10"
+    >
+      {error !== null ? (
+        <p
+          role="alert"
+          className="rounded-xl border border-[rgb(200_118_58_/_35%)] bg-[rgb(200_118_58_/_6%)] px-4 py-3 text-base leading-7 text-[var(--ink)]"
+        >
+          {failureMessages[error]}
+        </p>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div className="flex flex-col">
           <label htmlFor="name" className="text-sm font-medium tracking-[0.1em] text-[var(--muted-ink)]">

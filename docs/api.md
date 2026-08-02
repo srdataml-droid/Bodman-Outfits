@@ -125,12 +125,13 @@ not before it.
 
 1. ~~`PUT /api/shop-settings` — open, unauthenticated write endpoint.~~
    Resolved 2026-08-02 — see "Admin Authentication" below.
-2. FAQ and Appointment admin/backend features are simply **absent**
-   (`apps/web/components/appointment-form.tsx`'s submit is still simulated;
-   FAQ writes were never built at all) — these are missing-feature gaps,
-   not live exposures. Now that Admin auth exists, FAQ write endpoints can
-   be built and guarded the same way as ShopSettings PUT whenever that
-   work is picked up.
+2. ~~Appointment form simulated.~~ Resolved 2026-08-02 (real `POST
+   /api/appointments`). ~~Contact enquiry form simulated.~~ Resolved
+   2026-08-02 (real `POST /api/enquiries`). **Still absent:** FAQ write
+   endpoints and every admin mutation (confirm/decline an appointment, mark
+   an enquiry replied). These are missing-feature gaps, not live exposures.
+   Now that Admin auth exists they can be built and guarded the same way as
+   `PUT /api/shop-settings` whenever that work is picked up.
 
 No open, unauthenticated write endpoints remain as of 2026-08-02.
 
@@ -275,30 +276,70 @@ development, matching the existing convention in `lib/shop-settings.ts` and
 request, and any notification (email/WhatsApp) on submission. All of these
 need either `apps/admin` or an owner decision on notification channels.
 
-## Contact Enquiries — needs its own endpoint, not this one
+## Approved Contract Addition — Contact Enquiries
 
-`apps/web/components/enquiry-form.tsx` on `/contact` is **still simulated**
-and was deliberately not wired to `POST /api/appointments`. The two
-contracts do not fit:
+Built 2026-08-02, as a **separate entity from Appointment**. The two forms
+collect different required fields and mean different things: an appointment
+is a scheduling request with a confirm/decline workflow, an enquiry is a
+message awaiting a reply. Sharing one table would have required making three
+required appointment fields nullable and would have left neither form's
+contract enforced by the schema.
 
 | | Appointment form | Enquiry form |
 |---|---|---|
 | `preferredDate` / `preferredTime` / `category` | required | not collected |
-| `subject` | not collected | required (`bespoke`/`fitting`/`custom-request`/`general`) |
-| `message` | not collected (only optional `notes`) | required |
+| `subject` | not collected | required |
+| `message` | not collected (optional `notes`) | required |
 | `email` | optional | **required** |
 | `phone` | **required** | optional |
 
-Sharing one endpoint would mean making three required appointment fields
-nullable and adding two nullable enquiry fields, producing a table where no
-row ever populates all columns and neither form's actual contract is
-enforced by the schema. The two are also semantically different: an
-appointment is a scheduling request with a confirm/decline workflow, while
-an enquiry is a message awaiting a reply.
+```ts
+// POST /api/enquiries  (public)
+interface CreateEnquiryRequest {
+  name: string;     // required, 1..120
+  email: string;    // required, valid email, <=200
+  phone?: string;   // optional, <=40; "" treated as absent
+  subject: "bespoke" | "fitting" | "custom-request" | "general";
+  message: string;  // required, 1..5000
+}
 
-**Proposed** (not built — needs owner approval, since unlike the appointment
-contract this one was not delegated): an `Enquiry` model and
-`POST /api/enquiries` + admin `GET /api/enquiries`, mirroring this module
-exactly — `name`, `email` (required), `phone` (optional), `subject` (enum),
-`message`, plus a server-assigned `status` for whether it has been replied
-to. Say the word and it is a short, pattern-following build.
+// 201 response
+interface EnquiryReceipt { id: string; status: "unread" }
+
+// GET /api/enquiries  (admin only)
+interface Enquiry {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  subject: string;
+  message: string;
+  status: "unread" | "replied";
+  createdAt: string;  // ISO 8601
+}
+```
+
+- `POST /api/enquiries` — **public and unauthenticated by design**, since
+  customers have no accounts. Rate-limited to 5 per minute per IP, matching
+  appointments and login, and loose for the same carrier-NAT reason.
+- `GET /api/enquiries` — **admin only**, guarded by `AdminAuthGuard`. Rows
+  contain names, emails, phone numbers and free-text messages. Newest-first,
+  capped at 200 rows (no pagination contract yet).
+- `status` is never accepted from client input. Only two states exist
+  (`unread`, `replied`) because that is all the confirmed behaviour needs; no
+  triage or archival workflow was invented.
+- `subject` is stored as a plain String rather than a Postgres enum. The wire
+  value `custom-request` contains a hyphen, which is not a legal Postgres
+  enum identifier, so a native enum would need `@map` plus a two-way
+  translation layer to gain a second copy of a constraint Zod already
+  enforces at the boundary.
+
+**Frontend wiring:** `apps/web/components/enquiry-form.tsx` performs a real
+`POST` (the `setTimeout` simulation is gone) via `apps/web/lib/enquiries.ts`,
+posting directly from the browser so the rate limiter sees the real client
+IP. Failures are surfaced distinctly (validation / rate-limited /
+unavailable) and the form is never cleared on failure.
+
+**Not yet built:** an admin endpoint to mark an enquiry replied
+(`PATCH /api/enquiries/:id`), and any notification on submission. Both need
+`apps/admin` or an owner decision on notification channels.
