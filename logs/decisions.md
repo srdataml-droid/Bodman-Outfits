@@ -771,3 +771,55 @@ until merged.
 **Checked before the first commit, not assumed:** `.env` and
 `docs/admin-access.local.md` are both matched by `.gitignore`, neither is
 tracked, and neither appears anywhere in commit history.
+
+---
+
+## 2026-08-03 — RLS: closed a live public exposure, and why RLS still does not constrain the app
+
+**Found by measuring, not by reading the earlier flag at face value.** The
+standing note said "no RLS enabled, API connects as superuser." Both halves
+turned out to be slightly wrong and the real situation was worse:
+
+- `postgres` is **not** a superuser here, but it holds `rolbypassrls`, which
+  has the same practical effect and additionally overrides `FORCE`.
+- The actual exposure was not the missing RLS by itself. It was that
+  Supabase's `anon` and `authenticated` roles held **full**
+  SELECT/INSERT/UPDATE/DELETE/TRUNCATE on every table, including `Admin`
+  password hashes and `AdminSession` tokens, with RLS off and PostgREST live
+  on the public internet. The anon key is public by design.
+
+**Decision:** revoke those grants outright rather than write permissive
+policies for those roles. Nothing in this product uses PostgREST, so `anon`
+and `authenticated` have no legitimate need for any access, and removing
+access is a stronger and simpler statement than granting it conditionally.
+
+**The part that is easy to miss:** Supabase sets DEFAULT PRIVILEGES on the
+`public` schema, so the *next* Prisma migration that creates a table would
+have re-granted everything automatically. `ALTER DEFAULT PRIVILEGES` is
+included precisely so the fix does not silently undo itself the next time the
+schema changes.
+
+**Verified rather than asserted:** nine hostile probes run as `anon` inside
+rolled-back transactions (read password hashes, read session tokens, read
+customer PII from both tables, read shop settings, delete all appointments,
+update shop settings, insert a rogue admin, truncate FAQs). All nine blocked.
+Full API regression afterwards: public GET/POST, admin login, admin GET,
+admin PUT, all unchanged.
+
+**Stated plainly because the request asked for it:** RLS still does not
+constrain `apps/api`, because it connects with a BYPASSRLS role. Enabling RLS
+was worth doing regardless, since it is what blocks PostgREST and it makes the
+configuration already-correct for the day the app stops bypassing. But the
+honest headline is that the *grant revocation*, not the RLS, is what closed
+the exposure today.
+
+**Not fixed unilaterally, because it changes how the app connects:** the
+deeper issue is that `apps/api` uses one database role for every request, and
+whether a caller is an admin lives in an HTTP cookie that Postgres never
+sees. A single scoped role would therefore need the union of all permissions
+including customer PII reads, which is the very thing RLS would be trying to
+restrict, and would look safer without being safer. Two options, tradeoffs,
+and a recommendation (two roles, because its failure mode is a permission
+error rather than silent full access) are written up in
+`docs/architecture.md`. It needs new connection strings, so it needs an owner
+decision and new `.env` variables rather than an edit from me.

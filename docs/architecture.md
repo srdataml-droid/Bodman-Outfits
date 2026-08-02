@@ -183,3 +183,95 @@ Supabase connection to actually implement (role creation, RLS policies),
 and both are bigger/separate decisions from "add the Faq model" — logged
 here rather than acted on unprompted. See `logs/decisions.md` for the same
 entry in that log.
+
+### 2026-08-03 — Row Level Security, and the single-database-role limitation
+
+**What was found, by measurement rather than inference.** Before this change
+every table in `public` had RLS disabled with zero policies, *and* Supabase's
+`anon` and `authenticated` roles held `SELECT, INSERT, UPDATE, DELETE,
+TRUNCATE, REFERENCES, TRIGGER` on all of them, including `Admin` (bcrypt
+password hashes), `AdminSession` (session token hashes) and
+`Appointment`/`Enquiry` (customer names, phones, emails, free text). The
+project's PostgREST endpoint is live on the public internet (confirmed: it
+answers `401` with no API key). Neither `anon` nor `authenticated` holds
+BYPASSRLS.
+
+The Supabase anon key is designed to be public and is routinely shipped in
+client bundles. Anyone holding it could therefore have read every admin
+password hash and every customer record, and issued `DELETE`/`TRUNCATE`,
+entirely bypassing this application. This was a live exposure, not a
+theoretical hardening gap.
+
+**What was done** (`prisma/migrations/20260803000000_enable_rls/`):
+
+1. `REVOKE ALL` on all tables, sequences and functions in `public` from
+   `anon` and `authenticated`. Nothing in this product uses PostgREST, so
+   these roles need no access at all and removing it is better than writing
+   permissive policies for them.
+2. `ALTER DEFAULT PRIVILEGES` (both unqualified and `FOR ROLE postgres`) so
+   that tables created by *future* Prisma migrations do not silently receive
+   the same grants again. Without this the next `CREATE TABLE` reopens the
+   hole.
+3. `ENABLE` **and** `FORCE ROW LEVEL SECURITY` on all six application tables.
+4. Policies expressing only the genuinely public access patterns: `SELECT` on
+   `ShopSettings` and `Faq`, `INSERT` on `Appointment` and `Enquiry`.
+   `Admin` and `AdminSession` deliberately have **no policies at all**;
+   deny-by-default is the correct rule for password hashes and session
+   tokens.
+
+**Verified, not assumed.** Nine probes were run inside rolled-back
+transactions under `SET LOCAL ROLE anon`: reading password hashes, reading
+session tokens, reading appointment and enquiry PII, reading shop settings,
+deleting all appointments, updating shop settings, inserting a rogue admin,
+and truncating the FAQ table. All nine were blocked. A full API regression
+(public GET/POST, admin login, admin GET, admin PUT) passed unchanged
+afterwards.
+
+**`service_role` was deliberately left alone.** It already carries BYPASSRLS,
+its key is a server-side secret rather than a public one, and Supabase
+platform features depend on it. Revoking it would break things without
+closing the hole that mattered.
+
+#### The limitation that remains, stated plainly
+
+**RLS does not currently constrain `apps/api` at all.** The application
+connects as `postgres`, which holds `rolbypassrls = true` (it is not a
+superuser, but BYPASSRLS has the same effect here, and it overrides `FORCE`).
+`FORCE` was set anyway so the configuration is already correct the moment the
+application stops using a bypassing role.
+
+Fixing this properly is not just "create a non-superuser role", because of a
+deeper structural point: **`apps/api` uses one database role for every
+request.** Whether a caller is an anonymous customer or a logged-in admin is
+decided by an HTTP cookie in `AdminAuthGuard`, and that fact never reaches
+Postgres. So a single scoped role would need the union of every permission
+the app ever uses, including reading customer PII, which is exactly the
+permission RLS would be trying to restrict. The result would look safer
+without being safer.
+
+Two real options, neither chosen unilaterally because both change how the
+application connects to its database:
+
+- **Two roles.** `atelier_api_public` (SELECT on `ShopSettings`/`Faq`,
+  INSERT on `Appointment`/`Enquiry`) and `atelier_api_admin` (the admin
+  surface). `PrismaService` would hold two clients and pick per request based
+  on whether the route is guarded. Strongest boundary; a database-level
+  backstop that genuinely holds if `AdminAuthGuard` is ever bypassed. Cost is
+  two connection pools and a rule about which client each service uses.
+- **One role plus session context.** A single non-bypassing role, with the
+  app issuing `SET LOCAL app.admin_id = ...` inside a transaction after the
+  guard passes, and policies written against `current_setting(...)`. Cheaper
+  to wire, but every query must then run inside a transaction, and a missed
+  `SET LOCAL` fails open rather than closed.
+
+**Recommendation: the two-role option**, because its failure mode is the
+right way round. A service that forgets to use the admin client gets a
+permission error, rather than quietly retaining full access.
+
+**This needs a new environment variable and therefore an owner decision.**
+Creating the role requires a password, which must not be invented here or
+written into a migration file (migrations are committed to git). If the
+two-role option is chosen, the owner should create the roles in the Supabase
+SQL editor and add the resulting connection strings as
+`DATABASE_URL_PUBLIC` and `DATABASE_URL_ADMIN`. The exact SQL is in
+`docs/deployment-readiness.md`.
