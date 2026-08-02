@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Single-row shop configuration, matching the ShopSettings interface
+// documented in docs/api.md exactly. `id` is a fixed singleton row key
+// (see SINGLETON_ID in shop-settings.service.ts), not part of the public
+// API response shape.
+model ShopSettings {
+  id                String   @id @default(cuid())
+  shopName          String
+  tagline           String
+  phone             String
+  whatsappNumber    String
+  email             String
+  address           String
+  cityCountry       String
+  hoursWeekday      String
+  hoursSaturday     String
+  hoursSunday       String
+  pricingNote       String
+  depositPercentage Float
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// Public FAQ content — a list, not a singleton, so `id` uses normal
+// cuid() generation (no fixed singleton key). Matches the FaqEntry shape
+// already established in apps/web/lib/faq-data.ts. `category` is nullable
+// since grouping is optional per the original frontend type; `sortOrder`
+// (not `order`, a reserved SQL keyword) controls display sequence within
+// a category. Admin-editable per AGENTS.md, though no write endpoints
+// exist yet — see docs/api.md.
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String?
+  sortOrder Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Customer-requested fitting/consultation slots. Fields mirror exactly what
+// apps/web/components/appointment-form.tsx collects — nothing invented on
+// top of it. See docs/api.md "Appointment Requests" for the full contract.
+enum AppointmentTime {
+  morning
+  afternoon
+  evening
+}
+
+// Per AGENTS.md — Confirmed Product Policies: "Fitting-session booking is a
+// customer request, not a live calendar. Admin confirms or proposes an
+// alternative." `pending` is therefore the only valid initial state; the
+// customer never sets this field.
+enum AppointmentStatus {
+  pending
+  confirmed
+  declined
+}
+
+model Appointment {
+  id    String  @id @default(cuid())
+  name  String
+  phone String
+  email String?
+  // Date-only (@db.Date), not a timestamp: the customer picks a calendar
+  // day, not an instant, so storing a time component would invent precision
+  // they never gave and risk a timezone shifting the date by one day.
+  preferredDate DateTime        @db.Date
+  preferredTime AppointmentTime
+  // Plain String rather than a database enum, unlike the two above: these
+  // values mirror the catalogue categories in apps/web/lib/garments.ts,
+  // which are editable business content expected to change. A Postgres enum
+  // would need a migration every time the catalogue gains a category.
+  // Validated against an explicit allowlist in appointments.schema.ts.
+  category String
+  notes    String?
+  status   AppointmentStatus @default(pending)
+  // timestamptz, unlike the older tables in this schema which use plain
+  // timestamp. Timezone-aware is the correct choice (see the Supabase
+  // Postgres best-practices skill) and matters here because these rows will
+  // be read directly in the Supabase dashboard, not only through Prisma.
+  // The earlier tables should follow in their own migration — see
+  // docs/database.md.
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  // Admin lists these newest-first; index supports that ordering.
+  @@index([createdAt])
+}
+
+// The only authenticated role in this platform (AGENTS.md — Confirmed
+// Product Policies). Real email+password login, never a PIN or hard-coded
+// bypass. passwordHash is a bcrypt hash — never store or return plaintext.
+model Admin {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  sessions     AdminSession[]
+}
+
+// Server-side session store backing the Admin login cookie. Only a SHA-256
+// hash of the session token is persisted (tokenHash) — the raw token lives
+// solely in the client's httpOnly cookie, so a database read alone can never
+// reconstruct a valid session, matching how passwordHash is handled above.
+model AdminSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+}

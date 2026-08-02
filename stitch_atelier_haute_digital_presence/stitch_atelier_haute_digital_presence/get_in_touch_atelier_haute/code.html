@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Get in Touch | Atelier Haute</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&amp;family=Spectral:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#723600",
+                    "primary-container": "#1b3e2d",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e2e2e2",
+                    "primary-fixed-dim": "#a9cfb8",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#e1c299",
+                    "outline": "#727973",
+                    "on-primary-fixed": "#002113",
+                    "on-background": "#1a1c1c",
+                    "tertiary-fixed": "#feddb3",
+                    "secondary": "#924b11",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-dim": "#dadada",
+                    "tertiary": "#301f04",
+                    "surface-container-low": "#f3f3f3",
+                    "surface-bright": "#f9f9f9",
+                    "secondary-container": "#ffa363",
+                    "surface-tint": "#426653",
+                    "outline-variant": "#c1c8c2",
+                    "on-surface-variant": "#414843",
+                    "background": "#f9f9f9",
+                    "on-primary-fixed-variant": "#2b4e3c",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#311300",
+                    "on-tertiary-fixed": "#281801",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#eeeeee",
+                    "inverse-on-surface": "#f1f1f1",
+                    "tertiary-container": "#483416",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-high": "#e8e8e8",
+                    "secondary-fixed": "#ffdcc7",
+                    "primary-fixed": "#c4ecd3",
+                    "surface": "#f9f9f9",
+                    "inverse-primary": "#a9cfb8",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#584324",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary-fixed-dim": "#ffb787",
+                    "on-tertiary-container": "#b99c76",
+                    "inverse-surface": "#2f3131",
+                    "on-secondary-container": "#763800",
+                    "error-container": "#ffdad6",
+                    "primary": "#032819",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#84a993"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "unit": "8px",
+                    "section-gap": "120px",
+                    "margin-mobile": "20px",
+                    "gutter": "24px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "body-md": ["Spectral"],
+                    "display-lg": ["Fraunces"],
+                    "headline-sm": ["Fraunces"],
+                    "headline-md": ["Fraunces"],
+                    "body-lg": ["Spectral"],
+                    "label-caps": ["Spectral"],
+                    "display-lg-mobile": ["Fraunces"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-caps": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .form-input-minimal {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #727973;
+            border-radius: 0;
+            padding: 12px 0;
+            transition: border-color 0.3s ease;
+        }
+        .form-input-minimal:focus {
+            box-shadow: none;
+            border-bottom-color: #924b11; /* Secondary/Copper */
+            outline: none;
+        }
+        .stagger-in {
+            animation: fadeIn 1s ease forwards;
+            opacity: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-secondary-container">
+<!-- TopNavBar -->
+<header class="bg-surface/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-500 ease-in-out">
+<nav class="flex justify-between items-center w-full px-margin-desktop py-6 max-w-container-max mx-auto">
+<div class="text-headline-sm font-headline-sm text-primary tracking-widest uppercase">Atelier Haute</div>
+<div class="hidden md:flex gap-12 items-center">
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Heritage</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Services</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Process</a>
+<a class="font-label-caps text-label-caps text-secondary border-b-2 border-secondary pb-1" href="#">Bespoke</a>
+</div>
+<button class="bg-primary text-white px-6 py-2.5 rounded-xl font-label-caps hover:bg-primary-container transition-all duration-300">
+                Book Consultation
+            </button>
+</nav>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-24">
+<!-- Hero Section -->
+<section class="mb-section-gap text-center max-w-3xl mx-auto stagger-in" style="animation-delay: 0.1s;">
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6">Get in Touch</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                Whether you are ready to begin your bespoke journey or simply wish to visit our studio in Victoria Island, we invite you to start a conversation. At Atelier Haute, every stitch begins with a dialogue.
+            </p>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Contact Form Section -->
+<section class="lg:col-span-7 stagger-in" style="animation-delay: 0.2s;">
+<div class="border border-outline/20 rounded-[16px] p-8 md:p-12 bg-white/50 backdrop-blur-sm">
+<form class="space-y-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1" for="name">Name</label>
+<input class="form-input-minimal font-body-md" id="name" name="name" placeholder="Your full name" type="text"/>
+</div>
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1" for="email">Email</label>
+<input class="form-input-minimal font-body-md" id="email" name="email" placeholder="email@example.com" type="email"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1" for="phone">Phone</label>
+<input class="form-input-minimal font-body-md" id="phone" name="phone" placeholder="+234 ..." type="tel"/>
+</div>
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1" for="subject">Subject</label>
+<select class="form-input-minimal font-body-md appearance-none" id="subject" name="subject">
+<option value="bespoke">Bespoke Inquiry</option>
+<option value="fitting">Booking a Fitting</option>
+<option value="bridal">Bridal Consultation</option>
+<option value="general">General Inquiry</option>
+</select>
+</div>
+</div>
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1" for="message">Message</label>
+<textarea class="form-input-minimal font-body-md resize-none" id="message" name="message" placeholder="How can we assist you today?" rows="4"></textarea>
+</div>
+<div class="pt-4">
+<button class="w-full md:w-auto bg-primary text-white font-label-caps px-12 py-4 rounded-[12px] hover:bg-primary-container hover:shadow-lg transition-all duration-500 transform hover:-translate-y-0.5" type="submit">
+                                Send Message
+                            </button>
+</div>
+</form>
+</div>
+</section>
+<!-- Studio Information Section -->
+<aside class="lg:col-span-5 space-y-12 lg:pl-12 stagger-in" style="animation-delay: 0.3s;">
+<!-- WhatsApp Anchor -->
+<div class="bg-surface-container-low rounded-[16px] p-8 border border-outline/5">
+<h3 class="font-headline-sm text-headline-sm text-primary mb-4">Instant Connection</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">For quicker responses regarding fittings and fabric availability.</p>
+<a class="inline-flex items-center gap-3 bg-white border border-secondary/20 text-secondary font-label-caps px-6 py-3.5 rounded-[12px] hover:border-secondary transition-all duration-300 w-full justify-center group" href="#">
+<span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">chat</span>
+                        Message via WhatsApp
+                    </a>
+</div>
+<!-- Address & Hours -->
+<div class="space-y-10">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary pt-1" style="font-variation-settings: 'opsz' 32;">location_on</span>
+<div>
+<h4 class="font-headline-sm text-[20px] text-primary mb-2">Lagos Studio</h4>
+<address class="not-italic font-body-md text-body-lg text-on-surface-variant leading-relaxed">
+                                45B Adeola Hopewell Street,<br/>
+                                Victoria Island, Lagos,<br/>
+                                Nigeria
+                            </address>
+</div>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary pt-1" style="font-variation-settings: 'opsz' 32;">schedule</span>
+<div>
+<h4 class="font-headline-sm text-[20px] text-primary mb-2">Operating Hours</h4>
+<ul class="font-body-md text-body-lg text-on-surface-variant space-y-1">
+<li class="flex justify-between gap-8"><span>Monday – Friday</span> <span class="font-medium text-primary">9 AM - 6 PM</span></li>
+<li class="flex justify-between gap-8"><span>Saturday</span> <span class="font-medium text-primary">10 AM - 4 PM</span></li>
+<li class="flex justify-between gap-8"><span>Sunday</span> <span class="text-error/70 italic">Closed</span></li>
+</ul>
+</div>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary pt-1" style="font-variation-settings: 'opsz' 32;">mail</span>
+<div>
+<h4 class="font-headline-sm text-[20px] text-primary mb-2">Direct Contact</h4>
+<p class="font-body-md text-body-lg text-on-surface-variant">concierge@atelierhaute.com</p>
+<p class="font-body-md text-body-lg text-on-surface-variant">+234 (0) 801 234 5678</p>
+</div>
+</div>
+</div>
+<!-- Visual Element: Map or Architectural Image -->
+<div class="relative h-64 w-full rounded-[16px] overflow-hidden group shadow-sm border border-outline/10">
+<div class="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+<img class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" data-alt="A sophisticated architectural photograph of a minimalist luxury fashion atelier storefront in Lagos Victoria Island. The building features clean white lines, large glass windows reflecting tropical greenery, and a subtle brass sign reading Atelier Haute. Soft afternoon sunlight creates elegant shadows, embodying unhurried luxury and high-end craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUQsPBoG26TwpYiLK5dD7tdGvMWbr6owjJfWu-nAghjBhZvrOFCZuokCNxq1IEQFwMtzbs8bSjLMgJV2SovnKYOt0FdK6fWDeli-jHp1_ecwfytL_ZBtEc1YbDFp5bQdv0eYvsFFW-2jglVGB5ZgjRIwcDbH1fhpB838-pFeSMUxhca4Z5NSsZ-57-4ypevwytcM22kDNDr1_g2wIObSC-CFwvpVriGGT0D_hSUD0yUEDAs27WIoI5"/>
+<div class="absolute bottom-4 left-4 z-20 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm">
+<span class="font-label-caps text-xs text-primary flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                            Victoria Island, Lagos
+                        </span>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer Component -->
+<footer class="bg-surface-container-low border-t border-outline/10">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-margin-desktop py-section-gap max-w-container-max mx-auto">
+<div class="text-headline-sm font-headline-sm text-primary mb-8 md:mb-0">Atelier Haute</div>
+<div class="flex flex-wrap justify-center gap-8 md:gap-12 mb-8 md:mb-0">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Instagram</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Contact</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Atelier Locations</a>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant opacity-80">
+                © 2024 Atelier Haute. Crafted in Lagos.
+            </p>
+</div>
+</footer>
+<script>
+        // Micro-interaction for form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Sending...';
+            btn.disabled = true;
+            
+            // Simulating an API call
+            setTimeout(() => {
+                btn.innerHTML = '<span class="material-symbols-outlined align-middle mr-2">check_circle</span> Sent';
+                btn.classList.replace('bg-primary', 'bg-secondary');
+                e.target.reset();
+                
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.replace('bg-secondary', 'bg-primary');
+                    btn.disabled = false;
+                }, 3000);
+            }, 1500);
+        });
+
+        // Simple scroll reveal
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 20) {
+                header.classList.add('shadow-sm', 'py-4');
+                header.classList.remove('py-6');
+            } else {
+                header.classList.remove('shadow-sm', 'py-4');
+                header.classList.add('py-6');
+            }
+        });
+    </script>
+</body></html>

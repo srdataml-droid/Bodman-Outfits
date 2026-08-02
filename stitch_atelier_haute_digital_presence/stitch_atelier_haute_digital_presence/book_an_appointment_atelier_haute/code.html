@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Book an Appointment | Atelier Haute</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Fraunces & Spectral -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&amp;family=Spectral:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom smooth focus ring */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #032819 !important; /* Primary Everglade */
+            box-shadow: 0 1px 0 0 #032819;
+        }
+
+        .bespoke-input-border {
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            border-bottom: 1px solid #727973; /* Outline color */
+            background-color: transparent;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#84a993",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#281801",
+                        "on-tertiary-container": "#b99c76",
+                        "secondary": "#924b11",
+                        "inverse-surface": "#2f3131",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#ffb787",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#c4ecd3",
+                        "on-surface": "#1a1c1c",
+                        "primary": "#032819",
+                        "surface-variant": "#e2e2e2",
+                        "secondary-container": "#ffa363",
+                        "primary-container": "#1b3e2d",
+                        "surface": "#f9f9f9",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c1c8c2",
+                        "on-surface-variant": "#414843",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f3f3f3",
+                        "primary-fixed-dim": "#a9cfb8",
+                        "secondary-fixed": "#ffdcc7",
+                        "on-primary-fixed-variant": "#2b4e3c",
+                        "surface-container-high": "#e8e8e8",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-container": "#eeeeee",
+                        "background": "#f9f9f9",
+                        "on-secondary-container": "#763800",
+                        "on-background": "#1a1c1c",
+                        "on-secondary-fixed": "#311300",
+                        "surface-container-highest": "#e2e2e2",
+                        "outline": "#727973",
+                        "on-tertiary-fixed-variant": "#584324",
+                        "on-primary-fixed": "#002113",
+                        "surface-tint": "#426653",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#723600",
+                        "tertiary-container": "#483416",
+                        "on-error": "#ffffff",
+                        "tertiary": "#301f04",
+                        "surface-dim": "#dadada",
+                        "inverse-primary": "#a9cfb8",
+                        "tertiary-fixed": "#feddb3",
+                        "surface-bright": "#f9f9f9",
+                        "tertiary-fixed-dim": "#e1c299"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "12px", /* Customizing to 12px for buttons as per guidance */
+                        "card": "16px", /* Customizing to 16px for cards as per guidance */
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "120px",
+                        "margin-desktop": "64px",
+                        "margin-mobile": "20px",
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Fraunces"],
+                        "body-md": ["Spectral"],
+                        "body-lg": ["Spectral"],
+                        "label-caps": ["Spectral"],
+                        "display-lg": ["Fraunces"],
+                        "display-lg-mobile": ["Fraunces"],
+                        "headline-md": ["Fraunces"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-caps": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopNavBar -->
+<nav class="docked full-width top-0 sticky bg-surface/90 backdrop-blur-md z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop py-6 max-w-container-max mx-auto">
+<a class="text-headline-sm font-headline-sm text-primary tracking-widest uppercase" href="#">Atelier Haute</a>
+<div class="hidden md:flex items-center gap-10">
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Heritage</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Services</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Process</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Bespoke</a>
+</div>
+<button class="hidden md:block bg-primary text-on-primary font-label-caps text-label-caps px-8 py-3 rounded-xl hover:bg-primary-container transition-all duration-500">
+                Book Consultation
+            </button>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<main class="min-h-screen flex flex-col items-center pt-24 pb-section-gap px-margin-mobile md:px-0">
+<!-- Hero Intro Section -->
+<header class="text-center max-w-2xl mx-auto mb-16 fade-in-up">
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6">Book an Appointment</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                Begin your bespoke journey with an unhurried consultation at our Lagos atelier. 
+                Experience the tactile beauty of our heritage textiles and the precision of master tailoring.
+            </p>
+</header>
+<!-- Form Container -->
+<section class="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-gutter items-start">
+<!-- Side Image - Gallery Feel -->
+<div class="md:col-span-5 h-full hidden md:block fade-in-up" style="animation-delay: 0.2s;">
+<div class="sticky top-32 overflow-hidden rounded-card border border-on-tertiary-container/20 h-[700px] group">
+<img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" data-alt="A serene wide-angle shot of a minimalist luxury atelier interior in Lagos. The space features textured plaster walls, large windows letting in soft golden sunlight, and high-end wooden furniture. Hand-carved decorative elements and rolls of premium textiles are visible in the background, creating a mood of quiet, unhurried luxury." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAm6PpzqXMh361SlDUg-VesyRNLAZKs4Qf6MAgzAfhyZH8rsqCIj11mYBaOnSe_fQBF-h2exWLXkh31XMQoq6cWOB94xbh6JQgIkiMa2io1uai4bE-t62mcBxrJMN3C3TfAZmykULBheNMij26Q53KDel-GTizkwOwj_rp_zFtcuhy2pMALEIk0LB54Jn1Q2att-ROLboYGpQFJNieH8euxxdKbGuF3gXZhmqZFqGpbsK1W9ZhAXMBS"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div>
+<div class="absolute bottom-8 left-8 text-on-primary">
+<p class="font-label-caps text-label-caps tracking-widest uppercase mb-2">Our Lagos Atelier</p>
+<p class="font-headline-sm text-headline-sm">Victoria Island, Lagos</p>
+</div>
+</div>
+</div>
+<!-- The Form -->
+<div class="md:col-span-7 bg-white p-8 md:p-12 rounded-card border border-on-tertiary-container/30 shadow-sm fade-in-up" style="animation-delay: 0.3s;">
+<form action="#" class="space-y-10" method="POST">
+<div class="grid grid-cols-1 gap-8">
+<!-- Full Name -->
+<div class="flex flex-col space-y-2 group">
+<label class="font-label-caps text-label-caps text-primary/70 group-focus-within:text-primary transition-colors" for="name">Full Name</label>
+<input class="bespoke-input-border py-3 px-0 font-body-lg text-body-lg text-primary placeholder:text-outline-variant/60 focus:ring-0 transition-all" id="name" name="name" placeholder="Adewale Okonjo" required="" type="text"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Email -->
+<div class="flex flex-col space-y-2 group">
+<label class="font-label-caps text-label-caps text-primary/70 group-focus-within:text-primary transition-colors" for="email">Email Address</label>
+<input class="bespoke-input-border py-3 px-0 font-body-lg text-body-lg text-primary placeholder:text-outline-variant/60 focus:ring-0 transition-all" id="email" name="email" placeholder="wale@example.com" required="" type="email"/>
+</div>
+<!-- Phone -->
+<div class="flex flex-col space-y-2 group">
+<label class="font-label-caps text-label-caps text-primary/70 group-focus-within:text-primary transition-colors" for="phone">Phone Number</label>
+<input class="bespoke-input-border py-3 px-0 font-body-lg text-body-lg text-primary placeholder:text-outline-variant/60 focus:ring-0 transition-all" id="phone" name="phone" placeholder="+234 800 000 0000" required="" type="tel"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Date/Time -->
+<div class="flex flex-col space-y-2 group">
+<label class="font-label-caps text-label-caps text-primary/70 group-focus-within:text-primary transition-colors" for="datetime">Preferred Date &amp; Time</label>
+<input class="bespoke-input-border py-3 px-0 font-body-lg text-body-lg text-primary focus:ring-0 transition-all" id="datetime" name="datetime" required="" type="datetime-local"/>
+</div>
+<!-- Service Interest -->
+<div class="flex flex-col space-y-2 group">
+<label class="font-label-caps text-label-caps text-primary/70 group-focus-within:text-primary transition-colors" for="service">Service Interest</label>
+<select class="bespoke-input-border py-3 px-0 font-body-lg text-body-lg text-primary focus:ring-0 appearance-none bg-transparent transition-all" id="service" name="service" required="">
+<option disabled="" selected="" value="">Select a service</option>
+<option value="Consultation">Consultation</option>
+<option value="Measurement Session">Measurement Session</option>
+<option value="Fitting">Fitting</option>
+<option value="Other">Other</option>
+</select>
+</div>
+</div>
+<!-- Message -->
+<div class="flex flex-col space-y-2 group">
+<label class="font-label-caps text-label-caps text-primary/70 group-focus-within:text-primary transition-colors" for="message">Message &amp; Special Requirements</label>
+<textarea class="bespoke-input-border py-3 px-0 font-body-lg text-body-lg text-primary placeholder:text-outline-variant/60 focus:ring-0 resize-none transition-all" id="message" name="message" placeholder="Tell us more about your bespoke needs..." rows="4"></textarea>
+</div>
+</div>
+<div class="pt-6">
+<button class="w-full bg-primary text-on-primary font-label-caps text-label-caps px-12 py-5 rounded-xl hover:bg-primary-container transition-all duration-500 shadow-sm hover:shadow-lg transform hover:-translate-y-1" type="submit">
+                            Confirm Request
+                        </button>
+<p class="mt-6 text-center font-body-md text-on-surface-variant italic opacity-70">
+                            Our concierge will review your request and contact you within 24 hours.
+                        </p>
+</div>
+</form>
+</div>
+</section>
+<!-- Informational Cards (Bento Style) -->
+<section class="max-w-container-max w-full mt-section-gap px-margin-desktop grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-surface-container-low p-10 rounded-card border border-outline/10 flex flex-col justify-between hover:bg-white transition-all group">
+<span class="material-symbols-outlined text-secondary text-4xl mb-6">workspace_premium</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3">Master Tailoring</h3>
+<p class="font-body-md text-on-surface-variant">Every garment is crafted by artisans with over 30 years of experience in West African couture.</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-10 rounded-card border border-outline/10 flex flex-col justify-between hover:bg-white transition-all group">
+<span class="material-symbols-outlined text-secondary text-4xl mb-6">history_edu</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3">Heritage Textiles</h3>
+<p class="font-body-md text-on-surface-variant">We source rare hand-woven Aso Oke and artisanal linens directly from local weavers.</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-10 rounded-card border border-outline/10 flex flex-col justify-between hover:bg-white transition-all group">
+<span class="material-symbols-outlined text-secondary text-4xl mb-6">schedule</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3">The Fitting Process</h3>
+<p class="font-body-md text-on-surface-variant">An unhurried experience involving three distinct fitting stages for the perfect silhouette.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="full-width bg-surface-container-low border-t border-outline/10">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-margin-desktop py-section-gap max-w-container-max mx-auto">
+<div class="mb-10 md:mb-0">
+<p class="text-headline-sm font-headline-sm text-primary tracking-widest uppercase mb-4">Atelier Haute</p>
+<p class="font-body-md text-on-surface-variant max-w-xs opacity-80">
+                    Redefining luxury through heritage and craftsmanship. Lagos.
+                </p>
+</div>
+<div class="flex flex-col md:items-end gap-6">
+<div class="flex gap-8">
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Instagram</a>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Contact</a>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Atelier Locations</a>
+</div>
+<p class="font-body-md text-on-surface-variant opacity-60">
+                    © 2024 Atelier Haute. Crafted in Lagos.
+                </p>
+</div>
+</div>
+</footer>
+<!-- Simple interaction script -->
+<script>
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            el.addEventListener('focus', () => {
+                el.parentElement.classList.add('scale-[1.01]');
+            });
+            el.addEventListener('blur', () => {
+                el.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+
+        // Simple form submission feedback
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                const originalText = btn.innerText;
+                btn.innerText = 'Processing...';
+                btn.disabled = true;
+                
+                setTimeout(() => {
+                    btn.innerText = 'Request Sent';
+                    btn.classList.replace('bg-primary', 'bg-on-primary-container');
+                    form.reset();
+                    
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.replace('bg-on-primary-container', 'bg-primary');
+                        btn.disabled = false;
+                    }, 3000);
+                }, 1500);
+            });
+        }
+    </script>
+</body></html>

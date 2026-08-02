@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --everglade: #1b3e2d;
+  --everglade-dark: #153124;
+  --copper: #c8763a;
+  --tan: #d2b48c;
+  --canvas: #f9f9f9;
+  --ink: #0b0907;
+  --muted-ink: #414843;
+  --outline: rgb(27 62 45 / 16%);
+}
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("/fonts/fraunces-500.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Spectral";
+  src: url("/fonts/spectral-400.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "Spectral", Georgia, serif;
+  text-rendering: optimizeLegibility;
+}
+
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #d1d8d5;
+  color: var(--everglade-dark);
+}
+
+@keyframes catalogue-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Scroll reveal.
+ *
+ * Deliberately built so the content is VISIBLE by default and only hidden
+ * when we are certain motion is both wanted and possible. Three fallbacks,
+ * in order:
+ *   1. prefers-reduced-motion: the hiding rule sits inside a
+ *      `no-preference` query, so reduced-motion users never see a hidden
+ *      state at all and the page reads as a normal static document.
+ *   2. no JavaScript: the <noscript> rule below forces everything visible,
+ *      since nothing would ever arrive to reveal it.
+ *   3. observer never fires (element already past, tab restored, etc.):
+ *      ScrollReveal reveals immediately on mount if the element is already
+ *      in view.
+ *
+ * Only opacity and transform are animated. Both are compositor-friendly and
+ * they are the one pair that genuinely needs to move together: fading without
+ * the slight rise reads as a flicker, rising without the fade reads as a jump.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal="hidden"] {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+[data-reveal] {
+  transition:
+    opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/*
+ * Garment hover: flat cloth resolving into the garment on a form.
+ * A crossfade only, with a very slight settle on the incoming image. No
+ * scale bounce, no rotation. 420ms is slower than a UI micro-interaction on
+ * purpose, because this is a change of subject rather than a state change,
+ * but it stays well short of anything that would feel like a slideshow.
+ */
+.garment-figure img {
+  transition:
+    opacity 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

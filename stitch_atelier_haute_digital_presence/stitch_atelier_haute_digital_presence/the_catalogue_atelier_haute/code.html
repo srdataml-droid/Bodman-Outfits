@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Catalogue | Atelier Haute</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Fraunces & Spectral -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;500;700&amp;family=Spectral:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-primary": "#a9cfb8",
+            "background": "#f9f9f9",
+            "surface-container-high": "#e8e8e8",
+            "surface-tint": "#426653",
+            "primary-fixed": "#c4ecd3",
+            "primary": "#032819",
+            "inverse-on-surface": "#f1f1f1",
+            "on-secondary-container": "#763800",
+            "surface-dim": "#dadada",
+            "on-secondary-fixed-variant": "#723600",
+            "on-primary-fixed-variant": "#2b4e3c",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-container": "#b99c76",
+            "surface": "#f9f9f9",
+            "on-primary-fixed": "#002113",
+            "on-error-container": "#93000a",
+            "outline-variant": "#c1c8c2",
+            "secondary-fixed-dim": "#ffb787",
+            "outline": "#727973",
+            "primary-container": "#1b3e2d",
+            "on-tertiary-fixed": "#281801",
+            "on-tertiary-fixed-variant": "#584324",
+            "on-secondary": "#ffffff",
+            "tertiary": "#301f04",
+            "secondary": "#924b11",
+            "tertiary-container": "#483416",
+            "on-tertiary": "#ffffff",
+            "surface-bright": "#f9f9f9",
+            "on-background": "#1a1c1c",
+            "on-primary-container": "#84a993",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#feddb3",
+            "error": "#ba1a1a",
+            "secondary-container": "#ffa363",
+            "on-primary": "#ffffff",
+            "primary-fixed-dim": "#a9cfb8",
+            "on-secondary-fixed": "#311300",
+            "on-surface-variant": "#414843",
+            "error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#e1c299",
+            "surface-container-highest": "#e2e2e2",
+            "on-surface": "#1a1c1c",
+            "secondary-fixed": "#ffdcc7",
+            "surface-variant": "#e2e2e2",
+            "surface-container-low": "#f3f3f3",
+            "inverse-surface": "#2f3131",
+            "surface-container": "#eeeeee"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "unit": "8px",
+            "margin-desktop": "64px",
+            "gutter": "24px",
+            "margin-mobile": "20px",
+            "container-max": "1280px",
+            "section-gap": "120px"
+          },
+          "fontFamily": {
+            "label-caps": ["Spectral"],
+            "display-lg": ["Fraunces"],
+            "headline-sm": ["Fraunces"],
+            "headline-md": ["Fraunces"],
+            "display-lg-mobile": ["Fraunces"],
+            "body-md": ["Spectral"],
+            "body-lg": ["Spectral"]
+          },
+          "fontSize": {
+            "label-caps": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1em", "fontWeight": "500"}],
+            "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+            "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+            "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+            "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      background-color: #f9f9f9;
+      color: #1a1c1c;
+      -webkit-font-smoothing: antialiased;
+    }
+    .fade-in {
+      animation: fadeIn 1.2s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .category-card:hover .card-image {
+      transform: scale(1.02);
+    }
+    .card-image {
+      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- TopNavBar Implementation -->
+<nav class="bg-surface/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-500 ease-in-out">
+<div class="flex justify-between items-center w-full px-margin-desktop py-6 max-w-container-max mx-auto">
+<!-- Brand Identity -->
+<a class="text-headline-sm font-headline-sm text-primary tracking-widest uppercase" href="#">Atelier Haute</a>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-10">
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Heritage</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Services</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Process</a>
+<a class="font-label-caps text-label-caps text-secondary border-b-2 border-secondary pb-1" href="#">Bespoke</a>
+</div>
+<!-- Action -->
+<div class="flex items-center gap-6">
+<button class="hidden lg:block bg-primary text-on-primary px-6 py-3 rounded-xl font-label-caps text-label-caps hover:bg-secondary transition-colors duration-300">
+          Book Consultation
+        </button>
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-24">
+<!-- Page Header Section -->
+<header class="max-w-2xl mb-section-gap fade-in">
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6">
+        The Catalogue
+      </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+        A curated collection of our signature silhouettes, where heritage meets the modern wardrobe. Explore the depth of our craftsmanship across every category.
+      </p>
+</header>
+<!-- Grid Layout: 2x2 Refined Arrangement -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-gutter md:gap-x-12 md:gap-y-24">
+<!-- Category 1: Native Wear -->
+<article class="category-card flex flex-col group fade-in" style="animation-delay: 0.1s;">
+<div class="relative overflow-hidden rounded-[16px] aspect-[3/4] mb-8">
+<img class="card-image w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARX4HRTkIXNxph0IIX-cwt6w-8BLvR35fDR0vF_dZanXTxLMbZBSV-Rg6pKLd6A4FrmQxxnr3-0sULkR-RzH6OqQtQAKiG4u-PXbgfk88-2KHs7Skr5KwLsfPVPUt4SCS7uyGPsTYr2B24YoJcxwXgeIObL1nOJ95qsfOmkONDNwKWGumIju9zo6Lu_aGOEt0Wuy74CoFlp4H_NnW2H26dCLqIGjrcnRbez8YqqXXb-Ll8u1TKxQrR"/>
+<div class="absolute inset-0 bg-primary/5 group-hover:bg-transparent transition-colors duration-500"></div>
+</div>
+<div class="border-l border-outline/20 pl-6">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-2">Native Wear</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">The soul of West African style, reimagined.</p>
+<a class="inline-flex items-center gap-2 font-label-caps text-label-caps text-secondary group-hover:gap-4 transition-all duration-300" href="#">
+            VIEW COLLECTION
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</article>
+<!-- Category 2: Formal Wear -->
+<article class="category-card flex flex-col group fade-in md:mt-24" style="animation-delay: 0.2s;">
+<div class="relative overflow-hidden rounded-[16px] aspect-[3/4] mb-8">
+<img class="card-image w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgSjQb6v9hJpEJrvxvAzRIybx_fyItQ8dPhqxisvZ_xDjx_39KLHI3dmED6Wi48HXZSOAkVTKYa3tWsK1mH9vc0zb9JPyJD1d4xpq5YrTQc_mHVMQUA9w7VwKJLf0IHbZ2dvN7hCDkFIApYbv2lc2Meyhc45rBZk_AzI-inHCIu9XQOdQesm9L4sQlmhE1GWoSWXN7NES8vzb2KBo7maNZ6AcmsD0DuCy6l2DEh5DaSXA0EJObL1zK"/>
+<div class="absolute inset-0 bg-primary/5 group-hover:bg-transparent transition-colors duration-500"></div>
+</div>
+<div class="border-l border-outline/20 pl-6">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-2">Formal Wear</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Modern precision meeting timeless sartorial tradition.</p>
+<a class="inline-flex items-center gap-2 font-label-caps text-label-caps text-secondary group-hover:gap-4 transition-all duration-300" href="#">
+            VIEW COLLECTION
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</article>
+<!-- Category 3: Bridal -->
+<article class="category-card flex flex-col group fade-in" style="animation-delay: 0.3s;">
+<div class="relative overflow-hidden rounded-[16px] aspect-[3/4] mb-8">
+<img class="card-image w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYHFeO8KAzpNJ_Qw6rJAikJdFLZVqvSeS_VG5queoQXr21I_2qGJM8sRq4zk52Isn2lVYOodNkE4h_k2PMQV52L6CyCmSZYoyUY6IAxfJk27-XsMNRi1SCn7s4UWC5Un0s4Y7mulVp3AWQS-DavBqf8mMoOGiBly8-8c93s6gg8f5oX2yItTrC4rQlLrA0hKcXVKmIyMCCuHGVjkc9TBBeLSnucRde_-CAnUSvbkAdm7d_EpKLZyRZ"/>
+<div class="absolute inset-0 bg-primary/5 group-hover:bg-transparent transition-colors duration-500"></div>
+</div>
+<div class="border-l border-outline/20 pl-6">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-2">Bridal</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Exquisite commissions for the most significant moments.</p>
+<a class="inline-flex items-center gap-2 font-label-caps text-label-caps text-secondary group-hover:gap-4 transition-all duration-300" href="#">
+            VIEW COLLECTION
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</article>
+<!-- Category 4: Lounge Wear -->
+<article class="category-card flex flex-col group fade-in md:mt-24" style="animation-delay: 0.4s;">
+<div class="relative overflow-hidden rounded-[16px] aspect-[3/4] mb-8">
+<img class="card-image w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDldk2S10NN37uMCWNh1L6yJU4NCcehAOEYt3IH6eMVr3Cf3vSuUdT4tD-SR1YWdkp6HBmtnuWltOKcX5lpIq84FJNjM8VEfrMGsXT52XlrowsZKuiqvnQgUwpDw4DbRUf6yg2W3eVfayw8ZCFYgvnY1-MqLJE1STn5RJg4CeusHqeU3nWo_YaFzSHQbTDjCY6qgxrJnLS1XD8iFd3ulWMcy1AzLTfyNyj1_SUq4d6tJnZ_r7jD45oI"/>
+<div class="absolute inset-0 bg-primary/5 group-hover:bg-transparent transition-colors duration-500"></div>
+</div>
+<div class="border-l border-outline/20 pl-6">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-2">Lounge Wear</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Refined comfort crafted from the finest natural fibers.</p>
+<a class="inline-flex items-center gap-2 font-label-caps text-label-caps text-secondary group-hover:gap-4 transition-all duration-300" href="#">
+            VIEW COLLECTION
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</article>
+</section>
+<!-- Refined Bottom CTA -->
+<section class="mt-section-gap py-section-gap border-t border-outline/10 text-center flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-secondary mb-4">THE ATELIER EXPERIENCE</span>
+<h2 class="font-headline-md text-headline-md text-primary mb-8 max-w-xl">Each piece is a dialogue between tailor and client.</h2>
+<button class="bg-primary text-on-primary px-10 py-4 rounded-xl font-label-caps text-label-caps hover:bg-secondary shadow-lg shadow-primary/5 transition-all duration-500">
+        START YOUR BESPOKE JOURNEY
+      </button>
+</section>
+</main>
+<!-- Footer Implementation -->
+<footer class="bg-surface-container-low border-t border-outline/10">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-margin-desktop py-section-gap max-w-container-max mx-auto">
+<div class="mb-8 md:mb-0">
+<h3 class="text-headline-sm font-headline-sm text-primary mb-2">Atelier Haute</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xs">Redefining modern sartorial heritage from the heart of Lagos.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8 mb-8 md:mb-0">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Instagram</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Contact</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Atelier Locations</a>
+</div>
+<div class="text-on-surface-variant font-body-md text-body-md opacity-80">
+        © 2024 Atelier Haute. Crafted in Lagos.
+      </div>
+</div>
+</footer>
+<script>
+    // Micro-interaction: Subtle parallax/scroll effect for category cards
+    window.addEventListener('scroll', () => {
+      const cards = document.querySelectorAll('.category-card');
+      cards.forEach(card => {
+        const speed = 0.05;
+        const rect = card.getBoundingClientRect();
+        const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+        if (isInView) {
+          const shift = (rect.top - window.innerHeight / 2) * speed;
+          const img = card.querySelector('.card-image');
+          if (img) {
+            img.style.transform = `translateY(${shift}px) scale(1.05)`;
+          }
+        }
+      });
+    });
+  </script>
+</body></html>

@@ -1,0 +1,680 @@
+# Decisions Log
+
+Chronological record of judgment calls made during this project, and why.
+Backfilled from conversation history on 2026-08-02 — entries before that date
+are best-effort reconstructions, not live-logged at the time, so treat exact
+wording as approximate even where the substance is accurate. Going forward,
+new entries get added as decisions happen.
+
+This overlaps in places with `docs/architecture.md`'s own decision log
+(which is scoped to technical/architectural decisions specifically). Where
+both exist, `docs/architecture.md` has the authoritative full writeup;
+entries here that duplicate it are summarized with a pointer, not
+copy-pasted.
+
+---
+
+## 2026-08-01 — Home/Catalogue category restructure
+
+**Decision:** Switched Home and Catalogue from the original Native
+Wear/Formal Wear/Bridal/Lounge Wear categories to Suits/Corporate/Casual.
+
+**Why:** The `atelier-frontend` skill explicitly states "menswear only... no
+bridal, no native wear... do not build them even if old mockups suggest
+otherwise." The existing content directly violated that. User confirmed the
+skill's categories should win over the existing content when asked.
+
+**Consequence:** `lib/garments.ts` created as the shared data source for
+categories and items across Home, Catalogue, and the new dynamic
+`/catalogue/[category]/[item]` routes.
+
+---
+
+## 2026-08-01 — Dropped `lounge-wear.png` and `native-wear.png`/`bridal.png` entirely
+
+**Decision:** Standardized all placeholder catalogue imagery on
+`formal-wear.png` only.
+
+**Why:** `lounge-wear.png` depicts a woman — wrong gender entirely for a
+menswear-only brand, a worse violation than the category mismatch that
+prompted removing it. `native-wear.png`/`bridal.png` were off-category per
+the decision above. `formal-wear.png` (despite a baked-in fictional
+"Adebayo & Co." plaque) was the only genuinely on-brand asset available.
+
+---
+
+## 2026-08-01 — WhatsApp number: hard-code now, not build ShopSettings backend yet
+
+**Decision:** Hard-coded the confirmed WhatsApp number
+(`+234 706 131 3517`) in `lib/shop-settings.ts` with a `TODO`, instead of
+building the `ShopSettings` API endpoint in the same pass as the Contact
+page.
+
+**Why:** User chose this explicitly over building the backend immediately,
+to keep the Contact page task scoped to `apps/web`. Full context in
+`docs/ui-ux.md` under "WhatsApp Contact Entry Points" (historical — this was
+later reversed, see the 2026-08-02 entry below).
+
+**Superseded:** 2026-08-02 — real `ShopSettings` backend was built and
+`lib/shop-settings.ts` now fetches live data. The `TODO` is gone.
+
+---
+
+## 2026-08-01 — Floating WhatsApp button scoped to contact page's entry point only, then later expanded
+
+**Decision:** First pass added only the inline WhatsApp card on `/contact`.
+A **separate, explicit follow-up request** then added the sitewide floating
+button (fixed bottom-right, in the root layout, self-hides on `/admin`
+paths).
+
+**Why:** `docs/ui-ux.md` specifies both entry points, but the user chose to
+build them as two separate scoped passes rather than one, to keep each
+change reviewable.
+
+---
+
+## 2026-08-01 — About page: omitted the "Hands Behind the Work" team section entirely
+
+**Decision:** Did not build any version of the Stitch mockup's named-staff
+profile section (Tunde Adeyemi, Amaka Nwosu, Kofi Mensah), not even a
+genericized no-names version.
+
+**Why:** Those three people are fabricated by the design mockup — fake
+names, fake tenure claims ("Thirty years of..."), AI-generated photos. Also
+in tension with AGENTS.md's line against building "craftsperson... profiles."
+User was asked to choose between a generic version and omitting entirely;
+chose to omit. Revisit once real team information exists.
+
+**Also dropped in the same page:** the founding-story narrative (unconfirmed,
+replaced with an honest "still being written" note) and the Aso Oke/heritage-
+textile framing (coded toward native wear, which is out of scope per the
+2026-08-01 category decision above).
+
+---
+
+## 2026-08-02 — FAQ placeholder content: honest gaps, not invented policy
+
+**Decision:** 4 placeholder Q&As covering turnaround, measurements,
+deposit/payment, and alterations — each one states plainly that the specific
+number/policy is still pending owner confirmation, rather than inventing a
+plausible-sounding answer.
+
+**Why:** Real answers depend on pricing/policy decisions the business owner
+hasn't made yet. Matches the same honesty standard already applied to
+Contact (address/hours) and About (founding story).
+
+---
+
+## 2026-08-02 — `PUT /api/shop-settings` ships with no auth guard
+
+**Decision:** Built the endpoint fully functional but completely
+unauthenticated, with a loud in-code comment and a `docs/api.md` note
+calling it a deployment blocker (explicitly a harder category than a
+missing-feature `TODO`).
+
+**Why:** No Admin auth system exists anywhere in the repo (no `User` model,
+no login, no sessions). AGENTS.md explicitly forbids a PIN-only or
+hard-coded bypass as a shortcut. Building *real* auth was judged out of
+scope for a ShopSettings-focused pass — user was asked and chose "leave it
+open, flag clearly" over "build minimal real auth now."
+
+---
+
+## 2026-08-02 — Prisma generator: `prisma-client-js` (legacy), not `prisma-client` (v7-recommended)
+
+**Decision:** Used the older/legacy Prisma Client generator despite it not
+being the generally-recommended choice for Prisma 7 SQL setups.
+
+**Why:** Empirically, the newer `prisma-client` generator emits raw ESM
+source (`import.meta.url`) that crashes under `apps/api`'s CommonJS setup —
+confirmed via both a real `tsc` build and `ts-node` failing identically. The
+legacy generator emits pre-compiled CJS-compatible output and still supports
+driver adapters under v7. Full investigation in `debug-log.md`. Documented
+in `docs/architecture.md` and `docs/api.md` so nobody "helpfully" switches
+it back without first deciding to migrate `apps/api` to ESM.
+
+---
+
+## 2026-08-02 — Dev runner: `tsx` → `nodemon` + `ts-node`
+
+**Decision:** Replaced `apps/api`'s dev script from `tsx watch` to
+`nodemon --watch src --ext ts --exec "ts-node src/main.ts"`.
+
+**Why:** `tsx` (esbuild-based) never emitted the `emitDecoratorMetadata`
+NestJS needs for constructor injection — confirmed via
+`Reflect.getMetadata("design:paramtypes", ...)` returning `undefined`. This
+had silently never mattered before because `HealthController` had no
+injected dependencies; `ShopSettingsController` was the first to need real
+DI. `tsx` remains fine for `prisma/seed.ts` (no NestJS decorators there).
+Rejected `ts-node-dev` as the watch wrapper due to deprecated transitive
+dependencies; used `nodemon` instead.
+
+---
+
+## 2026-08-02 — ShopSettings seed values: real facts real, unconfirmed facts empty
+
+**Decision:** Seeded `shopName`, `whatsappNumber`, `cityCountry`, and
+`tagline` with real/already-approved values (the tagline reuses existing
+approved footer copy). Seeded `phone`, `email`, `address`, `hoursWeekday`,
+`hoursSaturday`, `hoursSunday`, `pricingNote` as empty strings, and
+`depositPercentage` as `0` — explicitly documented as a schema-required
+placeholder, not a claim that no deposit is required.
+
+**Why:** Same honesty standard as every other placeholder-content decision
+in this project. `depositPercentage: 0` specifically needed a comment
+because, unlike an empty string, a `0` could be misread as an actual policy
+statement if found without context.
+
+---
+
+## 2026-08-02 — Graceful degradation for WhatsApp links, not a thrown error
+
+**Decision:** `getShopSettings()`/`getWhatsAppLink()` return `null` on any
+fetch failure instead of throwing. All three call sites (root layout,
+`/contact`, `/appointment`) conditionally omit their WhatsApp entry point
+when the link is `null`, rather than crashing the page.
+
+**Why:** A backend outage shouldn't take down pages (like Home) that don't
+otherwise depend on this data. This was my own judgment call, not something
+explicitly requested — flagged as such at the time since it wasn't verified
+as cleanly as the rest of the ShopSettings work (see `debug-log.md` for the
+verification difficulty encountered).
+
+---
+
+## 2026-08-02 — FAQ backend: GET-only, no write endpoints
+
+**Decision:** Built `GET /api/faqs` only. Did not build even
+stubbed-unauthenticated `POST`/`PUT`/`DELETE` endpoints, unlike ShopSettings
+PUT.
+
+**Why:** User explicitly handed me this call ("your call on which is less
+risk"). Chose the lower-risk option: adding write endpoints would (a) add a
+second open write endpoint to the deployment blocker list with zero
+functional gain, since no consumer exists yet (no `apps/admin`), and
+(b) require inventing an unapproved API contract shape (single vs. bulk
+update, hard vs. soft delete, reordering semantics) — unlike ShopSettings,
+where the write contract was already documented in `docs/api.md` before I
+built it.
+
+---
+
+## 2026-08-02 — FAQ field naming: `sortOrder`, not `order`
+
+**Decision:** Named the Prisma field `sortOrder` even though the task
+description said "order (int, for display sequencing)."
+
+**Why:** `order` is a reserved SQL keyword (used in `ORDER BY`) — while
+Prisma would quote it safely, it's needless friction. More importantly,
+`sortOrder` already exists as the established name in the frontend
+`FaqEntry` type from the original hardcoded implementation, so matching it
+avoids a field-name translation layer between the API and the frontend.
+Treated as a minor implementation detail worth documenting, not one that
+needed a stop-and-ask.
+
+---
+
+## 2026-08-02 — FAQ page: honest "unavailable" state, not an empty list, on fetch failure
+
+**Decision:** `getFaqEntries()` returns `null` on fetch failure; the FAQ
+page shows an explicit "FAQs aren't loading right now, contact us" message
+rather than rendering `FaqList` with zero entries.
+
+**Why:** An empty list would read as "there are no FAQs," which is a
+different and more misleading claim than "the FAQs failed to load." This
+diverges slightly from the ShopSettings pattern (where a failed WhatsApp
+fetch just silently omits that one UI element) because FAQ content isn't a
+supplementary element on this page — it's the entire point of it, so
+silently showing nothing would be more misleading here than there.
+
+---
+
+## 2026-08-02 — Local Prisma dev database: reset with consent, then rebuilt from scratch
+
+**Decision:** When `prisma migrate dev` for the new `Faq` model hit a
+shadow-database error that `prisma migrate reset` didn't fully resolve
+(see `debug-log.md` and `docs/architecture.md` for the technical detail),
+switched strategy to `prisma db push` (schema sync, no shadow database) for
+local verification, and hand-generated the real migration file via
+`prisma migrate diff` (schema-to-schema, also no shadow database) instead
+of continuing to fight `migrate dev`.
+
+**Why:** `prisma migrate reset` is a destructive operation Prisma's own
+tooling requires explicit user consent for before an AI agent can run it —
+asked and received consent first (confirmed this was a disposable local
+instance, never connected to real data). After receiving consent and still
+hitting the same class of error on a second, differently-named "fresh"
+instance, concluded this was a genuine local-tooling quirk (evidence:
+identical port reused across differently-named instances, suggesting
+shared underlying storage) rather than something more resets would fix,
+and switched to a workaround that avoids the problematic mechanism
+entirely rather than repeatedly re-asking for the same class of
+destructive action.
+
+---
+
+## 2026-08-02 — Did not touch the newly-appeared real Supabase credentials in `.env`
+
+**Decision:** Noticed during cleanup that `.env`'s `DATABASE_URL`/
+`DIRECT_URL` now contain real-looking credentials (previously the
+placeholder `[YOUR-PASSWORD]`) — did not attempt to apply migrations or run
+any command against this real connection, and did not otherwise act on it
+beyond noting the fact in `project-status.md` and flagging it back.
+
+**Why:** I didn't add these credentials — they appeared during this
+session via a source outside my own actions (same pattern as the
+`schema.prisma`/`prisma.config.ts` external edits noted earlier this
+session). Applying real migrations to what may now be a live, real
+database is a materially bigger step than anything approved in this task
+(which was scoped to local verification, matching the established
+pattern), and deserves its own explicit go-ahead rather than being folded
+into "finish the FAQ backend."
+
+---
+
+## 2026-08-02 — Ran `prisma migrate deploy` against the real Supabase database, after explicit go-ahead
+
+**Decision:** User explicitly confirmed "Apply migrations" when asked (given the prior entry's flag). Ran `npx prisma migrate deploy` — the standard, non-destructive, production-safe command (applies only pending migrations, no shadow database, no reset). Result: **no pending migrations** — both `add_shop_settings` and `add_faq` were already recorded as applied in this database's `_prisma_migrations` table, not something I or this session did. Verified via `PrismaClient` + `@prisma/adapter-pg` (required for Prisma 7) that both `ShopSettings` and `Faq` tables exist but contain **0 rows** — schema is live, no data has been seeded against the real database.
+
+**Why:** This directly touches the production Supabase connection for the first time in a new way, so it stayed in the "ask first" bucket per the user's autonomy guidance even though `migrate deploy` itself is a routine, safe operation. Did not run `db seed` or otherwise write data — seeding real/production content is a business decision (what real shop info and FAQs to publish), not mine to make unilaterally.
+
+**Open question for the user:** who/what already applied these migrations, and whether the empty tables should now be seeded with real content (vs. staying empty until real data is ready).
+
+**Resolved 2026-08-02 (later same day):** User's theory confirmed by file-mtime cross-check, not an external actor. Timeline: `prisma.config.ts` was last modified 05:57:26 (the Prisma 7 config fix), `.env` received its real credentials at 06:19 per the earlier directory listing — *after* that fix. A separate Claude Code prompt (written earlier in this project's history, not in this session's own `debug-log.md`) had step 4 read "re-run `npx prisma migrate deploy`" as part of troubleshooting the same config error. That step, run once `.env` already held live credentials, is almost certainly what actually applied the migrations for real — not a mystery actor, just an ordinary troubleshooting step landing on a database that had just gone from placeholder to real underneath it. No further action needed; logged here for the record.
+
+---
+
+## 2026-08-02 — Added folder-scope + `.env` boundary to `.claude/settings.json` and `AGENTS.md`
+
+**Decision:** Extended `.claude/settings.json`'s `permissions.deny` with
+`Edit(/home/noirxvii/**)` and `Read(/home/noirxvii/**)`, paired with a
+narrower `allow` for `/home/noirxvii/Desktop/tailoring-platform/**`, per the
+user's explicit request to fence autonomous work to the project folder.
+Added the matching reasoning to `AGENTS.md` under a new "Boundaries for
+Autonomous Work" section (this project uses `AGENTS.md`, not `CLAUDE.md`,
+as its standing-instructions file, so it was added there instead of creating
+a new file).
+
+**Caveat flagged to the user, not resolved:** Could not empirically verify
+that the broad-deny-plus-narrow-allow pattern actually resolves in the
+allow's favor. A `Read` of `AGENTS.md` succeeded immediately after writing
+the change, but that is not proof — `.claude/settings.json` did not exist
+when this session started, so the settings watcher was very likely not
+watching that directory yet, meaning the successful read may just reflect
+the *old* (pre-change) bypass state rather than confirmation the new rule
+resolved correctly. If Claude Code's permission engine treats `deny` as an
+absolute override regardless of specificity (common in security-tool
+design, and consistent with how the `.env` deny rule appeared to block even
+unrelated `Bash` commands that merely referenced its path), the broad
+`/home/noirxvii/**` deny could end up blocking the project itself, since the
+project lives under that same path.
+
+**Why left unresolved rather than fixed silently:** This needs a fresh
+session (or another reload mechanism) to actually observe live behavior,
+which isn't something achievable within the same running session. Flagged
+back to the user rather than guessing at a "safer" rewrite, since getting
+this wrong in either direction has real cost — over-permissive misses the
+point of the ask, over-restrictive could silently break the ability to work
+in the project at all.
+
+**How to verify next session:** Try reading/editing an ordinary project
+file (e.g. `AGENTS.md`) early on. If that fails, the broad deny is winning
+and the config needs to move to `sandbox.filesystem.denyRead`/`denyWrite`
+(paths outside the project) plus `sandbox.filesystem.allowRead`/`allowWrite`
+(the project path) instead — that mechanism is documented to have
+allow-overrides-deny semantics for overlapping paths, unlike the top-level
+`permissions.allow`/`deny` lists — but it requires `sandbox.enabled: true`,
+which is a heavier change (OS-level sandboxing, needs
+`network.allowedDomains` configured for anything that talks to the network,
+e.g. the Supabase pooler, npm/pnpm registries) than what was asked for here,
+so it wasn't turned on unilaterally.
+
+---
+
+## 2026-08-02 — Built Admin authentication (login, session cookie, guard)
+
+**Decision:** Built the full Admin auth system in one pass: `Admin` +
+`AdminSession` Prisma models, `bcryptjs` password hashing,
+`POST /api/auth/login` (rate-limited 5/60s/IP via `@nestjs/throttler`),
+`POST /api/auth/logout`, `AdminAuthGuard` (SHA-256-hashed session token in
+an httpOnly cookie), and applied the guard to the previously-open
+`PUT /api/shop-settings`. Generated the migration file via the same
+no-shadow-database `prisma migrate diff` technique used for `add_faq`, but
+did **not** run `prisma migrate deploy` against the real Supabase database.
+
+**Why:** This was chosen autonomously (user said "go with what's best, read
+through the folder") rather than asked about, because it was the clearest,
+most fully-specified next step available: AGENTS.md already mandates the
+exact shape (real email+password, hashed password, session cookie, no PIN
+bypass, rate-limited login attempts), and `docs/api.md`/`docs/architecture.md`
+already flagged the open `PUT /api/shop-settings` endpoint as the single
+loudest deployment blocker in the repo. No business decision was needed —
+the policy was already confirmed, only the implementation was missing.
+Stopped short of `migrate deploy` against the real database because that's
+a production-connection action, and every prior instance of touching the
+live Supabase connection in this project has been treated as needing its
+own explicit go-ahead rather than folded into other work — see the entries
+above this one.
+
+**Also declined to seed/invent an admin account.** `prisma/bootstrap-admin.ts`
+reads `ADMIN_BOOTSTRAP_EMAIL`/`ADMIN_BOOTSTRAP_PASSWORD` from the
+environment and fails loudly if either is missing, rather than generating a
+placeholder admin login — real login credentials are a business/owner
+decision, not mine to invent, per AGENTS.md's `.env` boundary.
+
+**Open items for the user:**
+1. ~~Apply the migration to the real Supabase database.~~ Done — see the
+   entry immediately below.
+2. Add `ADMIN_BOOTSTRAP_EMAIL` and `ADMIN_BOOTSTRAP_PASSWORD` to `.env`
+   (I did not and will not touch `.env` myself), then run
+   `pnpm --filter @atelier-haute/api run bootstrap-admin` once.
+
+---
+
+## 2026-08-02 — Ran `prisma migrate deploy` for `add_admin_auth`, after explicit go-ahead
+
+**Decision:** User explicitly confirmed ("Run the migration" / "go ahead and
+apply it") after being asked. Ran `npx prisma migrate deploy` from the repo
+root — same non-destructive, production-safe command used for the two prior
+migrations. Result: `20260802210000_add_admin_auth` applied cleanly (3
+migrations total now recorded). Verified via a disposable script
+(`PrismaClient` + `@prisma/adapter-pg`, deleted immediately after) that
+`Admin` and `AdminSession` both exist with 0 rows, matching the same
+verification pattern used for the FAQ migration.
+
+**Note on execution:** The first `migrate deploy` attempt failed with
+"Could not find Prisma Schema" because the shell's working directory had
+drifted into `apps/api` from an earlier `tsc --noEmit` step in the same
+session — not a real schema or connectivity problem. Re-ran with an
+explicit `cd` to the repo root and it succeeded immediately.
+
+**Follow-up connectivity investigation (user asked to confirm it wasn't a
+recurring problem):** A separate, one-off `P1001` ("can't reach database
+server") also showed up on the first `prisma migrate status` check run
+afterward. Ran a raw TCP check (succeeded) plus five more consecutive
+`prisma migrate status` calls — all five succeeded cleanly, and no failure
+ever repeated back-to-back across the whole session (every `P1001` was the
+first query after a gap, every retry immediately after succeeded). This
+matches Supabase's free-tier auto-pause behavior: the database suspends
+after inactivity and takes a few seconds to wake on the first connection,
+so the first query after idle time can time out while everything
+afterward is instant. Read as a cold-start characteristic of this specific
+database, not a flaky or broken connection — no config change made in
+response to it.
+
+**Why:** Same reasoning as the two prior production-migration entries above
+— this is the first time schema changes for `Admin`/`AdminSession` touch the
+real database, so it stayed in the "ask first" bucket even though
+`migrate deploy` itself is routine and idempotent.
+
+**Resolved same day:** admin account created — see the entry below.
+
+---
+
+## 2026-08-02 — First real admin account created; credentials passed inline, not written to `.env`
+
+**Decision:** User supplied the real admin email
+(`samuelirenikase@gmail.com`) and asked me to generate a strong password and
+document both. Generated a 24-character password via `openssl rand -base64
+18` (~140 bits entropy, not human-chosen, not reused). Created the account
+by passing `ADMIN_BOOTSTRAP_EMAIL`/`ADMIN_BOOTSTRAP_PASSWORD` **inline for a
+single command** rather than writing them into `.env`.
+
+**Why inline instead of `.env`:** Three reasons, all pointing the same way.
+(1) It keeps me clear of the AGENTS.md `.env` boundary entirely — I never
+opened or edited that file. (2) The user had already said in the same
+breath that they'd want to delete the two lines from `.env` after
+bootstrapping anyway, so never writing them is strictly better than writing
+then removing. (3) The password's only durable homes are now the bcrypt
+hash in the database and the gitignored credentials file — not a plaintext
+line sitting in `.env` indefinitely.
+
+**Where the password is documented:** `docs/admin-access.local.md`, plus a
+new `*.local.md` rule in `.gitignore`. Flagged explicitly in that file that
+a password manager is the better long-term home. `docs/` was **not**
+already gitignored, so without the new rule the password would have been
+committed the moment this project becomes a git repository (it currently
+is not one) — worth noting as the specific reason the rule was added rather
+than assuming `.env`-style protection extended to `docs/`.
+
+**Verified, not assumed:** confirmed via a throwaway script (deleted after
+use) that the stored value is a real bcrypt hash, is *not* the plaintext
+password, validates against the correct password, and rejects a wrong one.
+
+---
+
+## 2026-08-02 — Fixed `.env` loading in `apps/api` and the bootstrap script (cwd-relative → file-relative)
+
+**Decision:** Changed both `prisma/bootstrap-admin.ts` and
+`apps/api/src/main.ts` to resolve `.env` from the script's own location
+(`path.resolve(__dirname, ...)`) rather than the current working directory,
+and added `dotenv` as an explicit `apps/api` dependency.
+
+**Why:** Bootstrapping the admin account failed with a misleading
+`DatabaseAccessDenied` auth error. Full investigation in `debug-log.md`;
+root cause was that `import "dotenv/config"` resolves `.env` against the
+cwd, and `pnpm --filter` runs scripts from `apps/api`, which has no `.env`.
+`DATABASE_URL` was therefore undefined and the pg adapter fell back to
+libpq defaults. **The wider finding was worse than the original bug:**
+`apps/api` had no `.env` loading of any kind, so every database-backed
+route had always failed at runtime (`GET /api/faqs` → 500) — never noticed
+because all prior database verification went through Prisma scripts run
+from the repo root, never through the running API.
+
+**Judged a routine, in-scope bug fix rather than something to ask about:**
+it is a defect in code written this session, the fix is small and
+reversible, and it follows the existing pattern (the same `dotenv` package
+already used elsewhere in the repo). Logged rather than flagged, per the
+autonomy-boundary agreement. `dotenv` does not overwrite already-present
+environment variables, so this is safe in production, where real env vars
+still take precedence over the file.
+
+---
+
+## 2026-08-02 — Admin auth verified end-to-end against the real database
+
+**What was tested** (running API, real Supabase connection, real admin
+account — not mocks, not just typechecks):
+
+| # | Case | Expected | Actual |
+|---|---|---|---|
+| 1 | `PUT /api/shop-settings`, no cookie | 401 | 401 ✅ |
+| 2 | Login, wrong password | 401, generic message | 401 "Invalid email or password" ✅ |
+| 3 | Login, correct password | 200 + httpOnly cookie | 200, cookie set, `HttpOnly` flag present ✅ |
+| 4 | `PUT /api/shop-settings`, with cookie | not 401 | 500 (guard passed — see below) ✅ |
+| 5 | Logout with cookie | 200 | 200 ✅ |
+| 6 | Logout again, revoked cookie | 401 | 401 ✅ |
+| 7 | Rapid repeated logins | 429 after 5/60s | 429 ✅ |
+
+**On case 4's 500:** the guard correctly allowed the request through (the
+point of the test — it was not a 401); the *update* then failed with Prisma
+`P2025` because the `ShopSettings` singleton row does not exist on the real
+database (that table still has 0 rows — it has never been seeded in
+production). Not an auth defect.
+
+**Rough edge noted, not fixed:** `ShopSettingsService.updateSettings()` lets
+`P2025` surface as a bare HTTP 500 "Internal server error", whereas
+`getSettings()` throws an explanatory message for the same missing-row
+condition. Left alone deliberately — the real resolution is seeding the
+production row, which is a business decision (what real shop details to
+publish), not a code fix to make unilaterally. Flagged to the user instead.
+
+---
+
+## 2026-08-02 — Appointments: separate endpoint for contact enquiries, not a shared one
+
+**Decision:** Built `Appointment` + `POST /api/appointments` (public,
+rate-limited) and `GET /api/appointments` (admin-guarded). Deliberately did
+**not** wire `enquiry-form.tsx` on `/contact` to the same endpoint. It is
+still simulated.
+
+**Why:** The two forms collect genuinely different things. Appointment
+requires `preferredDate`/`preferredTime`/`category`, which the enquiry form
+does not collect at all; enquiry requires `subject`/`message`, which the
+appointment form does not collect. They even disagree on which of
+email/phone is required. Sharing a table would mean making three required
+appointment fields nullable and adding two nullable enquiry fields,
+producing a table where no row ever fills all columns and neither form's
+contract is actually enforced by the schema. They are also semantically
+different: an appointment is a scheduling request with a confirm/decline
+workflow, an enquiry is a message awaiting a reply. Full comparison table
+and a concrete proposed contract are in `docs/api.md`. Not built because,
+unlike the appointment contract, this one was not delegated to me and would
+mean inventing an unapproved API shape.
+
+**Field list taken strictly from the existing form.** Nothing invented. The
+one addition is server-side `status` (`pending`/`confirmed`/`declined`),
+which is not a form field but is directly required by the confirmed policy
+that "Fitting-session booking is a customer request, not a live calendar.
+Admin confirms or proposes an alternative." `status` is never accepted from
+client input.
+
+**Open question flagged, not decided:** past dates are currently accepted.
+Rejecting them looks obvious but is a business rule rather than input
+validation, so it was flagged rather than silently chosen.
+
+**Posts directly from the browser, not through a Next.js route handler.**
+A server-side proxy would make every submission appear to come from the one
+web-server address, silently converting the API's per-IP rate limit into a
+global one that a single spammer could use to lock out all real customers.
+
+---
+
+## 2026-08-02 — Placeholder imagery: design-system, not licensed stock
+
+**Decision:** Chose option (b), non-photographic placeholders generated from
+the design system, over (a) licensed free-commercial stock.
+
+**Why:** The process narrative is a direct claim about how *this* workshop
+works. A stock photograph of a different workshop presented in that context
+is a misleading placeholder in a way that an abstract one is not, and the
+user's own brief already identified process imagery as the stronger
+placeholder-compromise. Licensed stock would also need per-asset license
+tracking for images destined to be deleted. The generated placeholders read
+as cloth swatches, carry zero licensing risk, and cannot be mistaken for a
+photograph, which keeps the "photography still pending" state honest and
+visible rather than hidden.
+
+**How they were made:** a throwaway Python/PIL script kept in the session
+scratchpad, deliberately **not** committed. It is authoring tooling, not
+project code, and adds no dependency to the repo. All 30 files total 119 KB.
+Palette progresses from Tan toward Everglade across the six process stages
+so the sequence reads as progression even before real photography exists.
+
+**No image generation anywhere in the product.** No API call, no key, no
+model download, per the out-of-band Colab pipeline.
+
+### IMAGE GENERATION CHECKLIST (the actual deliverable for Colab)
+
+Drop finished files at these exact paths to replace placeholders. Paths and
+aspect ratios are already committed to in code, so this is a file drop, not
+a code change. Dimensions are multiples of 64 for FLUX friendliness.
+
+**Process narrative — HIGHEST PRIORITY. 1152x1536 (3:4 portrait).**
+These carry a claim about this atelier specifically, so they matter more
+than anything else on the site.
+
+| Path | Should depict |
+|---|---|
+| `apps/web/public/images/process/01-measuring.png` | A tape measure in use on a person, close on hands and cloth. No faces needed. |
+| `apps/web/public/images/process/02-cutting.png` | Shears cutting cloth on a bench, chalk marks visible. |
+| `apps/web/public/images/process/03-sewing.png` | Machine or hand sewing, thread and needle in focus. |
+| `apps/web/public/images/process/04-fitting.png` | A jacket being pinned on a wearer or a form, mid-adjustment. |
+| `apps/web/public/images/process/05-pressing.png` | An iron and pressing cloth on a garment, steam if possible. |
+| `apps/web/public/images/process/06-finished.png` | A completed garment on a dress form, clean and lit. This one also needs to visually hand off into the catalogue. |
+
+**Garment pairs — 1024x1280 (4:5 portrait). Both halves of a pair MUST
+share the aspect ratio or the hover crossfade will jump.**
+`-flat` is the piece laid out or shot as detail; `-on-form` is the same
+piece dressed on a form. Same garment, same lighting, same framing.
+
+For each of these nine slugs, two files, `{slug}-flat.png` and
+`{slug}-on-form.png`, in `apps/web/public/images/catalogue/`:
+`navy-two-piece`, `charcoal-three-piece`, `ivory-wedding-suit`,
+`tailored-blazer`, `flat-front-trouser`, `oxford-shirt`,
+`linen-shirt`, `relaxed-chino`, `weekend-overshirt`.
+
+**Category pairs — 1024x1280 (4:5), same pattern:**
+`category-suits-{flat,on-form}.png`, `category-corporate-{flat,on-form}.png`,
+`category-casual-{flat,on-form}.png`.
+
+**Menswear only.** No womenswear, no bridal, no native/traditional wear.
+
+**If a path changes**, edit `apps/web/lib/process.ts` and
+`apps/web/lib/garments.ts` only. No component references an image path.
+
+---
+
+## 2026-08-02 — Scroll reveals hand-rolled, not GSAP (deviation from the frontend skill, flagged)
+
+**Decision:** Built `ScrollReveal` on `IntersectionObserver` plus two CSS
+properties, rather than adding GSAP, Motion and Lenis as the
+`atelier-frontend` skill nominates for `apps/web`.
+
+**Why:** The entire requirement is "fade and rise slightly, once." That is
+a few lines of observer and two transitions. GSAP plus ScrollTrigger is
+tens of kilobytes of JavaScript for that, which sits badly against both the
+skill's own non-negotiable performance guardrail and the instruction to keep
+this project light. Nothing here needs a timeline, easing curves beyond
+CSS, or scrubbing.
+
+**This is a real deviation from a stated skill instruction, so it is flagged
+rather than buried.** If the hero video transition or the customize-modal
+work later genuinely needs orchestration, GSAP/Motion can be added then, for
+those, without retrofitting them here.
+
+---
+
+## 2026-08-02 — ScrollReveal failsafe: content must never stay invisible
+
+**Decision:** `ScrollReveal` reveals content via three independent paths: an
+immediate synchronous reveal if the element is already in the viewport at
+mount, the `IntersectionObserver` callback, and a 3-second failsafe timer.
+Reduced-motion users never get a hidden state at all (the hiding rule lives
+inside a `prefers-reduced-motion: no-preference` query), and a `<noscript>`
+rule forces visibility when JavaScript never runs.
+
+**Why the failsafe specifically:** during browser verification,
+`IntersectionObserver` was observed **never firing at all** in the automated
+Chrome context, including on a freshly created, plainly visible,
+fixed-position element and on `document.body`, while `requestAnimationFrame`
+kept running. CSS transitions were stuck at their start values in the same
+context (disabling the transition immediately produced the correct final
+opacity, and `getAnimations()` returned an empty list). That is an
+environment artifact rather than an application bug, and the same code
+reached `data-reveal="shown"` on all twelve elements once the failsafe
+existed.
+
+The lesson taken from it is the real point: a design where text is hidden
+until a callback arrives has a failure mode where the text is simply never
+readable. Being unable to reproduce a normal browser here is exactly the
+reason not to rely on the callback being the only path. Worst case the
+animation is skipped; the alternative worst case is unreadable content.
+
+**Not verified, and stated as such:** the actual motion (timing, easing,
+the hover crossfade) could not be observed in this environment for the
+reasons above. Structure, layout, reveal state and final styles were
+verified; the feel of the animation was not.
+
+---
+
+## 2026-08-02 — FAQ copy: voice rewritten, facts untouched
+
+**Decision:** Rewrote all four seeded FAQ answers for voice. Every fact is
+unchanged, including which policies remain unsettled. No answer gained a
+timeframe, price, percentage, or commitment that was not already there.
+
+**Also removed every em-dash**, per instruction. Worth noting that three of
+the four original answers contained one, so this was not limited to the
+turnaround answer that was called out.
+
+**Deliberately avoided in the rewrite:** any implication of staff size
+("more hands"), since AGENTS.md forbids building staff or craftsperson
+entities, and any hint of a turnaround range, which remains unconfirmed in
+`docs/business-requirements.md`.
+
+**Not published.** The copy lives in `prisma/seed.ts`; the real database's
+`Faq` table is still empty, so none of it is live yet. Running
+`prisma db seed` would also write the `ShopSettings` singleton, which is a
+separate business decision about publishing shop identity that has been
+asked about and not yet answered. Flagged rather than run.

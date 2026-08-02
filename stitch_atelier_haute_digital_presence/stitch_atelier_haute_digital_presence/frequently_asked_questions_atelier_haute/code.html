@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Frequently Asked Questions | Atelier Haute</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,700&amp;family=Spectral:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-tertiary-container": "#b99c76",
+                        "on-background": "#1a1c1c",
+                        "on-surface-variant": "#414843",
+                        "inverse-surface": "#2f3131",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#426653",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#763800",
+                        "secondary-fixed-dim": "#ffb787",
+                        "tertiary-fixed": "#feddb3",
+                        "surface-dim": "#dadada",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary": "#924b11",
+                        "surface-container": "#eeeeee",
+                        "on-primary-container": "#84a993",
+                        "tertiary-fixed-dim": "#e1c299",
+                        "on-primary-fixed": "#002113",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#1b3e2d",
+                        "secondary-container": "#ffa363",
+                        "on-secondary-fixed-variant": "#723600",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#311300",
+                        "secondary-fixed": "#ffdcc7",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#584324",
+                        "surface-container-high": "#e8e8e8",
+                        "on-surface": "#1a1c1c",
+                        "outline": "#727973",
+                        "primary-fixed-dim": "#a9cfb8",
+                        "on-primary-fixed-variant": "#2b4e3c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#c4ecd3",
+                        "primary": "#032819",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-bright": "#f9f9f9",
+                        "outline-variant": "#c1c8c2",
+                        "background": "#f9f9f9",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#281801",
+                        "tertiary": "#301f04",
+                        "inverse-primary": "#a9cfb8",
+                        "tertiary-container": "#483416"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "section-gap": "120px",
+                        "margin-mobile": "20px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Spectral"],
+                        "display-lg": ["Fraunces"],
+                        "headline-sm": ["Fraunces"],
+                        "label-caps": ["Spectral"],
+                        "headline-md": ["Fraunces"],
+                        "display-lg-mobile": ["Fraunces"],
+                        "body-lg": ["Spectral"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "label-caps": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                        "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .accordion-item.active .accordion-content {
+            max-height: 500px;
+        }
+        .accordion-item.active .icon-rotate {
+            transform: rotate(180deg);
+        }
+        .search-focus:focus-within {
+            border-color: #032819;
+            box-shadow: 0 0 0 1px #032819;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #032819;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Header / TopNavBar -->
+<header class="bg-surface/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-500 ease-in-out">
+<nav class="flex justify-between items-center w-full px-6 md:px-margin-desktop py-6 max-w-container-max mx-auto">
+<div class="text-headline-sm font-headline-sm text-primary tracking-widest uppercase">Atelier Haute</div>
+<!-- Desktop Nav -->
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Heritage</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Services</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Process</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-secondary transition-colors duration-300" href="#">Bespoke</a>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-xl font-label-caps text-label-caps hover:bg-secondary transition-colors duration-300">Book Consultation</button>
+</div>
+<!-- Mobile Toggle -->
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</nav>
+</header>
+<main class="max-w-container-max mx-auto px-6 md:px-margin-desktop py-12 md:py-24">
+<!-- Hero Section -->
+<section class="mb-section-gap">
+<div class="max-w-3xl">
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6">Frequently Asked Questions</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-12 max-w-2xl">
+                    Welcome to the Atelier Haute Concierge. Here, we address common inquiries regarding our bespoke tailoring process, heritage fabrics, and international delivery. Our goal is to ensure your journey from first measurement to final fitting is as seamless as the garments we create.
+                </p>
+<!-- Search Component -->
+<div class="relative group max-w-xl">
+<div class="search-focus flex items-center bg-surface border border-outline/20 rounded-xl px-4 py-4 transition-all duration-300">
+<span class="material-symbols-outlined text-outline mr-3">search</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-body-md font-body-md placeholder:text-outline/60" placeholder="Search for keywords (e.g., 'Aso Oke', 'Shipping')..." type="text"/>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQ Categories Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Category Sidebar -->
+<aside class="lg:col-span-3 hidden lg:block sticky top-32 h-fit">
+<nav class="space-y-4">
+<h3 class="font-label-caps text-label-caps text-secondary mb-6 tracking-widest uppercase">Quick Navigation</h3>
+<a class="block font-body-md text-primary hover:text-secondary transition-colors" href="#ordering">Ordering &amp; Process</a>
+<a class="block font-body-md text-primary hover:text-secondary transition-colors" href="#pricing">Pricing &amp; Payment</a>
+<a class="block font-body-md text-primary hover:text-secondary transition-colors" href="#measurements">Measurements &amp; Fitting</a>
+<a class="block font-body-md text-primary hover:text-secondary transition-colors" href="#delivery">Delivery &amp; Timelines</a>
+<a class="block font-body-md text-primary hover:text-secondary transition-colors" href="#care">Alterations &amp; Care</a>
+</nav>
+</aside>
+<!-- Accordions Column -->
+<div class="lg:col-span-9 space-y-16">
+<!-- Category: Ordering & Process -->
+<section class="scroll-mt-32" id="ordering">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-8 border-b border-outline/10 pb-4">Ordering &amp; Process</h2>
+<div class="space-y-4">
+<div class="accordion-item group border border-outline/10 rounded-xl overflow-hidden hover:border-outline/30 transition-all duration-300" onclick="toggleAccordion(this)">
+<button class="flex justify-between items-center w-full px-6 py-5 text-left bg-surface">
+<span class="font-headline-sm text-body-lg text-primary">How long does a bespoke suit take?</span>
+<span class="material-symbols-outlined icon-rotate transition-transform duration-300 text-outline">expand_more</span>
+</button>
+<div class="accordion-content bg-white">
+<div class="px-6 pb-6 pt-2 text-on-surface-variant font-body-md">
+                                    Our signature bespoke process typically spans 6 to 10 weeks. This timeframe accounts for the selection of heritage fabrics, initial cutting, and at least two distinct fitting sessions to ensure absolute precision. For hand-woven Agbada or intricate lace garments, we recommend allowing 12 weeks.
+                                </div>
+</div>
+</div>
+<div class="accordion-item group border border-outline/10 rounded-xl overflow-hidden hover:border-outline/30 transition-all duration-300" onclick="toggleAccordion(this)">
+<button class="flex justify-between items-center w-full px-6 py-5 text-left bg-surface">
+<span class="font-headline-sm text-body-lg text-primary">Can I provide my own fabric?</span>
+<span class="material-symbols-outlined icon-rotate transition-transform duration-300 text-outline">expand_more</span>
+</button>
+<div class="accordion-content bg-white">
+<div class="px-6 pb-6 pt-2 text-on-surface-variant font-body-md">
+                                    While we take pride in our curated selection of heritage silks, wools, and hand-loomed textiles, we do occasionally work with client-provided fabric for sentimental pieces. A consultation is required to assess the fabric's suitability for the desired design.
+                                </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Pricing & Payment -->
+<section class="scroll-mt-32" id="pricing">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-8 border-b border-outline/10 pb-4">Pricing &amp; Payment</h2>
+<div class="space-y-4">
+<div class="accordion-item group border border-outline/10 rounded-xl overflow-hidden hover:border-outline/30 transition-all duration-300" onclick="toggleAccordion(this)">
+<button class="flex justify-between items-center w-full px-6 py-5 text-left bg-surface">
+<span class="font-headline-sm text-body-lg text-primary">Do you offer payment plans?</span>
+<span class="material-symbols-outlined icon-rotate transition-transform duration-300 text-outline">expand_more</span>
+</button>
+<div class="accordion-content bg-white">
+<div class="px-6 pb-6 pt-2 text-on-surface-variant font-body-md">
+                                    Yes. For bespoke orders exceeding a certain threshold, we offer a structured payment plan consisting of a 50% initial deposit to begin the pattern-making process, and the remaining 50% due upon the final fitting before garment release.
+                                </div>
+</div>
+</div>
+<div class="accordion-item group border border-outline/10 rounded-xl overflow-hidden hover:border-outline/30 transition-all duration-300" onclick="toggleAccordion(this)">
+<button class="flex justify-between items-center w-full px-6 py-5 text-left bg-surface">
+<span class="font-headline-sm text-body-lg text-primary">Is the consultation fee refundable?</span>
+<span class="material-symbols-outlined icon-rotate transition-transform duration-300 text-outline">expand_more</span>
+</button>
+<div class="accordion-content bg-white">
+<div class="px-6 pb-6 pt-2 text-on-surface-variant font-body-md">
+                                    Your consultation fee is a commitment to the design journey. Should you choose to proceed with a bespoke order, the full consultation fee is credited toward the final cost of your garment.
+                                </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Measurements & Fitting -->
+<section class="scroll-mt-32" id="measurements">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-8 border-b border-outline/10 pb-4">Measurements &amp; Fitting</h2>
+<div class="space-y-4">
+<div class="accordion-item group border border-outline/10 rounded-xl overflow-hidden hover:border-outline/30 transition-all duration-300" onclick="toggleAccordion(this)">
+<button class="flex justify-between items-center w-full px-6 py-5 text-left bg-surface">
+<span class="font-headline-sm text-body-lg text-primary">Do I need to visit the studio for measurements?</span>
+<span class="material-symbols-outlined icon-rotate transition-transform duration-300 text-outline">expand_more</span>
+</button>
+<div class="accordion-content bg-white">
+<div class="px-6 pb-6 pt-2 text-on-surface-variant font-body-md">
+                                    While we prefer an in-person measurement session at our Lagos or London studios, we offer a "Virtual Tailor" service. This involves a guided video call with our lead fitter to ensure measurements are taken accurately.
+                                </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Delivery & Timelines -->
+<section class="scroll-mt-32" id="delivery">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-8 border-b border-outline/10 pb-4">Delivery &amp; Timelines</h2>
+<div class="space-y-4">
+<div class="accordion-item group border border-outline/10 rounded-xl overflow-hidden hover:border-outline/30 transition-all duration-300" onclick="toggleAccordion(this)">
+<button class="flex justify-between items-center w-full px-6 py-5 text-left bg-surface">
+<span class="font-headline-sm text-body-lg text-primary">Do you ship internationally?</span>
+<span class="material-symbols-outlined icon-rotate transition-transform duration-300 text-outline">expand_more</span>
+</button>
+<div class="accordion-content bg-white">
+<div class="px-6 pb-6 pt-2 text-on-surface-variant font-body-md">
+                                    Indeed. Atelier Haute serves a global clientele. We use premium couriers (DHL/FedEx) to ensure your garment arrives in pristine condition, housed in our bespoke garment bags and flight-ready packaging.
+                                </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Alterations & Care -->
+<section class="scroll-mt-32" id="care">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-8 border-b border-outline/10 pb-4">Alterations &amp; Care</h2>
+<div class="space-y-4">
+<div class="accordion-item group border border-outline/10 rounded-xl overflow-hidden hover:border-outline/30 transition-all duration-300" onclick="toggleAccordion(this)">
+<button class="flex justify-between items-center w-full px-6 py-5 text-left bg-surface">
+<span class="font-headline-sm text-body-lg text-primary">How should I store my hand-woven Agbada?</span>
+<span class="material-symbols-outlined icon-rotate transition-transform duration-300 text-outline">expand_more</span>
+</button>
+<div class="accordion-content bg-white">
+<div class="px-6 pb-6 pt-2 text-on-surface-variant font-body-md">
+                                    Hand-woven textiles like Aso Oke should never be hung for extended periods as the weight can distort the weave. We recommend folding these garments with acid-free tissue paper and storing them in the Atelier Haute cedar trunk provided at purchase.
+                                </div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Closing CTA -->
+<section class="mt-section-gap text-center max-w-4xl mx-auto py-20 bg-primary-container rounded-[32px] overflow-hidden relative">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<div class="w-full h-full bg-cover bg-center" data-alt="A macro photography shot of luxurious hand-woven Aso Oke textile showing intricate gold and emerald green threads. The texture is rich and architectural, set against a dark background that emphasizes the metallic sheen. High-end editorial fashion aesthetic for a luxury atelier." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvs_ENR8So2Y7wEiD4WRwNqdZINKhKsjnpA9rYf2xFo_7cCmRKymD7hvsvxWlBNvFA1N2VzDrlasu7HnWpLnvAcM7zVWzQ2jKVFWVUBVlS6xh3NCcDYhQtWoifDBXKGv8tg5S_8we5w7yvLh9COBQuCn1cVTSZLGDNF8EvgnAsx1-JjNcPuh-2py5d26k6Q9RGxT8kiZh_XhQAEeFwU04FFH2_ShB51umsn9esfXiMMLEcfjCWM5Gq')"></div>
+</div>
+<div class="relative z-10 px-8">
+<h2 class="font-display-lg text-headline-md text-on-primary mb-6">Still have questions?</h2>
+<p class="font-body-md text-on-primary-container mb-10 max-w-xl mx-auto">
+                    If your inquiry hasn't been addressed above, our concierge team is available for a private consultation to discuss your specific needs.
+                </p>
+<div class="flex flex-col sm:flex-row justify-center gap-4">
+<button class="bg-secondary text-on-secondary px-8 py-4 rounded-xl font-label-caps text-label-caps hover:bg-on-secondary hover:text-secondary transition-all duration-300 shadow-lg shadow-secondary/20">Contact Concierge</button>
+<button class="border border-on-primary-container text-on-primary px-8 py-4 rounded-xl font-label-caps text-label-caps hover:bg-on-primary-container/10 transition-all duration-300">Book Visit</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-outline/10">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-6 md:px-margin-desktop py-section-gap max-w-container-max mx-auto">
+<div class="flex flex-col items-center md:items-start mb-8 md:mb-0">
+<div class="text-headline-sm font-headline-sm text-primary mb-2">Atelier Haute</div>
+<p class="font-body-md text-on-surface-variant text-sm">© 2024 Atelier Haute. Crafted in Lagos.</p>
+</div>
+<div class="flex gap-8 items-center">
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Instagram</a>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Contact</a>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Atelier Locations</a>
+</div>
+</div>
+</footer>
+<script>
+        function toggleAccordion(element) {
+            const isActive = element.classList.contains('active');
+            
+            // Close all other accordions in the same section
+            const parent = element.parentElement;
+            const items = parent.querySelectorAll('.accordion-item');
+            items.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Toggle clicked item
+            if (!isActive) {
+                element.classList.add('active');
+            }
+        }
+
+        // Initialize first item of first section
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstItem = document.querySelector('.accordion-item');
+            if(firstItem) firstItem.classList.add('active');
+        });
+
+        // Simple smooth scroll highlighting (Optional enhancement)
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('aside nav a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('text-secondary', 'font-bold');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('text-secondary', 'font-bold');
+                }
+            });
+        });
+    </script>
+</body></html>
