@@ -24,7 +24,7 @@ export default async function FaqPage(): Promise<React.ReactElement> {
               Questions we hear often.
             </h1>
             <p className="mt-7 text-lg leading-8 text-[var(--muted-ink)] md:text-[22px] md:leading-9">
-              Straight answers about how we work — and where we&apos;re still finalizing policy.
+              Straight answers about how we work, and where we&apos;re still finalizing policy.
             </p>
           </div>
 
@@ -33,7 +33,7 @@ export default async function FaqPage(): Promise<React.ReactElement> {
             style={{ animationDelay: "90ms" }}
           >
             <p className="text-base leading-7 text-[var(--muted-ink)]">
-              Some answers below are marked pending — final pricing, turnaround, and alteration policy are still
+              Some answers below are marked pending. Final pricing, turnaround, and alteration policy are still
               being confirmed. Ask us directly on{" "}
               <Link
                 href="/contact"
