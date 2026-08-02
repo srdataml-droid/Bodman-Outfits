@@ -30,7 +30,7 @@ export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
   async login(credentials: LoginDto): Promise<AdminSessionResult> {
-    const admin = await this.prisma.admin.findUnique({ where: { email: credentials.email } });
+    const admin = await this.prisma.adminDb.admin.findUnique({ where: { email: credentials.email } });
     const valid = await bcrypt.compare(credentials.password, admin?.passwordHash ?? DUMMY_HASH);
     if (!admin || !valid) {
       // Same message either way — never reveal whether the email exists.
@@ -38,7 +38,7 @@ export class AuthService {
     }
 
     const token = randomBytes(32).toString("hex");
-    await this.prisma.adminSession.create({
+    await this.prisma.adminDb.adminSession.create({
       data: {
         tokenHash: hashToken(token),
         adminId: admin.id,
@@ -50,11 +50,11 @@ export class AuthService {
   }
 
   async logout(token: string): Promise<void> {
-    await this.prisma.adminSession.deleteMany({ where: { tokenHash: hashToken(token) } });
+    await this.prisma.adminDb.adminSession.deleteMany({ where: { tokenHash: hashToken(token) } });
   }
 
   async validateSession(token: string): Promise<AdminIdentity | null> {
-    const session = await this.prisma.adminSession.findUnique({
+    const session = await this.prisma.adminDb.adminSession.findUnique({
       where: { tokenHash: hashToken(token) },
       include: { admin: true },
     });
@@ -69,7 +69,7 @@ export class AuthService {
   // left-open session should not be enough to take permanent ownership of
   // the account by rotating its credentials.
   async changePassword(adminId: string, currentSessionToken: string, input: ChangePasswordDto): Promise<void> {
-    const admin = await this.prisma.admin.findUnique({ where: { id: adminId } });
+    const admin = await this.prisma.adminDb.admin.findUnique({ where: { id: adminId } });
     if (!admin || !(await bcrypt.compare(input.currentPassword, admin.passwordHash))) {
       throw new UnauthorizedException("Current password is incorrect");
     }
@@ -82,21 +82,21 @@ export class AuthService {
     // would defeat the entire point. The caller keeps their own session so
     // that changing a password does not log you out of the screen you are
     // standing in front of.
-    await this.prisma.$transaction([
-      this.prisma.admin.update({ where: { id: adminId }, data: { passwordHash } }),
-      this.prisma.adminSession.deleteMany({
+    await this.prisma.adminDb.$transaction([
+      this.prisma.adminDb.admin.update({ where: { id: adminId }, data: { passwordHash } }),
+      this.prisma.adminDb.adminSession.deleteMany({
         where: { adminId, NOT: { tokenHash: hashToken(currentSessionToken) } },
       }),
     ]);
   }
 
   async changeEmail(adminId: string, input: ChangeEmailDto): Promise<{ email: string }> {
-    const admin = await this.prisma.admin.findUnique({ where: { id: adminId } });
+    const admin = await this.prisma.adminDb.admin.findUnique({ where: { id: adminId } });
     if (!admin || !(await bcrypt.compare(input.currentPassword, admin.passwordHash))) {
       throw new UnauthorizedException("Current password is incorrect");
     }
 
-    const existing = await this.prisma.admin.findUnique({ where: { email: input.newEmail } });
+    const existing = await this.prisma.adminDb.admin.findUnique({ where: { email: input.newEmail } });
     if (existing && existing.id !== adminId) {
       throw new ConflictException("That email address is already in use");
     }
@@ -104,7 +104,7 @@ export class AuthService {
     // Sessions are intentionally left intact. An email change does not
     // invalidate the credential that sessions were established against, so
     // there is nothing to revoke.
-    const updated = await this.prisma.admin.update({
+    const updated = await this.prisma.adminDb.admin.update({
       where: { id: adminId },
       data: { email: input.newEmail },
     });

@@ -28,7 +28,8 @@ export class EnquiriesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createEnquiry(input: CreateEnquiryDto): Promise<EnquiryReceiptDto> {
-    const enquiry = await this.prisma.enquiry.create({
+    // Public: customers submit these unauthenticated.
+    const enquiry = await this.prisma.publicDb.enquiry.create({
       data: {
         name: input.name,
         email: input.email,
@@ -38,12 +39,17 @@ export class EnquiriesService {
         // status is never taken from input. A customer cannot mark their own
         // enquiry as replied to.
       },
+      // Restricts the RETURNING clause to exactly the two columns the
+      // public role holds a column-level SELECT grant on. Without this,
+      // Prisma returns every column and Postgres refuses the insert.
+      select: { id: true, status: true },
     });
     return { id: enquiry.id, status: enquiry.status };
   }
 
   async listEnquiries(): Promise<EnquiryDto[]> {
-    const enquiries = await this.prisma.enquiry.findMany({
+    // Admin: these rows contain customer personal data.
+    const enquiries = await this.prisma.adminDb.enquiry.findMany({
       orderBy: { createdAt: "desc" },
       take: MAX_LIST_SIZE,
     });

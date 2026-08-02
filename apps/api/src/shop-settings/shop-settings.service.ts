@@ -25,7 +25,8 @@ export class ShopSettingsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getSettings(): Promise<ShopSettingsDto> {
-    const settings = await this.prisma.shopSettings.findUnique({ where: { id: SINGLETON_ID } });
+    // Public: GET /api/shop-settings is unauthenticated display content.
+    const settings = await this.prisma.publicDb.shopSettings.findUnique({ where: { id: SINGLETON_ID } });
     if (!settings) {
       throw new InternalServerErrorException(
         "ShopSettings has not been seeded. Run `prisma db seed` against a configured DATABASE_URL.",
@@ -35,7 +36,8 @@ export class ShopSettingsService {
   }
 
   async updateSettings(update: UpdateShopSettingsDto): Promise<ShopSettingsDto> {
-    const settings = await this.prisma.shopSettings.update({
+    // Admin: PUT is behind AdminAuthGuard.
+    const settings = await this.prisma.adminDb.shopSettings.update({
       where: { id: SINGLETON_ID },
       data: update,
     });

@@ -33,7 +33,8 @@ export class AppointmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createAppointment(input: CreateAppointmentDto): Promise<AppointmentReceiptDto> {
-    const appointment = await this.prisma.appointment.create({
+    // Public: customers submit these unauthenticated.
+    const appointment = await this.prisma.publicDb.appointment.create({
       data: {
         name: input.name,
         phone: input.phone,
@@ -47,12 +48,17 @@ export class AppointmentsService {
         // status is never taken from input — the customer cannot self-confirm
         // a booking. It defaults to `pending` for Admin to act on.
       },
+      // Restricts the RETURNING clause to exactly the two columns the
+      // public role holds a column-level SELECT grant on. Without this,
+      // Prisma returns every column and Postgres refuses the insert.
+      select: { id: true, status: true },
     });
     return { id: appointment.id, status: appointment.status };
   }
 
   async listAppointments(): Promise<AppointmentDto[]> {
-    const appointments = await this.prisma.appointment.findMany({
+    // Admin: these rows contain customer personal data.
+    const appointments = await this.prisma.adminDb.appointment.findMany({
       orderBy: { createdAt: "desc" },
       take: MAX_LIST_SIZE,
     });

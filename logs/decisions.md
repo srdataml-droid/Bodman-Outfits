@@ -864,3 +864,78 @@ new address.
 was confirmed at the database level with `bcrypt.compare`, so
 `docs/admin-access.local.md` remains accurate and nobody is locked out. The
 temporary verification password no longer validates.
+
+---
+
+## 2026-08-03 — Two scoped database roles wired into the API
+
+**Decision:** `PrismaService` now holds two clients. `publicDb` connects as
+`atelier_api_public`, `adminDb` as `atelier_api_admin`. Neither role holds
+BYPASSRLS, so for the first time the policies added in
+`20260803000000_enable_rls` actually constrain the application rather than
+being bypassed. Migrations and seeds continue to use `DIRECT_URL`/
+`DATABASE_URL`, which is correct: schema changes legitimately need privileges
+the running app should never have.
+
+**Chosen per endpoint, not per service.** Several services span both levels
+(`ShopSettingsService` serves a public GET and a guarded PUT;
+`AppointmentsService` a public POST and a guarded GET), so the client is
+selected at the individual call site by what the *endpoint* exposes. That
+also gives a useful smell test: reaching for `adminDb` in an unguarded path
+is a signal the endpoint should probably have been guarded.
+
+**No fallback to `DATABASE_URL` when the scoped variables are missing.** The
+convenient-looking default would mean a deployment with a typo'd variable
+name silently running every request as the BYPASSRLS role, with nothing
+appearing wrong. `PrismaService` refuses to start instead.
+
+### Two problems this surfaced, both found by running it rather than reading it
+
+**1. RLS deny-by-default is silent on SELECT.** The previous migration gave
+`Admin` and `AdminSession` no policies at all, reasoning that nothing outside
+a BYPASSRLS connection should read a password hash. Correct while the app
+connected as `postgres`; wrong the moment it stopped, because the app itself
+became a non-bypassing role. The symptom was not a permission error: under
+RLS, a SELECT with no matching policy returns **zero rows**, so
+`findUnique` returned `null` and login simply behaved as "no such account".
+Worth remembering that RLS fails closed *quietly* on reads and loudly on
+writes. Fixed by policies that name the roles explicitly, which is also more
+precise than the untargeted policies written before the roles existed.
+
+**2. `INSERT` alone is not enough for Prisma's `create()`.** Prisma issues
+`INSERT ... RETURNING`, so it also needs SELECT on whatever comes back. The
+lazy fix would be granting the public role plain SELECT on `Appointment` and
+`Enquiry`, which would hand it every customer name, phone number and message
+body and defeat the entire split. Instead: a **column-level** grant on
+`(id, status)` only, paired with `select: { id: true, status: true }` in the
+service so the RETURNING clause matches. A leaked public credential can now
+learn that appointments exist and whether they are pending, and nothing about
+who made them.
+
+### Verification
+
+- **20 database-level probes** across both roles, writes inside rolled-back
+  transactions. Public role denied on: reading `Admin` hashes, reading
+  `AdminSession` tokens, reading `Appointment`/`Enquiry` PII, updating shop
+  settings, deleting appointments, deleting FAQs, inserting an admin,
+  updating appointment status. Public role allowed on exactly its own job.
+  Admin role allowed across the admin surface, and still **denied** deleting
+  the `Admin` row.
+- **Full API regression, 16 checks**, all identical to before the split:
+  public GETs and POSTs, validation 400, all guarded routes 401 without a
+  session, login (wrong and correct), `/me`, admin GETs, admin PUT, logout,
+  and `/me` failing after logout.
+- **The failure mode was proven, not asserted.** `listAppointments` was
+  deliberately miswired to `publicDb`, the API restarted, and a correctly
+  authenticated admin called `GET /api/appointments`. Result: HTTP 500 with
+  `permission denied for table Appointment` in the log and **zero rows
+  returned**. The miswiring was then reverted and the regression re-confirmed.
+  That is the property worth having: a developer who forgets which client to
+  use gets a loud error, not silent full access.
+
+### Note for whoever adds the next feature
+
+`atelier_api_admin` deliberately has no INSERT or DELETE on `Admin`. Adding a
+second admin account from inside the running app will fail until that grant
+and a matching policy are added. `prisma/bootstrap-admin.ts` still works
+because it uses `DATABASE_URL`.

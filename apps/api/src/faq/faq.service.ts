@@ -15,7 +15,8 @@ export class FaqService {
   constructor(private readonly prisma: PrismaService) {}
 
   async listFaqs(): Promise<FaqDto[]> {
-    const faqs = await this.prisma.faq.findMany({
+    // Public: GET /api/faqs is unauthenticated public content.
+    const faqs = await this.prisma.publicDb.faq.findMany({
       orderBy: { sortOrder: "asc" },
     });
     return faqs.map((faq) => this.toDto(faq));

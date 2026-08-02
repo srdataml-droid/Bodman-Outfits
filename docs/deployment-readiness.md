@@ -100,7 +100,9 @@ wrong.
 
 | Variable | Required | Notes |
 |---|---|---|
-| `DATABASE_URL` | Yes | Pooled connection, port 6543. Used at runtime. Already set locally. |
+| `DATABASE_URL_PUBLIC` | **Yes** | Pooled, `atelier_api_public`. Used by every unauthenticated path. The API will not start without it. |
+| `DATABASE_URL_ADMIN` | **Yes** | Pooled, `atelier_api_admin`. Used by every guarded path. The API will not start without it. |
+| `DATABASE_URL` | Yes | Pooled, `postgres` (holds BYPASSRLS). **No longer used by the running API.** Still used by seeds and `bootstrap-admin`. |
 | `DIRECT_URL` | Yes | Direct connection, port 5432. Used by migrations only. Already set locally. |
 | `PORT` | Host usually injects | Defaults to 4000. |
 | `WEB_ORIGIN` | **Yes in production** | CORS allowlist. Defaults to `http://localhost:3000`, which is wrong in production and will block the real frontend. |
@@ -128,16 +130,25 @@ into a production environment** just because they exist locally.
 
 ---
 
-## Optional hardening: the scoped database role
+## Scoped database roles — ADOPTED 2026-08-03
 
-`docs/architecture.md` explains why RLS does not currently constrain the API
-and recommends a two-role split. If that is adopted, run this in the Supabase
-SQL editor, choosing your own passwords, and then add the two resulting
-connection strings to `.env` as `DATABASE_URL_PUBLIC` and
-`DATABASE_URL_ADMIN`.
+The two-role split described below is **implemented and in use**. Both roles
+exist, neither holds BYPASSRLS, and `apps/api` refuses to start without both
+connection strings. What follows is kept as reference for recreating them.
 
-This is deliberately not a migration file: migrations are committed to git and
-these statements contain passwords.
+
+Role creation is deliberately not a migration file: migrations are committed
+to git and these statements contain passwords. The **grants and policies**
+that go with them *are* in migrations
+(`20260803000000_enable_rls` and `20260803010000_scoped_role_policies`), so
+only the two `CREATE ROLE` lines need running by hand.
+
+Two gotchas worth knowing if you ever recreate these:
+
+- Supabase's pooler expects the username as `<role>.<project-ref>`, not the
+  bare role name.
+- Generate passwords as hex (`openssl rand -hex 24`). A base64 password can
+  contain `/`, `+` or `=`, which break URL parsing unless percent-encoded.
 
 ```sql
 -- Public-surface role: exactly what an anonymous visitor's request needs.
@@ -185,7 +196,7 @@ Below the line, not blocking:
 
 - [ ] Replace placeholder imagery with real photography (checklist in
       `logs/decisions.md`).
-- [ ] Adopt the scoped database roles above.
+- [x] ~~Adopt the scoped database roles above.~~ Done 2026-08-03.
 - [ ] Decide whether appointment/enquiry submissions should trigger a
       notification, and by what channel. Nothing notifies anyone today.
 - [ ] Add automated tests. `AGENTS.md` asks for Vitest and Playwright; there
