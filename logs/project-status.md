@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-02 (database seeded, enquiries endpoint, legacy assets removed)
+Last updated: 2026-08-03 (RLS + anon grant revocation, admin self-service auth, deployment writeup)
 
 This is a living snapshot of what's actually built and working, verified by
 reading the code — not aspirational. Update it whenever a feature moves
@@ -84,7 +84,7 @@ table in `logs/decisions.md`. Contract detail in `docs/api.md`,
 1. ~~`PUT /api/shop-settings` has no auth guard.~~ Resolved 2026-08-02 — guarded by `AdminAuthGuard`.
 2. ~~Appointment form is frontend-only.~~ Resolved 2026-08-02 — real `POST /api/appointments`, the `TODO` is gone. ~~FAQ~~ — resolved 2026-08-02. **Still open: the contact enquiry form remains simulated** and needs its own endpoint (see `docs/api.md`).
 3. `.env` contains several live-looking third-party API keys in plaintext (Resend, Google, OpenAI, Groq, Grok, OpenRouter, DeepSeek) — flagged for awareness, not something I've acted on.
-4. Neither `ShopSettings` nor `Faq` has Row-Level Security enabled, and `apps/api` connects as the Postgres superuser rather than a scoped role — real Supabase best practices, not yet applied. Needs a live Supabase connection to actually implement. See `docs/architecture.md` 2026-08-02 entry.
+4. ~~No RLS anywhere.~~ Resolved 2026-08-03, and it was worse than recorded: `anon`/`authenticated` held full SELECT/INSERT/UPDATE/DELETE/TRUNCATE on **every** table including `Admin` password hashes, with PostgREST live on the public internet. Grants revoked, default privileges fixed so future migrations cannot re-grant, RLS enabled and forced, policies added. Verified with nine hostile probes as `anon`, all blocked. **Remaining, by design:** RLS still does not constrain `apps/api` itself, which connects with a BYPASSRLS role. Two-role fix proposed with a recommendation in `docs/architecture.md`; needs new connection strings and therefore an owner decision.
 5. ~~Admin/AdminSession migration not yet applied to the real Supabase database.~~ Resolved 2026-08-02 — `prisma migrate deploy` applied `20260802210000_add_admin_auth` after explicit go-ahead. Verified `Admin`/`AdminSession` exist with 0 rows on the real database.
 6. ~~No admin account exists yet.~~ Resolved 2026-08-02 — real admin account created for `samuelirenikase@gmail.com`, credentials in the gitignored `docs/admin-access.local.md`. Auth verified end-to-end against the real database.
 7. **New:** `ShopSettings` still has **0 rows** on the real database, so `PUT /api/shop-settings` returns a bare 500 (`P2025`, no row to update) even when correctly authenticated, and `GET` returns 500 too. Seeding it is a business decision (which real shop details to publish) — see `docs/business-requirements.md` for which values are still unconfirmed. `Faq` is likewise empty (`GET /api/faqs` returns `[]`).
@@ -130,3 +130,24 @@ no workflow to act on them.
     stayed pinned at their start values in that automated Chrome context,
     including for a freshly created visible element. Worth one human look on
     a normal browser.
+
+## Added 2026-08-03
+
+- **Admin self-service auth**: `POST /api/auth/change-password`,
+  `POST /api/auth/change-email`, `GET /api/auth/me`. Guarded, rate-limited,
+  both mutations require the current password. Password change revokes all
+  other sessions and keeps the caller's. Verified end-to-end (10 checks);
+  credentials restored to documented values afterwards.
+- **Deployment readiness** written up in `docs/deployment-readiness.md`:
+  hosting tradeoffs, full environment-variable inventory, pre-deploy
+  checklist, and the scoped-role SQL. No host chosen, no host-specific config
+  written.
+
+### Not started (requested 2026-08-03, not reached this session)
+
+- **Admin dashboard UI** and the FAQ write endpoints it would consume.
+  This remains the single largest gap: every guarded endpoint now exists and
+  is verified, but there is still no interface, so the business cannot read
+  an appointment or reply to an enquiry without `curl`.
+- **CustomRequest module.**
+- **Order model.**
