@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Post, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, HttpCode, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { AdminAuthGuard } from "../auth/admin-auth.guard";
 import { AppointmentsService } from "./appointments.service";
@@ -6,6 +6,7 @@ import {
   type AppointmentDto,
   type AppointmentReceiptDto,
   createAppointmentSchema,
+  updateAppointmentStatusSchema,
 } from "./appointments.schema";
 
 @Controller("api/appointments")
@@ -37,5 +38,14 @@ export class AppointmentsController {
   @Get()
   async listAppointments(): Promise<AppointmentDto[]> {
     return this.appointmentsService.listAppointments();
+  }
+
+  // ADMIN ONLY — status is the single mutable field. See the schema comment.
+  @UseGuards(AdminAuthGuard)
+  @Patch(":id")
+  async updateStatus(@Param("id") id: string, @Body() body: unknown): Promise<AppointmentDto> {
+    const parsed = updateAppointmentStatusSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.appointmentsService.updateStatus(id, parsed.data);
   }
 }

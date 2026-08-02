@@ -74,3 +74,13 @@ export interface AppointmentDto {
   status: (typeof APPOINTMENT_STATUSES)[number];
   createdAt: string;
 }
+
+// Admin status transition. Deliberately the ONLY mutable field: an admin
+// confirming a booking has no business rewriting the customer's name or
+// requested date, and keeping the surface this narrow means a compromised
+// admin session cannot quietly alter what a customer actually asked for.
+export const updateAppointmentStatusSchema = z.object({
+  status: z.enum(APPOINTMENT_STATUSES),
+});
+
+export type UpdateAppointmentStatusDto = z.infer<typeof updateAppointmentStatusSchema>;

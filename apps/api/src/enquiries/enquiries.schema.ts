@@ -53,3 +53,11 @@ export interface EnquiryDto {
   status: (typeof ENQUIRY_STATUSES)[number];
   createdAt: string;
 }
+
+// Admin status transition. Same reasoning as appointments: status is the
+// only mutable field, so an admin cannot rewrite what a customer wrote.
+export const updateEnquiryStatusSchema = z.object({
+  status: z.enum(ENQUIRY_STATUSES),
+});
+
+export type UpdateEnquiryStatusDto = z.infer<typeof updateEnquiryStatusSchema>;

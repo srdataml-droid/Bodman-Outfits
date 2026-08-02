@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import type {
+  UpdateAppointmentStatusDto,
   AppointmentDto,
   AppointmentReceiptDto,
   APPOINTMENT_STATUSES,
@@ -63,6 +64,19 @@ export class AppointmentsService {
       take: MAX_LIST_SIZE,
     });
     return appointments.map((appointment) => this.toDto(appointment));
+  }
+
+
+  // Admin-only. Uses adminDb: the public role has no UPDATE grant on
+  // Appointment at all, so routing this through publicDb would fail loudly.
+  async updateStatus(id: string, input: UpdateAppointmentStatusDto): Promise<AppointmentDto> {
+    const existing = await this.prisma.adminDb.appointment.findUnique({ where: { id }, select: { id: true } });
+    if (!existing) throw new NotFoundException(`No appointment with id ${id}`);
+    const updated = await this.prisma.adminDb.appointment.update({
+      where: { id },
+      data: { status: input.status },
+    });
+    return this.toDto(updated);
   }
 
   // Explicitly rebuilds each row so any column added to the model later

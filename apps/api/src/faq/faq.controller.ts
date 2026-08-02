@@ -1,36 +1,55 @@
-import { Controller, Get } from "@nestjs/common";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from "@nestjs/common";
+import { AdminAuthGuard } from "../auth/admin-auth.guard";
 import { FaqService } from "./faq.service";
-import type { FaqDto } from "./faq.schema";
+import { createFaqSchema, updateFaqSchema, type FaqDto } from "./faq.schema";
 
-// ============================================================================
-// SCOPE DECISION — no POST/PUT/DELETE here, GET only.
-//
-// Admin-editable FAQ management (create/edit/delete/reorder) is a real,
-// documented product requirement (see docs/ui-ux.md, docs/api.md), but is
-// deliberately not built yet rather than shipped as stubbed-open write
-// endpoints, unlike ShopSettings PUT. Two reasons:
-//
-//   1. No Admin auth exists anywhere in this repo (same gap as
-//      ShopSettings), so any write endpoint here would be just as
-//      unauthenticated-open — adding a SECOND open write endpoint to the
-//      deployment blocker list for no functional gain, since nothing
-//      calls it yet (no apps/admin exists).
-//   2. Unlike ShopSettings, there is no already-approved request/response
-//      contract for FAQ writes (single vs. bulk update, hard vs. soft
-//      delete, how reordering works). Building it now would mean
-//      inventing an unapproved API shape, not just leaving a shape
-//      unauthenticated.
-//
-// GET is read-only public content — same risk profile as the hardcoded
-// array it replaces. Build the write endpoints alongside real Admin auth,
-// as one piece of work, not before it. See docs/api.md.
-// ============================================================================
+// FAQ shipped GET-only originally because no consumer existed for the write
+// endpoints and building them would have meant inventing an unapproved
+// contract while there was no auth to guard them with. Both conditions have
+// since changed: AdminAuthGuard exists and the admin dashboard consumes
+// these. See docs/api.md.
 @Controller("api/faqs")
 export class FaqController {
   constructor(private readonly faqService: FaqService) {}
 
+  // Public: this is customer-facing content.
   @Get()
   async listFaqs(): Promise<FaqDto[]> {
     return this.faqService.listFaqs();
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Post()
+  @HttpCode(201)
+  async createFaq(@Body() body: unknown): Promise<FaqDto> {
+    const parsed = createFaqSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.faqService.createFaq(parsed.data);
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Put(":id")
+  async updateFaq(@Param("id") id: string, @Body() body: unknown): Promise<FaqDto> {
+    const parsed = updateFaqSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.faqService.updateFaq(id, parsed.data);
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Delete(":id")
+  @HttpCode(204)
+  async deleteFaq(@Param("id") id: string): Promise<void> {
+    await this.faqService.deleteFaq(id);
   }
 }

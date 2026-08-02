@@ -1,8 +1,8 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Post, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, HttpCode, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { AdminAuthGuard } from "../auth/admin-auth.guard";
 import { EnquiriesService } from "./enquiries.service";
-import { type EnquiryDto, type EnquiryReceiptDto, createEnquirySchema } from "./enquiries.schema";
+import { type EnquiryDto, type EnquiryReceiptDto, createEnquirySchema, updateEnquiryStatusSchema } from "./enquiries.schema";
 
 @Controller("api/enquiries")
 export class EnquiriesController {
@@ -29,5 +29,14 @@ export class EnquiriesController {
   @Get()
   async listEnquiries(): Promise<EnquiryDto[]> {
     return this.enquiriesService.listEnquiries();
+  }
+
+  // ADMIN ONLY — status is the single mutable field.
+  @UseGuards(AdminAuthGuard)
+  @Patch(":id")
+  async updateStatus(@Param("id") id: string, @Body() body: unknown): Promise<EnquiryDto> {
+    const parsed = updateEnquiryStatusSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.enquiriesService.updateStatus(id, parsed.data);
   }
 }

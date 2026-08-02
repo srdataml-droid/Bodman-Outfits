@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import type {
+  UpdateEnquiryStatusDto,
   CreateEnquiryDto,
   EnquiryDto,
   EnquiryReceiptDto,
@@ -54,6 +55,14 @@ export class EnquiriesService {
       take: MAX_LIST_SIZE,
     });
     return enquiries.map((enquiry) => this.toDto(enquiry));
+  }
+
+  // Admin-only. adminDb: the public role holds no UPDATE grant on Enquiry.
+  async updateStatus(id: string, input: UpdateEnquiryStatusDto): Promise<EnquiryDto> {
+    const existing = await this.prisma.adminDb.enquiry.findUnique({ where: { id }, select: { id: true } });
+    if (!existing) throw new NotFoundException(`No enquiry with id ${id}`);
+    const updated = await this.prisma.adminDb.enquiry.update({ where: { id }, data: { status: input.status } });
+    return this.toDto(updated);
   }
 
   // Explicit rebuild so a column added to the model later cannot leak into
