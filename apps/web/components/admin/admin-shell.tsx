@@ -79,7 +79,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             href="/admin/appointments"
             className="font-[Fraunces] text-lg font-medium tracking-[0.02em] text-[var(--everglade)]"
           >
-            Atelier Haute
+            Bodman Outfits
             <span className="ml-2 align-middle text-xs font-normal uppercase tracking-[0.14em] text-[var(--copper)]">
               Admin
             </span>

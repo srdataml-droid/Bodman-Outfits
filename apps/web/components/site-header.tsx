@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getShopName } from "../lib/shop-settings";
 
 const navigationItems = [
   { href: "/about", label: "Heritage" },
@@ -6,7 +7,8 @@ const navigationItems = [
   { href: "/faq", label: "FAQ" },
 ];
 
-export function SiteHeader(): React.ReactElement {
+export async function SiteHeader(): Promise<React.ReactElement> {
+  const shopName = await getShopName();
   return (
     <header className="sticky top-0 z-20 border-b border-[var(--outline)] bg-[#f9f9f9]/90 backdrop-blur-md">
       <nav
@@ -15,9 +17,9 @@ export function SiteHeader(): React.ReactElement {
       >
         <Link
           href="/"
-          className="font-[Fraunces] text-xl font-medium tracking-[0.12em] text-[var(--everglade)] transition-colors duration-300 hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
+          className="font-[Fraunces] text-xl font-medium uppercase tracking-[0.12em] text-[var(--everglade)] transition-colors duration-300 hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
         >
-          ATELIER HAUTE
+          {shopName}
         </Link>
         <div className="hidden items-center gap-9 md:flex">
           {navigationItems.map((item) => (

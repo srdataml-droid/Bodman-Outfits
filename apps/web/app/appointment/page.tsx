@@ -7,11 +7,11 @@ import { getWhatsAppLink } from "../../lib/shop-settings";
 
 export const metadata: Metadata = {
   title: "Book an Appointment",
-  description: "Request a fitting or consultation appointment with Atelier Haute.",
+  description: "Request a fitting or consultation appointment with Bodman Outfits.",
 };
 
 export default async function AppointmentPage(): Promise<React.ReactElement> {
-  const whatsappLink = await getWhatsAppLink("Hello Atelier Haute, I'd like to book a fitting appointment.");
+  const whatsappLink = await getWhatsAppLink("Hello Bodman Outfits, I'd like to book a fitting appointment.");
 
   return (
     <>

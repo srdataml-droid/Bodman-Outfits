@@ -7,12 +7,12 @@ import { getWhatsAppLink } from "../../lib/shop-settings";
 
 export const metadata: Metadata = {
   title: "Get in Touch",
-  description: "Start a conversation with Atelier Haute. Send an enquiry or reach us directly on WhatsApp.",
+  description: "Start a conversation with Bodman Outfits. Send an enquiry or reach us directly on WhatsApp.",
 };
 
 export default async function ContactPage(): Promise<React.ReactElement> {
   const whatsappLink = await getWhatsAppLink(
-    "Hello Atelier Haute, I'd like to know more about your bespoke tailoring.",
+    "Hello Bodman Outfits, I'd like to know more about your bespoke tailoring.",
   );
 
   return (

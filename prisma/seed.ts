@@ -69,7 +69,7 @@ async function main(): Promise<void> {
     update: {},
     create: {
       id: SINGLETON_ID,
-      shopName: "Atelier Haute",
+      shopName: "Bodman Outfits",
       tagline: "Redefining modern sartorial heritage from the heart of Lagos.",
       // Confirmed per docs/business-requirements.md — Customer WhatsApp Contact.
       whatsappNumber: "+234 706 131 3517",

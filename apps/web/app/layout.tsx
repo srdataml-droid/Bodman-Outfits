@@ -2,15 +2,17 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { WhatsAppFloatingButton } from "../components/whatsapp-floating-button";
-import { getWhatsAppLink } from "../lib/shop-settings";
+import { getShopName, getWhatsAppLink } from "../lib/shop-settings";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Atelier Haute",
-    template: "%s | Atelier Haute",
-  },
-  description: "Bespoke tailoring from Lagos.",
-};
+// Async so the browser tab title uses the Admin-editable shop name rather
+// than a constant baked in at build time.
+export async function generateMetadata(): Promise<Metadata> {
+  const shopName = await getShopName();
+  return {
+    title: { default: shopName, template: `%s | ${shopName}` },
+    description: "Bespoke tailoring from Lagos.",
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -20,7 +22,7 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   const whatsappLink = await getWhatsAppLink(
-    "Hello Atelier Haute, I'd like to know more about your bespoke tailoring.",
+    "Hello Bodman Outfits, I'd like to know more about your bespoke tailoring.",
   );
 
   return (

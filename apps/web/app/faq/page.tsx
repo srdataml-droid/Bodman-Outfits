@@ -7,7 +7,7 @@ import { getFaqEntries } from "../../lib/faq-data";
 
 export const metadata: Metadata = {
   title: "FAQ",
-  description: "Answers to common questions about ordering, measurements, and timelines at Atelier Haute.",
+  description: "Answers to common questions about ordering, measurements, and timelines at Bodman Outfits.",
 };
 
 export default async function FaqPage(): Promise<React.ReactElement> {

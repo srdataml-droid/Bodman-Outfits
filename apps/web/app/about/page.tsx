@@ -5,8 +5,8 @@ import { SiteFooter } from "../../components/site-footer";
 import { SiteHeader } from "../../components/site-header";
 
 export const metadata: Metadata = {
-  title: "The Atelier",
-  description: "How Atelier Haute approaches menswear tailoring in Lagos.",
+  title: "Heritage",
+  description: "How Bodman Outfits approaches menswear tailoring in Lagos.",
 };
 
 const craftPrinciples = [
@@ -34,7 +34,7 @@ export default function AboutPage(): React.ReactElement {
       <main>
         <section className="mx-auto max-w-[1280px] px-5 pb-20 pt-16 md:px-16 md:pb-28 md:pt-28">
           <div className="mx-auto max-w-2xl text-center animate-[catalogue-enter_700ms_cubic-bezier(0.16,1,0.3,1)_both]">
-            <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">THE ATELIER</p>
+            <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">THE HOUSE</p>
             <h1 className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl">
               Built on patience, not shortcuts.
             </h1>
@@ -56,7 +56,7 @@ export default function AboutPage(): React.ReactElement {
                 Measure once. Cut once.
               </h2>
               <p className="mt-6 text-lg leading-8 text-[var(--muted-ink)]">
-                Atelier Haute exists because good tailoring shouldn&apos;t be rushed. We take the time to understand
+                Bodman Outfits exists because good tailoring shouldn&apos;t be rushed. We take the time to understand
                 the person in front of us: how they stand, how they move, what they need the garment to do for
                 them. All of that happens before a single cut is made.
               </p>
@@ -71,7 +71,7 @@ export default function AboutPage(): React.ReactElement {
             >
               <Image
                 src="/images/catalogue/category-suits-on-form.png"
-                alt="Placeholder for a photograph of the atelier's suiting"
+                alt="Placeholder for a photograph of the house's suiting"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
                 className="object-cover"

@@ -55,7 +55,7 @@ export default function AdminLoginPage(): React.ReactElement {
     >
       <div className="w-full max-w-sm">
         <div className="mb-7 text-center">
-          <p className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">Atelier Haute</p>
+          <p className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">Bodman Outfits</p>
           <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--copper)]">Admin</p>
         </div>
 

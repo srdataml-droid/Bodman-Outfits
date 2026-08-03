@@ -1176,3 +1176,61 @@ codebase.
 **Also corrected while in there:** the hero still described the house as
 "suits, corporate wear, and casual pieces", which stopped being true when the
 catalogue moved to five lines. It now names all five.
+
+---
+
+## 2026-08-03 — Business renamed to Bodman Outfits, and the name made database-driven
+
+**The real business name is Bodman Outfits.** "Atelier Haute" was placeholder
+branding that had never been confirmed. Casing confirmed by the owner as
+title case.
+
+**The rename exposed a standing gap rather than just needing find-and-replace.**
+`ShopSettings.shopName` has existed in the database, seeded and Admin-editable,
+since the ShopSettings work, but **nothing on the public site ever read it**.
+All fifteen visible occurrences were hardcoded, directly against AGENTS.md:
+"shop details... are database-managed, editable Admin content, not frontend
+constants."
+
+So the header, the footer and the browser tab title now read `shopName` from
+the database. Renaming again is a change in the Admin dashboard, not a
+deployment. The root layout already fetched shop settings for the WhatsApp
+link, so this costs no extra round trip.
+
+**`SHOP_NAME_FALLBACK` exists as a safety net, not a source of truth.** It
+covers two cases only: the API being unreachable, and the per-page metadata
+descriptions, which are static exports evaluated at build time and cannot
+await a fetch. The constant is documented as such so nobody mistakes it for
+the canonical value.
+
+**The footer tagline is now database-driven too**, and is omitted entirely
+rather than substituted when the API is unreachable. An invented tagline
+would be worse than none.
+
+**Live database updated** alongside the seed, and the unconfirmed fields were
+re-checked afterwards: phone, email, address, hours and pricing note are all
+still empty strings, deposit still 0. The rename touched the name only.
+
+### The judgement call worth reviewing
+
+The word "atelier" appeared in five more user-visible places that were not
+the brand name itself: the About page title and eyebrow, an image alt, and
+two catalogue section labels ("THE ATELIER EDIT", "THE ATELIER EXPERIENCE").
+
+"Atelier" is a legitimate common noun for a tailoring workshop, so these were
+not strictly wrong. But they read as an unfinished rename now that the brand
+no longer contains the word. They were changed to "the house", which is the
+voice the site had already established independently ("A member of the house
+reads every enquiry", "Come to the house", "A Lagos house working in
+menswear"), rather than inventing new brand language. The About page title
+also became "Heritage", matching its own navigation label instead of echoing
+the retired brand.
+
+**Easy to revert** if "atelier" was wanted as a generic descriptor.
+
+**Deliberately not renamed:** the npm workspace package names
+(`@atelier-haute/web`, `@atelier-haute/api`) and the repository directory.
+They are internal identifiers, invisible to customers, and renaming them
+means lockfile churn and a broken `pnpm --filter` in every command in the
+docs and logs for no user-facing benefit. Worth doing only if the repository
+is ever renamed for other reasons.

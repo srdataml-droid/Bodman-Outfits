@@ -8,7 +8,7 @@ import { categories } from "../../lib/garments";
 
 export const metadata: Metadata = {
   title: "The Catalogue",
-  description: "A curated collection of Atelier Haute signature silhouettes.",
+  description: "A curated collection of Bodman Outfits signature silhouettes.",
 };
 
 export default function CataloguePage(): React.ReactElement {
@@ -19,7 +19,7 @@ export default function CataloguePage(): React.ReactElement {
         <section className="mx-auto max-w-[1280px] px-5 pb-28 pt-16 md:px-16 md:pb-32 md:pt-28">
           <header className="max-w-2xl animate-[catalogue-enter_700ms_cubic-bezier(0.16,1,0.3,1)_both]">
             <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">
-              THE ATELIER EDIT
+              THE HOUSE EDIT
             </p>
             <h1 className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl">
               The Catalogue
@@ -68,7 +68,7 @@ export default function CataloguePage(): React.ReactElement {
 
           <section className="mt-28 border-t border-[var(--outline)] px-4 py-24 text-center md:mt-[120px] md:py-[120px]">
             <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">
-              THE ATELIER EXPERIENCE
+              THE HOUSE EXPERIENCE
             </p>
             <h2 className="mx-auto mt-5 max-w-2xl font-[Fraunces] text-4xl font-medium leading-tight tracking-[-0.02em] text-[var(--everglade)] md:text-5xl">
               Each piece is a dialogue between tailor and client.
