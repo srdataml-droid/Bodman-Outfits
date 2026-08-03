@@ -133,7 +133,7 @@ export default function ShopSettingsPage(): React.ReactElement {
                       <div key={String(f.key)} className={f.multiline ? "md:col-span-2" : ""}>
                         <Field
                           label={f.label}
-                          hint={f.pending ? "Not yet confirmed — blank on the live site" : undefined}
+                          hint={f.pending ? "Not yet confirmed, blank on the live site" : undefined}
                         >
                           {f.multiline ? (
                             <textarea

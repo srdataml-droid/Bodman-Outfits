@@ -7,7 +7,7 @@ import { getWhatsAppLink } from "../../lib/shop-settings";
 
 export const metadata: Metadata = {
   title: "Get in Touch",
-  description: "Start a conversation with Atelier Haute — send an enquiry or reach us directly on WhatsApp.",
+  description: "Start a conversation with Atelier Haute. Send an enquiry or reach us directly on WhatsApp.",
 };
 
 export default async function ContactPage(): Promise<React.ReactElement> {
@@ -50,7 +50,7 @@ export default async function ContactPage(): Promise<React.ReactElement> {
                 <div className="rounded-2xl bg-[#e8ebea] p-8">
                   <h3 className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">Instant Connection</h3>
                   <p className="mt-3 text-base leading-7 text-[var(--muted-ink)]">
-                    For the fastest response on fittings, fabric, and timelines — message us directly.
+                    For the fastest response on fittings, fabric, and timelines, message us directly.
                   </p>
                   <a
                     href={whatsappLink}
@@ -68,7 +68,7 @@ export default async function ContactPage(): Promise<React.ReactElement> {
                 <h3 className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">Visit the Studio</h3>
                 <p className="mt-3 text-base leading-7 text-[var(--muted-ink)]">
                   Our Lagos studio address and visiting hours are still being finalized. Reach us on WhatsApp above in the
-                  meantime — we&apos;ll help directly and personally.
+                  meantime. We&apos;ll help directly and personally.
                 </p>
               </div>
             </aside>

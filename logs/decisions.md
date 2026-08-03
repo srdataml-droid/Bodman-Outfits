@@ -1130,3 +1130,49 @@ were caused by my own synthetic hover and mouseleave events pausing and
 resuming autoplay mid-measurement. A clean run with no pointer interference
 gave exact 5000ms gaps. The lesson is the same one as the stale-row false
 negative: check what the measurement itself is doing before believing it.
+
+---
+
+## 2026-08-03 — Heritage page: dashes removed, and a fabricated brand removed with them
+
+**Dashes.** All eleven em-dashes on `/about` were removed, and the same sweep
+was run across the rest of the site: contact, appointment, the two form
+confirmations, and one admin hint. Every public page now renders zero
+em-dashes and zero en-dashes.
+
+They were rewritten rather than swapped for commas. An em-dash usually marks
+a thought the sentence could not hold, so replacing the punctuation alone
+leaves a sentence that still wants it. "The last details, buttons, seams, the
+set of a collar, are where a garment holds up" is worse than the original;
+splitting it into two sentences is better than both.
+
+**Interpretation, flagged in case it is wrong:** this was read as no dashes
+used as sentence punctuation. Hyphens inside compound words are untouched,
+so "made-to-measure" and "three-piece" still read normally. Say if hyphens
+were meant too.
+
+**One em-dash deliberately kept:** `app/admin/orders/page.tsx` uses one in a
+table cell as the "no value" marker. That is a typographic convention in a
+data table rather than punctuation in a sentence, and it is admin-only.
+
+### The bigger find: a fabricated business on the Heritage page
+
+`/about` was illustrated with `formal-wear.png`, which carries a prominent
+brass plaque reading **"ADEBAYO & CO. / LAGOS / BESPOKE TAILORS / EST.
+1960"**.
+
+That is a fabricated business name, a fabricated trade description and a
+fabricated 1960 founding date, displayed on the one page whose entire job is
+telling people who this house is. `logs/decisions.md` had recorded the plaque
+back on 2026-08-01 and kept the image anyway as "the only genuinely on-brand
+asset available", but that reasoning does not survive contact with the page
+it ended up on: a heritage page invites the reader to believe exactly the
+claim the plaque is making. Replaced with a design-system placeholder from
+the current set.
+
+That was also the last reference to `formal-wear.png` anywhere in the
+codebase.
+
+**Also corrected while in there:** the hero still described the house as
+"suits, corporate wear, and casual pieces", which stopped being true when the
+catalogue moved to five lines. It now names all five.

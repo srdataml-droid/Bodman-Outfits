@@ -76,7 +76,7 @@ export function AppointmentForm(): React.ReactElement {
       <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-[rgb(210_180_140_/_40%)] bg-white p-8 text-center animate-[catalogue-enter_700ms_cubic-bezier(0.16,1,0.3,1)_both]">
         <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">REQUEST SENT</p>
         <h3 className="mt-4 font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">
-          Thank you — we&apos;ll confirm a time with you personally.
+          Thank you. We&apos;ll confirm a time with you personally.
         </h3>
         <p className="mt-3 max-w-sm text-base leading-7 text-[var(--muted-ink)]">
           This is a request, not a booked slot. A member of the house will reach out to confirm or suggest another

@@ -17,7 +17,7 @@ file is a summary/index, not a replacement for those.
 | Catalogue (`/catalogue`) | Done | Hardcoded — `lib/garments.ts` | No |
 | Category (`/catalogue/[category]`) | Done | Five lines: suits, agbada, kaftan, casuals, corporate. Agbada/kaftan list no pieces yet and say so. | No |
 | Item detail (`/catalogue/[category]/[item]`) | Done | Hardcoded — `lib/garments.ts` | No |
-| About (`/about`) | Done | Static JSX | No |
+| About / Heritage (`/about`) | Done | Static JSX. Copy pass 2026-08-03: em-dashes removed, five lines named, fabricated-brand image replaced. | No |
 | Contact (`/contact`) | Done | WhatsApp link: real. Enquiry form: **real `POST /api/enquiries`** | Yes |
 | FAQ (`/faq`) | Done | Real — fetches `GET /api/faqs` (`lib/faq-data.ts`) | Yes |
 | Appointment (`/appointment`) | Done | WhatsApp link: real. Booking form: **real `POST /api/appointments`** | Yes |

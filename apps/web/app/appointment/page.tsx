@@ -24,7 +24,7 @@ export default async function AppointmentPage(): Promise<React.ReactElement> {
               Let&apos;s find a time that works.
             </h1>
             <p className="mt-7 text-lg leading-8 text-[var(--muted-ink)] md:text-[22px] md:leading-9">
-              Tell us a little about what you&apos;re looking for and a preferred time — we&apos;ll confirm the
+              Tell us a little about what you&apos;re looking for and a preferred time. We&apos;ll confirm the
               details with you personally.
             </p>
           </header>
@@ -51,7 +51,7 @@ export default async function AppointmentPage(): Promise<React.ReactElement> {
                     Prefer to talk it through?
                   </h3>
                   <p className="mt-3 text-base leading-7 text-[var(--muted-ink)]">
-                    Skip the form and message us directly on WhatsApp — we can sort a time together in the
+                    Skip the form and message us directly on WhatsApp, and we can sort a time together in the
                     conversation.
                   </p>
                   <a
@@ -69,7 +69,7 @@ export default async function AppointmentPage(): Promise<React.ReactElement> {
               <div className="rounded-2xl border border-[var(--outline)] p-8">
                 <h3 className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">What happens next</h3>
                 <p className="mt-3 text-base leading-7 text-[var(--muted-ink)]">
-                  This form sends a request, not a confirmed booking. We don&apos;t yet run a live calendar — a
+                  This form sends a request, not a confirmed booking. We don&apos;t yet run a live calendar, so a
                   member of the house will get back to you to confirm the time, or suggest another that works.
                 </p>
               </div>

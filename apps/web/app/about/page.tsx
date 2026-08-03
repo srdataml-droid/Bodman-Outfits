@@ -13,17 +13,17 @@ const craftPrinciples = [
   {
     title: "Fabric",
     description:
-      "We work in premium wool, cotton, and linen, chosen for how they hold a line and move with the body — not just how they photograph.",
+      "We work in premium wool, cotton, and linen, chosen for how they hold a line and move with the body rather than for how they photograph.",
   },
   {
     title: "Construction",
     description:
-      "Every pattern is cut once, by hand, and adjusted to the person in front of us — never pulled straight from a size chart.",
+      "Every pattern is cut once, by hand, and adjusted to the person in front of us. Nothing is pulled straight from a size chart.",
   },
   {
     title: "Finishing",
     description:
-      "The last details — buttons, seams, the set of a collar — are where a garment holds up or doesn't. We don't rush them.",
+      "Buttons, seams, the set of a collar. The last details are where a garment holds up or it doesn't, so we take our time over them.",
   },
 ] as const;
 
@@ -39,8 +39,8 @@ export default function AboutPage(): React.ReactElement {
               Built on patience, not shortcuts.
             </h1>
             <p className="mt-7 text-lg leading-8 text-[var(--muted-ink)] md:text-[22px] md:leading-9">
-              A Lagos house working in menswear — suits, corporate wear, and casual pieces — cut for the person
-              wearing them, not assembled for the market.
+              A Lagos house working in menswear. Suits, agbada, kaftans, casuals and corporate pieces, all cut
+              for the person wearing them rather than assembled for the market.
             </p>
           </div>
         </section>
@@ -57,11 +57,11 @@ export default function AboutPage(): React.ReactElement {
               </h2>
               <p className="mt-6 text-lg leading-8 text-[var(--muted-ink)]">
                 Atelier Haute exists because good tailoring shouldn&apos;t be rushed. We take the time to understand
-                the person in front of us — how they stand, how they move, what they need the garment to do for them
-                — before a single cut is made.
+                the person in front of us: how they stand, how they move, what they need the garment to do for
+                them. All of that happens before a single cut is made.
               </p>
               <p className="mt-6 text-lg leading-8 text-[var(--muted-ink)]">
-                The fuller story of the house — how it started, and who started it — is still being written. What we
+                The fuller story of the house, how it started and who started it, is still being written. What we
                 can tell you today is how we work: patiently, precisely, one client at a time.
               </p>
             </div>
@@ -70,8 +70,8 @@ export default function AboutPage(): React.ReactElement {
               style={{ animationDelay: "150ms" }}
             >
               <Image
-                src="/images/catalogue/formal-wear.png"
-                alt="A sharp bespoke three-piece suit"
+                src="/images/catalogue/category-suits-on-form.png"
+                alt="Placeholder for a photograph of the atelier's suiting"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
                 className="object-cover"
@@ -112,7 +112,7 @@ export default function AboutPage(): React.ReactElement {
               Ready to begin?
             </h2>
             <p className="mt-6 text-lg leading-8 text-[var(--muted-ink)]">
-              Come to the house and let us build something true — or start the conversation from wherever you are.
+              Come to the house and let us build something true, or start the conversation from wherever you are.
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
