@@ -10,6 +10,7 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common";
+import { AdminThrottle } from "../common/throttle";
 import { AdminAuthGuard } from "../auth/admin-auth.guard";
 import { FaqService } from "./faq.service";
 import { createFaqSchema, updateFaqSchema, type FaqDto } from "./faq.schema";
@@ -29,6 +30,7 @@ export class FaqController {
     return this.faqService.listFaqs();
   }
 
+  @AdminThrottle()
   @UseGuards(AdminAuthGuard)
   @Post()
   @HttpCode(201)
@@ -38,6 +40,7 @@ export class FaqController {
     return this.faqService.createFaq(parsed.data);
   }
 
+  @AdminThrottle()
   @UseGuards(AdminAuthGuard)
   @Put(":id")
   async updateFaq(@Param("id") id: string, @Body() body: unknown): Promise<FaqDto> {
@@ -46,6 +49,7 @@ export class FaqController {
     return this.faqService.updateFaq(id, parsed.data);
   }
 
+  @AdminThrottle()
   @UseGuards(AdminAuthGuard)
   @Delete(":id")
   @HttpCode(204)

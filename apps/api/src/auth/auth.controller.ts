@@ -1,6 +1,7 @@
 import { BadRequestException, Controller, Get, HttpCode, Body, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import type { Request, Response } from "express";
+import { AdminThrottle } from "../common/throttle";
 import { AdminAuthGuard, type AuthenticatedRequest } from "./admin-auth.guard";
 import { changeEmailSchema, changePasswordSchema, loginSchema } from "./auth.schema";
 import { AuthService } from "./auth.service";
@@ -25,6 +26,7 @@ export class AuthController {
     return { email: session.email };
   }
 
+  @AdminThrottle()
   @UseGuards(AdminAuthGuard)
   @Post("logout")
   @HttpCode(200)
@@ -40,6 +42,8 @@ export class AuthController {
   // Self-service credential management. Rate-limited on the same 5/60s
   // budget as login: these accept a password and are therefore just as
   // attractive a target for guessing as the login route itself.
+  // Deliberately NOT AdminThrottle: this accepts a password, so it stays on
+  // the tight login budget even though the caller is already authenticated.
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseGuards(AdminAuthGuard)
   @Post("change-password")
@@ -60,6 +64,8 @@ export class AuthController {
     return { ok: true };
   }
 
+  // Deliberately NOT AdminThrottle: this accepts a password, so it stays on
+  // the tight login budget even though the caller is already authenticated.
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseGuards(AdminAuthGuard)
   @Post("change-email")
@@ -74,6 +80,7 @@ export class AuthController {
 
   // Lets the dashboard render "signed in as ..." and check session validity
   // without a dedicated probe against a data endpoint.
+  @AdminThrottle()
   @UseGuards(AdminAuthGuard)
   @Get("me")
   me(@Req() req: AuthenticatedRequest): { id: string; email: string } {

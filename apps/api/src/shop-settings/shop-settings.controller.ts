@@ -1,4 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Put, UseGuards } from "@nestjs/common";
+import { AdminThrottle } from "../common/throttle";
 import { AdminAuthGuard } from "../auth/admin-auth.guard";
 import { ShopSettingsService } from "./shop-settings.service";
 import { type ShopSettingsDto, updateShopSettingsSchema } from "./shop-settings.schema";
@@ -12,6 +13,7 @@ export class ShopSettingsController {
     return this.shopSettingsService.getSettings();
   }
 
+  @AdminThrottle()
   @UseGuards(AdminAuthGuard)
   @Put()
   async updateShopSettings(@Body() body: unknown): Promise<ShopSettingsDto> {

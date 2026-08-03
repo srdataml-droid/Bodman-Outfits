@@ -98,6 +98,8 @@ model Appointment {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
+  orders Order[]
+
   // Admin lists these newest-first; index supports that ordering.
   @@index([createdAt])
 }
@@ -137,8 +139,106 @@ model Enquiry {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
+  orders Order[]
+
   // Admin lists newest-first.
   @@index([createdAt])
+}
+
+
+// Customer-originated design requests: someone starts from their own idea
+// rather than an existing catalogue piece. Spec'd in the atelier-frontend
+// skill; see docs/api.md for where this implementation deviates from it and
+// why.
+enum CustomRequestStatus {
+  pending_review
+  accepted
+  declined
+}
+
+model CustomRequest {
+  id String @id @default(cuid())
+  // Contact fields are NOT in the skill's field list, which names only
+  // description, reference image and category. They are added because
+  // customers have no accounts: without a name and a way to reply, an
+  // accepted request cannot be acted on and a declined one cannot be
+  // answered. Mirrors what Appointment and Enquiry already collect.
+  name  String
+  email String
+  phone String?
+  description String
+  // Optional link to a catalogue category, as a plain String for the same
+  // reason as Appointment.category: these mirror editable catalogue content
+  // and a database enum would need a migration every time it changes.
+  category String?
+  status   CustomRequestStatus @default(pending_review)
+  // Per the skill: declining requires a reason. Enforced in the service
+  // rather than by the database, because "required only when status is
+  // declined" is a conditional constraint the schema cannot express cleanly.
+  declineReason String?
+  // Which admin reviewed it. Nullable because it is unset until reviewed.
+  reviewedById String?
+  reviewedBy   Admin?  @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  orders Order[]
+
+  // The skill specifies an oldest-first review queue, so the index supports
+  // ascending createdAt rather than the descending order used elsewhere.
+  @@index([createdAt])
+  @@index([reviewedById])
+}
+
+// Orders are admin-created only. There is no customer checkout, no payment
+// integration and no public endpoint, because both depend on pricing
+// decisions that have not been made. See docs/api.md.
+enum OrderStatus {
+  draft
+  in_production
+  ready
+  completed
+  cancelled
+}
+
+model Order {
+  id String @id @default(cuid())
+  // Exactly one source should be set. Modelled as three nullable foreign
+  // keys rather than a polymorphic (type, id) pair so the database still
+  // enforces that the referenced row exists; the "exactly one" rule is
+  // enforced in the service, since a CHECK across three columns would have
+  // to be hand-written outside Prisma's schema language.
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  enquiryId String?
+  enquiry   Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+  customRequestId String?
+  customRequest   CustomRequest? @relation(fields: [customRequestId], references: [id], onDelete: SetNull)
+
+  // Snapshot of who the order is for. Denormalised deliberately: the source
+  // request can be deleted (all three relations are SetNull), and an order
+  // that loses the customer's name because a request was tidied up would be
+  // worse than a little duplication.
+  customerName  String
+  customerPhone String
+
+  status OrderStatus @default(draft)
+  notes  String?
+
+  // Pricing is nullable throughout and stays that way. No pricing or deposit
+  // policy has been confirmed, so there is nothing to default to and a zero
+  // would read as "free" rather than "not yet decided". Decimal rather than
+  // Float because money must not be stored in binary floating point.
+  totalAmount   Decimal? @db.Decimal(12, 2)
+  depositAmount Decimal? @db.Decimal(12, 2)
+  currency      String?
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@index([status])
 }
 
 // The only authenticated role in this platform (AGENTS.md — Confirmed
@@ -151,6 +251,7 @@ model Admin {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   sessions     AdminSession[]
+  reviewed     CustomRequest[]
 }
 
 // Server-side session store backing the Admin login cookie. Only a SHA-256

@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
+import { AdminThrottle, PublicWriteThrottle } from "../common/throttle";
 import { AdminAuthGuard } from "../auth/admin-auth.guard";
 import { AppointmentsService } from "./appointments.service";
 import {
@@ -21,7 +22,7 @@ export class AppointmentsController {
   // address, so an aggressive per-IP limit would block real customers to
   // stop a spammer who can rotate addresses anyway. Volume abuse is
   // additionally bounded by the field length caps in appointments.schema.ts.
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @PublicWriteThrottle()
   @Post()
   @HttpCode(201)
   async createAppointment(@Body() body: unknown): Promise<AppointmentReceiptDto> {
@@ -34,6 +35,7 @@ export class AppointmentsController {
 
   // ADMIN ONLY — appointment records contain customer names, phone numbers
   // and email addresses. This must never ship unguarded.
+  @AdminThrottle()
   @UseGuards(AdminAuthGuard)
   @Get()
   async listAppointments(): Promise<AppointmentDto[]> {
@@ -41,6 +43,7 @@ export class AppointmentsController {
   }
 
   // ADMIN ONLY — status is the single mutable field. See the schema comment.
+  @AdminThrottle()
   @UseGuards(AdminAuthGuard)
   @Patch(":id")
   async updateStatus(@Param("id") id: string, @Body() body: unknown): Promise<AppointmentDto> {
