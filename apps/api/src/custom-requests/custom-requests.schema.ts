@@ -5,7 +5,7 @@ export type CustomRequestStatus = (typeof CUSTOM_REQUEST_STATUSES)[number];
 
 // Catalogue categories, optional here: a custom request starts from the
 // customer's own idea, so it need not belong to an existing category.
-export const CUSTOM_REQUEST_CATEGORIES = ["suits", "corporate", "casual"] as const;
+export const CUSTOM_REQUEST_CATEGORIES = ["suits", "agbada", "kaftan", "casuals", "corporate"] as const;
 
 const MAX_NAME = 120;
 const MAX_EMAIL = 200;

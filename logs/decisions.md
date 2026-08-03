@@ -1021,3 +1021,112 @@ produced last session.
 
 All probe rows removed. Database back to its seeded state: four FAQs, one
 shop settings row, everything else empty.
+
+---
+
+## 2026-08-03 — Catalogue restructured to five lines; agbada and kaftan added
+
+**This supersedes the 2026-08-01 decision that removed native/traditional
+wear**, and it resolves open item #1 in the `atelier-frontend` skill.
+
+That skill says "menswear only... no native wear... do not build them even if
+old mockups suggest otherwise", and separately lists "Native/traditional wear
+status: unresolved, **pending owner confirmation**". The 2026-08-01 entry
+removed those categories on the strength of the first line. The owner has now
+asked for Agbada and Kaftan by name, with explicit routes, which is exactly
+the confirmation the second line was waiting for. Recorded as a supersession
+rather than applied silently, because reversing a documented decision without
+saying so makes the log untrustworthy.
+
+**New structure:** Suits, Agbada, Kaftan, Casuals, Corporate. `casual` also
+became `casuals` to match the requested route, so `/catalogue/casual` now
+404s.
+
+**Casuals and Corporate are parent lines**, each holding a shirt and a
+trouser, rather than single garments.
+
+**Agbada and Kaftan have no individual pieces listed.** Rather than invent
+garment names, cloths and descriptions for lines nobody has described, those
+category pages say plainly that pieces are not listed yet and point at a
+conversation. Same honesty standard as the empty shop settings.
+
+**Ripple handled:** the category allowlists are validated server-side, so
+`APPOINTMENT_CATEGORIES` and `CUSTOM_REQUEST_CATEGORIES` in the API, plus the
+matching option lists in both public forms, were updated together. Leaving
+them would have meant a customer selecting "Agbada" getting a 400 from a form
+that offered it.
+
+### OPEN QUESTION — shirt and trouser imagery, needs answering before photography
+
+There is **one** shirt pair and **one** trouser pair, shared by both the
+casuals and the corporate lines. If a casual shirt and a corporate shirt are
+meant to be visually distinct garments (different cloth, cut, formality) then
+this needs **four** pairs, not two:
+
+| Path | Currently |
+|---|---|
+| `shirt-flat.png` / `shirt-on-form.png` | shared by casuals **and** corporate |
+| `trousers-flat.png` / `trousers-on-form.png` | shared by casuals **and** corporate |
+
+Splitting them later is a data change in `lib/garments.ts` only (swap
+`sharedPair(...)` for `placeholderPair(...)` per garment), but the photography
+has to be shot with the answer already known. Flagged rather than guessed.
+
+**Also still needed:** real agbada and kaftan imagery. Both currently use
+generated placeholders at
+`category-agbada-{flat,on-form}.png` and `category-kaftan-{flat,on-form}.png`,
+1024x1280 (4:5) like the rest of the catalogue set.
+
+---
+
+## 2026-08-03 — Hero carousel
+
+**Scope:** replaced the home page hero's three-image process grid only. The
+process narrative further down the page is untouched.
+
+**`CAROUSEL_INTERVAL_MS = 5000`, named and exported.** This is navigation
+rather than decoration, so the dwell time has to be long enough to read a
+label and decide whether to click.
+
+**Autoplay pauses on hover and on focus**, and after a manual advance it
+pauses for 10 seconds and then **resumes** rather than switching off for good.
+A carousel that stops permanently after one click has stopped being a
+carousel; the goal is not to fight the user, only to get out of their way.
+
+**Reduced motion disables autoplay entirely** rather than slowing it, leaving
+a static first slide with working manual controls.
+
+**Every slide is a real anchor**, so it works with a keyboard, middle-clicks
+into a new tab, and is announced as a link. Only the active slide is tabbable
+(`tabIndex={-1}` on the rest), so tabbing does not walk through four hidden
+links. Arrow keys advance and reverse. Labels are always visible rather than
+revealed on hover, because a control you cannot read until you touch it is
+not a control.
+
+### Verification
+
+Measured in a real browser, not asserted:
+
+- **Interval:** after a manual advance the carousel sat still for **15.2
+  seconds** (the 10s pause, then the first tick 5s later; predicted 15000ms),
+  and subsequent advances were **5000ms and 5000ms exactly**.
+- **Sequence and wrap:** Corporate → Suits → Agbada → Kaftan → Casuals →
+  Corporate → Suits, confirming it cycles all five and wraps.
+- **Manual advance** wrapped slide 5 → 1 and paused autoplay as designed.
+- **Keyboard:** ArrowRight advanced, ArrowLeft reversed, indicator buttons
+  jumped directly, exactly one carried `aria-current`.
+- **Label matches destination:** the visible label always equalled the slug of
+  the tabbable link, so no slide can advertise one line and navigate to
+  another.
+- **Navigation:** clicking the active slide landed on `/catalogue/casuals`
+  with the heading "Casuals".
+- **Routes:** all five category pages return 200; agbada and kaftan render the
+  honest empty state; casuals and corporate list two pieces each; the retired
+  `/catalogue/casual` returns 404.
+
+**One measurement artifact worth recording:** an early sampling run produced
+ragged intervals (8799ms, 6513ms, 3487ms) that looked like a timing bug. They
+were caused by my own synthetic hover and mouseleave events pausing and
+resuming autoplay mid-measurement. A clean run with no pointer interference
+gave exact 5000ms gaps. The lesson is the same one as the stale-row false
+negative: check what the measurement itself is doing before believing it.

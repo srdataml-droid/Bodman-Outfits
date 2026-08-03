@@ -1,6 +1,6 @@
 export const APPOINTMENT_TIMES = ["morning", "afternoon", "evening"] as const;
 
-export const APPOINTMENT_CATEGORIES = ["suits", "corporate", "casual", "not-sure"] as const;
+export const APPOINTMENT_CATEGORIES = ["suits", "agbada", "kaftan", "casuals", "corporate", "not-sure"] as const;
 
 export interface AppointmentRequest {
   name: string;

@@ -56,6 +56,17 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
             <h2 id="category-garments" className="sr-only">
               {category.name} garments
             </h2>
+            {garments.length === 0 ? (
+              // Agbada and kaftan have no individual pieces listed yet.
+              // Saying so plainly beats inventing garment names for lines
+              // nobody has described, and matches how the rest of the site
+              // handles unconfirmed content.
+              <p className="max-w-xl text-lg leading-8 text-[var(--muted-ink)]">
+                Individual pieces from this line aren&apos;t listed here yet. Everything is cut to
+                measure, so the best place to start is a conversation. Book a fitting or send us a
+                note and we&apos;ll talk through what you have in mind.
+              </p>
+            ) : null}
             <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
               {garments.map((garment, index) => (
                 <article

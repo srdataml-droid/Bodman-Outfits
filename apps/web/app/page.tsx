@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { CategoryCarousel } from "../components/category-carousel";
 import { GarmentFigure } from "../components/garment-figure";
 import { ProcessNarrative } from "../components/process-narrative";
 import { ScrollReveal } from "../components/scroll-reveal";
@@ -31,37 +31,15 @@ export default function HomePage(): React.ReactElement {
             </Link>
           </div>
 
-          <div className="mt-16 grid grid-cols-1 items-end gap-5 sm:grid-cols-[0.5fr_1fr_0.5fr] sm:gap-8 md:mt-24">
-            <div className="relative aspect-square overflow-hidden rounded-2xl border border-[rgb(210_180_140_/_40%)] sm:mb-14">
-              <Image
-                src="/images/process/02-cutting.png"
-                alt="Placeholder for photography of cloth being cut"
-                fill
-                priority
-                sizes="(min-width: 640px) 25vw, 100vw"
-                className="object-cover"
-              />
+          {/* Hero carousel replaces the former static process-image grid.
+              The process narrative further down the page is untouched. */}
+          <div className="mt-14 md:mt-20 lg:grid lg:grid-cols-[1fr_0.85fr] lg:items-center lg:gap-16">
+            <div className="hidden lg:block">
+              <p className="max-w-md text-lg leading-8 text-[var(--muted-ink)]">
+                Five lines, each cut to measure. Choose where to start.
+              </p>
             </div>
-            <div className="relative aspect-[3/2] overflow-hidden rounded-2xl border border-[rgb(210_180_140_/_40%)]">
-              <Image
-                src="/images/process/04-fitting.png"
-                alt="Placeholder for photography of a garment being fitted"
-                fill
-                priority
-                sizes="(min-width: 640px) 50vw, 100vw"
-                className="object-cover"
-              />
-            </div>
-            <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-[rgb(210_180_140_/_40%)] sm:mt-10">
-              <Image
-                src="/images/process/06-finished.png"
-                alt="Placeholder for photography of a finished garment on the form"
-                fill
-                priority
-                sizes="(min-width: 640px) 25vw, 100vw"
-                className="object-cover"
-              />
-            </div>
+            <CategoryCarousel />
           </div>
         </section>
 

@@ -10,8 +10,10 @@ import {
 const categoryOptions = [
   { value: "", label: "Not sure yet" },
   { value: "suits", label: "Suits" },
+  { value: "agbada", label: "Agbada" },
+  { value: "kaftan", label: "Kaftan" },
+  { value: "casuals", label: "Casuals" },
   { value: "corporate", label: "Corporate" },
-  { value: "casual", label: "Casual" },
 ] as const;
 
 type SubmitState = "idle" | "submitting" | "sent";

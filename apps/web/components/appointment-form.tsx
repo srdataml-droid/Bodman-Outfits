@@ -7,10 +7,14 @@ import {
   type SubmitOutcome,
 } from "../lib/appointments";
 
+// Mirrors the five catalogue lines in lib/garments.ts plus the form's own
+// escape hatch. Keep in sync with APPOINTMENT_CATEGORIES in the API.
 const categoryOptions = [
   { value: "suits", label: "Suits" },
+  { value: "agbada", label: "Agbada" },
+  { value: "kaftan", label: "Kaftan" },
+  { value: "casuals", label: "Casuals" },
   { value: "corporate", label: "Corporate" },
-  { value: "casual", label: "Casual" },
   { value: "not-sure", label: "Not sure yet" },
 ] as const;
 

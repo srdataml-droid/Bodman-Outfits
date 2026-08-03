@@ -1,4 +1,4 @@
-export const CUSTOM_REQUEST_CATEGORIES = ["suits", "corporate", "casual"] as const;
+export const CUSTOM_REQUEST_CATEGORIES = ["suits", "agbada", "kaftan", "casuals", "corporate"] as const;
 
 export interface CustomRequestSubmission {
   name: string;

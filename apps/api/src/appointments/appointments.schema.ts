@@ -4,7 +4,7 @@ import { z } from "zod";
 // form's own "not-sure" escape hatch. Kept as an explicit allowlist here
 // rather than a database enum — see the comment on Appointment.category in
 // prisma/schema.prisma. If a catalogue category is added, add it here too.
-export const APPOINTMENT_CATEGORIES = ["suits", "corporate", "casual", "not-sure"] as const;
+export const APPOINTMENT_CATEGORIES = ["suits", "agbada", "kaftan", "casuals", "corporate", "not-sure"] as const;
 
 export const APPOINTMENT_TIMES = ["morning", "afternoon", "evening"] as const;
 

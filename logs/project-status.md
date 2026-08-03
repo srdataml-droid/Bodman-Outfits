@@ -13,9 +13,9 @@ file is a summary/index, not a replacement for those.
 
 | Page | Status | Data source | Backend-connected |
 |---|---|---|---|
-| Home (`/`) | Done | Hardcoded — `lib/garments.ts`, `lib/process.ts` | No |
+| Home (`/`) | Done | Hardcoded — `lib/garments.ts`, `lib/process.ts`. Hero is now a five-line category carousel. | No |
 | Catalogue (`/catalogue`) | Done | Hardcoded — `lib/garments.ts` | No |
-| Category (`/catalogue/[category]`) | Done | Hardcoded — `lib/garments.ts` | No |
+| Category (`/catalogue/[category]`) | Done | Five lines: suits, agbada, kaftan, casuals, corporate. Agbada/kaftan list no pieces yet and say so. | No |
 | Item detail (`/catalogue/[category]/[item]`) | Done | Hardcoded — `lib/garments.ts` | No |
 | About (`/about`) | Done | Static JSX | No |
 | Contact (`/contact`) | Done | WhatsApp link: real. Enquiry form: **real `POST /api/enquiries`** | Yes |

@@ -1,4 +1,15 @@
-export type CategorySlug = "suits" | "corporate" | "casual";
+/**
+ * Five top-level lines, confirmed by the owner on 2026-08-03.
+ *
+ * This ADDS agbada and kaftan, which the atelier-frontend skill had listed as
+ * "native/traditional wear status: unresolved, pending owner confirmation" and
+ * told contributors not to build until confirmed. That confirmation is what
+ * this change records; it supersedes the 2026-08-01 decision that removed
+ * them. See logs/decisions.md.
+ *
+ * `casual` also became `casuals` to match the requested route.
+ */
+export type CategorySlug = "suits" | "agbada" | "kaftan" | "casuals" | "corporate";
 
 /**
  * Two-shot photography, as a pair.
@@ -57,23 +68,54 @@ export const categories: Category[] = [
     name: "Suits",
     tagline: "Business, wedding & event",
     description: "Two- and three-piece suiting cut for the boardroom, the aisle, and everything between.",
-    images: placeholderPair("category-suits", "the suits category"),
+    images: placeholderPair("category-suits", "the suits line"),
+  },
+  {
+    slug: "agbada",
+    name: "Agbada",
+    tagline: "Ceremonial & occasion",
+    description: "Flowing, layered pieces for the occasions that ask for them.",
+    images: placeholderPair("category-agbada", "the agbada line"),
+  },
+  {
+    slug: "kaftan",
+    name: "Kaftan",
+    tagline: "Everyday & occasion",
+    description: "Clean-lined kaftans, cut to move.",
+    images: placeholderPair("category-kaftan", "the kaftan line"),
+  },
+  {
+    slug: "casuals",
+    name: "Casuals",
+    tagline: "Shirts & trousers",
+    description: "Off-duty pieces that keep the same discipline of cut, just without the tie.",
+    images: placeholderPair("category-casuals", "the casuals line"),
   },
   {
     slug: "corporate",
     name: "Corporate",
-    tagline: "Blazers, trousers & shirts",
+    tagline: "Shirts & trousers",
     description: "Separates built for the working week. Mix, match, and repeat without the garment giving up on you.",
-    images: placeholderPair("category-corporate", "the corporate category"),
-  },
-  {
-    slug: "casual",
-    name: "Casual",
-    tagline: "Everyday menswear",
-    description: "Off-duty pieces that keep the same discipline of cut, just without the tie.",
-    images: placeholderPair("category-casual", "the casual category"),
+    images: placeholderPair("category-corporate", "the corporate line"),
   },
 ];
+
+// Shared placeholder imagery for shirts and trousers.
+//
+// OPEN QUESTION, flagged rather than guessed: only one shirt pair and one
+// trousers pair exist, and they are used for BOTH the casuals and corporate
+// lines. If a casual shirt and a corporate shirt are meant to be visually
+// distinct garments (different cloth, cut, formality) then this needs four
+// pairs, not two. That has to be settled before real photography, not after.
+// See logs/decisions.md.
+function sharedPair(kind: "shirt" | "trousers", subject: string): GarmentImagePair {
+  return {
+    flat: `/images/catalogue/${kind}-flat.png`,
+    onForm: `/images/catalogue/${kind}-on-form.png`,
+    altFlat: `Placeholder for a flat/detail photograph of ${subject}`,
+    altOnForm: `Placeholder for a photograph of ${subject} on the form`,
+  };
+}
 
 export const garments: Garment[] = [
   {
@@ -103,54 +145,45 @@ export const garments: Garment[] = [
       "An ivory wool-silk suit for the groom. Softly structured shoulders, finished with hand-stitched lapels.",
     images: placeholderPair("ivory-wedding-suit", "an ivory wedding suit"),
   },
+  // Casuals and Corporate are parent lines, each holding a shirt and a
+  // trouser. Descriptions stay deliberately general: the actual cloths and
+  // cuts that distinguish a casual shirt from a corporate one have not been
+  // confirmed, and inventing them here would be inventing product.
   {
-    slug: "tailored-blazer",
+    slug: "casual-shirt",
+    category: "casuals",
+    name: "Casual Shirt",
+    detail: "Casuals",
+    description: "A relaxed shirt cut with a little more room through the body, for days without a tie.",
+    images: sharedPair("shirt", "a casual shirt"),
+  },
+  {
+    slug: "casual-trousers",
+    category: "casuals",
+    name: "Casual Trousers",
+    detail: "Casuals",
+    description: "An easy trouser made to move between a Saturday errand and dinner out.",
+    images: sharedPair("trousers", "a pair of casual trousers"),
+  },
+  {
+    slug: "corporate-shirt",
     category: "corporate",
-    name: "Tailored Blazer",
+    name: "Corporate Shirt",
     detail: "Corporate",
-    description: "A single-breasted blazer that pairs cleanly with separates. Structured chest, soft shoulder.",
-    images: placeholderPair("tailored-blazer", "a tailored blazer"),
+    description: "A made-to-measure shirt built to hold its shape through a long working day.",
+    images: sharedPair("shirt", "a corporate shirt"),
   },
   {
-    slug: "flat-front-trouser",
+    slug: "corporate-trousers",
     category: "corporate",
-    name: "Flat-Front Trouser",
+    name: "Corporate Trousers",
     detail: "Corporate",
-    description: "A flat-front trouser in a mid-weight wool blend, cut for a clean line from waist to break.",
-    images: placeholderPair("flat-front-trouser", "a flat-front trouser"),
+    description: "A tailored trouser cut for a clean line from waist to break.",
+    images: sharedPair("trousers", "a pair of corporate trousers"),
   },
-  {
-    slug: "oxford-shirt",
-    category: "corporate",
-    name: "Oxford Shirt",
-    detail: "Corporate",
-    description: "A made-to-measure oxford shirt in brushed cotton, built to hold its shape through a long day.",
-    images: placeholderPair("oxford-shirt", "an oxford shirt"),
-  },
-  {
-    slug: "linen-shirt",
-    category: "casual",
-    name: "Linen Shirt",
-    detail: "Casual",
-    description: "A relaxed linen shirt for warm-weather days, cut with a touch more room through the body.",
-    images: placeholderPair("linen-shirt", "a linen shirt"),
-  },
-  {
-    slug: "relaxed-chino",
-    category: "casual",
-    name: "Relaxed Chino",
-    detail: "Casual",
-    description: "A tapered chino in soft cotton twill, made to move between a Saturday errand and dinner out.",
-    images: placeholderPair("relaxed-chino", "a relaxed chino"),
-  },
-  {
-    slug: "weekend-overshirt",
-    category: "casual",
-    name: "Weekend Overshirt",
-    detail: "Casual",
-    description: "An unstructured overshirt in brushed cotton, layered easily over a tee or worn open.",
-    images: placeholderPair("weekend-overshirt", "a weekend overshirt"),
-  },
+  // Agbada and kaftan have no individual pieces listed yet. Rather than
+  // invent garment names and descriptions for lines nobody has described,
+  // the category pages say so honestly. See getGarmentsByCategory callers.
 ];
 
 export function getCategory(slug: string): Category | undefined {
