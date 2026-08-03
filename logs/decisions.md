@@ -939,3 +939,85 @@ who made them.
 second admin account from inside the running app will fail until that grant
 and a matching policy are added. `prisma/bootstrap-admin.ts` still works
 because it uses `DATABASE_URL`.
+
+---
+
+## 2026-08-03 — Rate limiting split by audience rather than raised
+
+**Decision:** public write endpoints keep 5/60s per IP; admin-guarded routes
+get 1200/60s. The global ceiling was **not** raised.
+
+**Why:** anonymous submission is the spam surface, which is exactly where the
+limit does its work. Admin traffic is bursty for a structural reason (one
+navigation costs a session check plus the screen's data) but the caller has
+already proved they hold the account. Raising one number would have loosened
+protection where it matters to fix a problem that only exists where it does
+not.
+
+**One exclusion:** `change-password` and `change-email` stay on the tight
+5/60s despite being guarded, because they accept a password and are still a
+credential-guessing surface.
+
+**Verified both directions:** 140 rapid authenticated `/me` calls produced
+zero rejections (old ceiling was 100), while the sixth public POST in a
+minute still returned 429.
+
+---
+
+## 2026-08-03 — CustomRequest and Order
+
+Full contracts in `docs/api.md`. The judgement calls:
+
+**Two deviations from the skill spec, both recorded.** Contact fields added
+(the spec has no name or reply channel, which does not work for customers
+without accounts). Reference image omitted entirely including the column,
+because uploads need a storage decision that does not exist, and a column
+with no way to populate it is a guess at the eventual shape.
+
+**Custom requests deliberately not built on the shared RecordScreen.** It is
+a queue, not a status list: oldest first, declining needs a typed reason
+before the action is available, and an accepted request offers to become an
+order. Bending the shared component around those would have made it worse for
+the two screens it already serves.
+
+**Orders carry no pricing and no assumed currency.** Defaulting to NGN was
+tempting given Lagos, but it is an unconfirmed business fact and an amount in
+an assumed currency is worse than no amount. Status lifecycle kept coarse
+rather than inventing production stages nobody has described.
+
+**Customer-facing order lookup skipped and flagged.** Approved in AGENTS.md,
+but what a customer may see and whether a phone number alone identifies
+someone are both undecided, and the second is a genuine enumeration risk
+given how predictable Nigerian mobile prefixes are.
+
+---
+
+## 2026-08-03 — Verification of sections 4 and 5
+
+**Backend, 17 checks against the real database:** unauthenticated GET and
+PATCH rejected on both modules, public POST accepted, invalid payload
+rejected, decline-without-reason rejected, accept clearing a stale decline
+reason, `reviewedById` recorded, order creation rejected for an unknown
+source id, pricing genuinely null on creation, Decimal precision surviving a
+round trip, a three-decimal amount rejected, 404 on an unknown order.
+
+**Browser, against the real database:** public page renders with no file
+input, both new screens load real rows, the decline flow keeps its confirm
+button disabled until a reason is typed, and the decline persisted with
+reason and reviewer recorded. Order pricing edited through the UI
+round-tripped into the table.
+
+**One false negative worth recording:** a browser assertion reported the
+decline had not taken effect. It had. The assertion had read a stale row
+reference; the direct database read settled it. Checking the database rather
+than trusting the DOM is what made the difference, and it is the reason the
+standard is "verify at the data layer" rather than "verify what the screen
+says".
+
+**Both new screens were checked specifically for the `useSessionAwareError`
+render-loop class of bug** by leaving each idle for six seconds and
+confirming no rate-limit error appeared, which is exactly what that loop
+produced last session.
+
+All probe rows removed. Database back to its seeded state: four FAQs, one
+shop settings row, everything else empty.

@@ -118,13 +118,20 @@ export function StatusPill({ status }: { status: string }) {
     confirmed: "border-[rgb(27_62_45_/_30%)] bg-[rgb(27_62_45_/_8%)] text-[var(--everglade)]",
     replied: "border-[rgb(27_62_45_/_30%)] bg-[rgb(27_62_45_/_8%)] text-[var(--everglade)]",
     declined: "border-[rgb(120_120_120_/_35%)] bg-[rgb(120_120_120_/_8%)] text-[#5a5a5a]",
+    pending_review: "border-[rgb(200_118_58_/_40%)] bg-[rgb(200_118_58_/_10%)] text-[#8a4d1d]",
+    accepted: "border-[rgb(27_62_45_/_30%)] bg-[rgb(27_62_45_/_8%)] text-[var(--everglade)]",
+    draft: "border-[rgb(120_120_120_/_35%)] bg-[rgb(120_120_120_/_8%)] text-[#5a5a5a]",
+    in_production: "border-[rgb(200_118_58_/_40%)] bg-[rgb(200_118_58_/_10%)] text-[#8a4d1d]",
+    ready: "border-[rgb(27_62_45_/_30%)] bg-[rgb(27_62_45_/_8%)] text-[var(--everglade)]",
+    completed: "border-[rgb(27_62_45_/_30%)] bg-[rgb(27_62_45_/_8%)] text-[var(--everglade)]",
+    cancelled: "border-[rgb(120_120_120_/_35%)] bg-[rgb(120_120_120_/_8%)] text-[#5a5a5a]",
   };
   return (
     <span
       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${tone[status] ?? "border-[rgb(27_62_45_/_20%)] text-[var(--muted-ink)]"}`}
       style={{ fontFamily: ADMIN_FONT }}
     >
-      {status}
+      {status.replace(/_/g, " ")}
     </span>
   );
 }

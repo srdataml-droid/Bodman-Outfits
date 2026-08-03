@@ -58,6 +58,40 @@ export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
 export const ENQUIRY_STATUSES = ["unread", "replied"] as const;
 export type EnquiryStatus = (typeof ENQUIRY_STATUSES)[number];
 
+export interface CustomRequest {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  description: string;
+  category: string | null;
+  status: CustomRequestStatus;
+  declineReason: string | null;
+  reviewedById: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+}
+
+export interface Order {
+  id: string;
+  source: "appointment" | "enquiry" | "customRequest" | null;
+  sourceId: string | null;
+  customerName: string;
+  customerPhone: string;
+  status: OrderStatus;
+  notes: string | null;
+  totalAmount: string | null;
+  depositAmount: string | null;
+  currency: string | null;
+  createdAt: string;
+}
+
+export const CUSTOM_REQUEST_STATUSES = ["pending_review", "accepted", "declined"] as const;
+export type CustomRequestStatus = (typeof CUSTOM_REQUEST_STATUSES)[number];
+
+export const ORDER_STATUSES = ["draft", "in_production", "ready", "completed", "cancelled"] as const;
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
 export type AdminResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number; message: string };
@@ -155,6 +189,26 @@ export const adminApi = {
       method: "PUT",
       body: JSON.stringify(patch),
     }),
+
+  customRequests: () => adminFetch<CustomRequest[]>("/api/custom-requests"),
+  reviewCustomRequest: (id: string, status: CustomRequestStatus, declineReason?: string) =>
+    adminFetch<CustomRequest>(`/api/custom-requests/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status, ...(declineReason ? { declineReason } : {}) }),
+    }),
+
+  orders: () => adminFetch<Order[]>("/api/orders"),
+  createOrder: (input: {
+    source: "appointment" | "enquiry" | "customRequest";
+    sourceId: string;
+    customerName: string;
+    customerPhone: string;
+    notes?: string;
+  }) => adminFetch<Order>("/api/orders", { method: "POST", body: JSON.stringify(input) }),
+  updateOrder: (
+    id: string,
+    patch: { status?: OrderStatus; notes?: string; totalAmount?: string; depositAmount?: string; currency?: string },
+  ) => adminFetch<Order>(`/api/orders/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
 
   faqs: () => adminFetch<Faq[]>("/api/faqs"),
   createFaq: (input: Omit<Faq, "id">) =>

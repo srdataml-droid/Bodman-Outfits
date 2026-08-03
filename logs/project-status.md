@@ -26,11 +26,11 @@ file is a summary/index, not a replacement for those.
 
 | Capability | Status |
 |---|---|
-| Order submission | Missing — no `Order` model, no code anywhere |
-| Custom design request | Missing — no `CustomRequest` model. (Note: the contact form's `custom-request` subject captures intent as a message only, not a structured request.) |
+| Order submission | **Partial** — model, admin endpoints and dashboard exist; orders are created from an accepted request. No customer checkout, blocked on pricing. |
+| Custom design request | **Done** — public `POST /api/custom-requests`, admin review queue with accept/decline-with-reason, public form at `/custom-request`. Image upload omitted pending a storage decision. |
 | Consultation/appointment submission | **Done** — `POST /api/appointments` (public, rate-limited), `GET /api/appointments` (admin-guarded). Verified end-to-end against the real database. |
 | Payment/deposit collection | Missing — no Paystack integration anywhere |
-| Order status tracking | Missing — no order entity to track |
+| Order status tracking | Admin-side done. **Customer lookup not built** — needs a decision on what customers may see and whether a phone number alone identifies them. See `docs/api.md`. |
 
 ## Backend (`apps/api/src`)
 
@@ -42,6 +42,8 @@ file is a summary/index, not a replacement for those.
 | `auth/` | Done — login/logout, session cookie, rate-limited | `POST /api/auth/login` public, `POST /api/auth/logout` admin |
 | `appointments/` | Done | `POST` public + rate-limited, `GET` **admin-guarded** |
 | `enquiries/` | Done | `POST` public + rate-limited, `GET` **admin-guarded** |
+| `custom-requests/` | Done | `POST` public + rate-limited, `GET`/`PATCH` **admin-guarded** |
+| `orders/` | Done | **entirely admin-guarded**, no public route |
 | `prisma/` | Done (infra, not a route) | N/A |
 
 No Order or CustomRequest modules exist yet. No `apps/admin` dashboard yet

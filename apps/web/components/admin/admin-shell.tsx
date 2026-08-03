@@ -9,6 +9,8 @@ import { ADMIN_FONT, Button } from "./admin-ui";
 const NAV = [
   { href: "/admin/appointments", label: "Appointments" },
   { href: "/admin/enquiries", label: "Enquiries" },
+  { href: "/admin/custom-requests", label: "Custom requests" },
+  { href: "/admin/orders", label: "Orders" },
   { href: "/admin/faqs", label: "FAQs" },
   { href: "/admin/shop-settings", label: "Shop settings" },
   { href: "/admin/account", label: "Account" },

@@ -363,3 +363,74 @@ unavailable) and the form is never cleared on failure.
 **Not yet built:** an admin endpoint to mark an enquiry replied
 (`PATCH /api/enquiries/:id`), and any notification on submission. Both need
 `apps/admin` or an owner decision on notification channels.
+
+## Approved Contract Addition — Custom Design Requests
+
+Built 2026-08-03 from the `atelier-frontend` skill spec, with two deviations.
+
+- `POST /api/custom-requests` — **public**, 5/60s per IP, `publicDb`.
+  `name`, `email` required; `phone`, `category` optional; `description`
+  required up to 6000 characters. Returns `{ id, status }` only, matching the
+  column-level `(id, status)` grant the public role holds.
+- `GET /api/custom-requests` — **admin only**, `adminDb`, **oldest first**,
+  unlike every other list here, because the skill specifies a review queue
+  and a queue is worked from the front.
+- `PATCH /api/custom-requests/:id` — **admin only**. Declining without a
+  reason returns 400. Accepting or reopening clears any previous reason so a
+  stale decline note cannot linger. Records `reviewedById`/`reviewedAt`.
+- The description is not admin-editable. It is the customer's own words.
+
+**Deviation 1 — contact fields added.** The skill lists only description,
+image and category, with no name or reply channel. Customers have no
+accounts, so an accepted request could not be acted on and a declined one
+could not be answered.
+
+**Deviation 2 — reference image omitted, including the column.** Uploads need
+a storage decision, size/type limits and a scanning position, none of which
+exist. A nullable `referenceImageUrl` was deliberately not added either,
+since a column with no way to populate it is a guess at the eventual shape.
+The public form says images cannot be attached yet and asks customers to
+mention them instead.
+
+**Not built:** notifying the customer. The skill says a decline is "sent back
+to the customer"; nothing here sends email or WhatsApp, so both screens state
+that a decision is recorded rather than delivered.
+
+## Approved Contract Addition — Orders (admin only)
+
+Built 2026-08-03. **No public endpoint, no checkout, no payment integration.**
+
+- `GET`/`POST`/`PATCH /api/orders` — all **admin only**, all `adminDb`. The
+  public role holds no grant on the table.
+- Created **from an existing request** (`appointment`, `enquiry` or
+  `customRequest` plus that record's id). The source is verified to exist, so
+  a bad id returns 400 rather than a raw foreign-key violation. Three
+  nullable foreign keys rather than a polymorphic pair, so the database still
+  enforces the target exists.
+- `customerName`/`customerPhone` are **snapshotted**. All three relations are
+  `onDelete: SetNull`, so an order outlives a tidied-up source request
+  without losing who it is for.
+- **Pricing nullable and no currency default.** Defaulting to NGN was
+  tempting given Lagos, but it is still an unconfirmed business fact, and an
+  amount in an assumed currency is worse than no amount. `Decimal(12,2)` in
+  the database, strings on the wire, so nothing passes through a JS double.
+- Statuses: `draft`, `in_production`, `ready`, `completed`, `cancelled`.
+  **Coarse on purpose.** AGENTS.md mentions measurements, fittings and
+  delivery, but the stages this workshop actually uses have not been
+  described, and five invented steps would look real and be wrong.
+
+### Customer-facing order lookup — NOT built, needs your decision
+
+AGENTS.md approves the *existence* of "look up an order by ID or phone
+number". Two things it does not settle, both policy rather than engineering:
+
+1. **What may a customer see?** Status only, or amounts, notes and dates too?
+   Admin notes are written for internal use and read very differently to the
+   customer they describe.
+2. **Is a phone number alone sufficient to identify someone?** Nigerian
+   mobile prefixes are predictable, so lookup-by-phone alone would allow
+   enumerating other people's orders. Requiring order ID **and** phone
+   together fixes it, but that is a decision about how much friction to put
+   in front of a customer.
+
+Flagged rather than guessed. Answer these and it is a short build.
