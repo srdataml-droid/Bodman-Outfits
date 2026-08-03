@@ -7,6 +7,13 @@ export interface ProcessStage {
   line: string;
   image: string;
   alt: string;
+  /**
+   * Clip for this stage. Poster is `image` above. Lazy-loaded: no request is
+   * made until the stage reaches the viewport. Files live in
+   * public/videos/process/ and are absent until dropped in, in which case the
+   * poster simply remains. See components/process-stage-video.tsx.
+   */
+  video: string;
 }
 
 /**
@@ -34,6 +41,7 @@ export const processStages: ProcessStage[] = [
     title: "Measuring",
     line: "It begins with the person, not the pattern. Everything that follows rests on getting this part right.",
     image: "/images/process/01-measuring.png",
+    video: "/videos/process/01-measuring.mp4",
     alt: "Placeholder for photography of the measuring stage",
   },
   {
@@ -42,6 +50,7 @@ export const processStages: ProcessStage[] = [
     title: "Cutting",
     line: "Cloth is marked, then cut. There is no undoing this stage, so it is never the one to hurry.",
     image: "/images/process/02-cutting.png",
+    video: "/videos/process/02-cutting.mp4",
     alt: "Placeholder for photography of the cutting stage",
   },
   {
@@ -50,6 +59,7 @@ export const processStages: ProcessStage[] = [
     title: "Sewing",
     line: "Piece joined to piece. Somewhere in here, a stack of flat panels starts behaving like a garment.",
     image: "/images/process/03-sewing.png",
+    video: "/videos/process/03-sewing.mp4",
     alt: "Placeholder for photography of the sewing stage",
   },
   {
@@ -58,6 +68,7 @@ export const processStages: ProcessStage[] = [
     title: "Fitting",
     line: "Worn, studied, marked again. This is where close becomes correct.",
     image: "/images/process/04-fitting.png",
+    video: "/videos/process/04-fitting.mp4",
     alt: "Placeholder for photography of the fitting stage",
   },
   {
@@ -66,6 +77,7 @@ export const processStages: ProcessStage[] = [
     title: "Pressing",
     line: "Heat, weight, and patience. Pressing is most of the distance between sewn and finished.",
     image: "/images/process/05-pressing.png",
+    video: "/videos/process/05-pressing.mp4",
     alt: "Placeholder for photography of the pressing stage",
   },
   {
@@ -74,6 +86,7 @@ export const processStages: ProcessStage[] = [
     title: "On the form",
     line: "It waits on the form for the person it was measured for.",
     image: "/images/process/06-finished.png",
+    video: "/videos/process/06-finished.mp4",
     alt: "Placeholder for photography of a finished garment on the form",
   },
 ];

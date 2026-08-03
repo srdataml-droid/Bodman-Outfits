@@ -1234,3 +1234,82 @@ They are internal identifiers, invisible to customers, and renaming them
 means lockfile churn and a broken `pnpm --filter` in every command in the
 docs and logs for no user-facing benefit. Worth doing only if the repository
 is ever renamed for other reasons.
+
+---
+
+## 2026-08-03 — Process clips: path convention, and a load guarantee that does not rely on a hint
+
+**Path.** `public/videos/process/`, not `public/videos/`. The existing
+convention is `public/images/<section>/`, already holding `catalogue/`,
+`home/` and `process/`, so videos mirror it. The request listed the files as
+`videos/01-measuring.mp4`; the extra `process/` segment is the difference,
+and it decides whether the files are found. A `README.md` sits in the folder
+as the drop checklist and so git tracks the directory at all, since git does
+not track empty ones.
+
+**Note on the brief:** it referred to "the earlier video task". There is no
+earlier video task in this session's history, so nothing was assumed from it.
+Everything built here comes from the requirements stated in this request,
+which were complete on their own.
+
+### The load guarantee
+
+The requirement was zero network activity ahead of scroll, explicitly not
+just `preload="none"`, because that attribute is a hint that browsers are
+free to interpret loosely.
+
+So the `<source>` element **is not rendered at all** until the observer
+fires. A `<video>` with no source has nothing to fetch, which makes the
+guarantee structural rather than advisory. `preload="none"` is kept as a
+second layer for the window after the source appears, and it turned out to
+be doing real work: see the verification below.
+
+**No prefetch of the next stage**, deliberately. On a slow connection that
+costs a beat before a clip starts and the poster covers it.
+
+**Deliberately no failsafe timer, unlike `ScrollReveal` in this same
+codebase.** That component reveals text and must never leave content
+unreadable, so it gives up waiting and shows itself. Here the opposite holds:
+a timer that loaded the video anyway would defeat the requirement outright.
+If the observer never fires, the correct outcome is that the clip never loads
+and the poster stays, which is a complete rendering of the stage.
+
+**Reduced motion renders no `<video>` element at all**, so there is no
+playback attempt and no request. The poster is the whole experience.
+
+**A missing file degrades to the poster**, which is the same thing the page
+showed before videos existed. The poster is rendered through `next/image`
+underneath the video rather than as a raw `poster` attribute, so it is
+optimised rather than shipping the full-size original.
+
+### Verification, and what could not be verified
+
+**Verified:**
+
+- With the page fully loaded and parked at the top: **zero requests to
+  `/videos/`**, zero `<source>` elements, six `<video>` elements mounted.
+  Confirmed twice with network tracking active before the load.
+- Server-rendered HTML contains **no `<video>` and no `<source>` elements**.
+  The clip URLs appear only as inert props inside the RSC payload, which is
+  data, not a fetchable element.
+- When the observer does fire, the source is attached, the file is fetched
+  (HTTP 206) and the element reaches `readyState 4`, confirmed directly on
+  the first stage.
+- `preload="none"` is genuinely load-bearing: in one run all six `<source>`
+  elements were present but **only three files were actually fetched**,
+  because the browser does not download a source it has not been asked to
+  play.
+
+**Not verified, stated plainly:** strict one-request-per-stage-as-you-reach-it
+timing. IntersectionObserver delivery is intermittent in this automated
+Chrome context, the same defect hit earlier this session. Callbacks stall and
+then flush as a batch, so a run that should have loaded one clip per stage
+instead showed all six sources appear at the first sample. That is a
+measurement artifact of the harness, not eager loading by the component: the
+same run began from a verified zero-request state and nothing loaded until
+scrolling started.
+
+**Worth one human check on a normal browser:** open the network panel, scroll
+slowly through the six stages, and confirm requests arrive one at a time.
+Everything structural is in place for that to be true; what could not be done
+here is watch it happen cleanly.

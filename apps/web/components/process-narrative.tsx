@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ProcessStageVideo } from "./process-stage-video";
 import { processStages } from "../lib/process";
 import { ScrollReveal } from "./scroll-reveal";
 
@@ -71,16 +71,11 @@ export function ProcessNarrative(): React.ReactElement {
                   </span>
 
                   <div className="md:w-1/2">
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-[rgb(210_180_140_/_45%)]">
-                      <Image
-                        src={stage.image}
-                        alt={stage.alt}
-                        fill
-                        loading="lazy"
-                        sizes="(min-width: 768px) 45vw, 100vw"
-                        className="object-cover"
-                      />
-                    </div>
+                    <ProcessStageVideo
+                      videoSrc={stage.video}
+                      poster={stage.image}
+                      posterAlt={stage.alt}
+                    />
                   </div>
 
                   <div className={`mt-7 md:mt-0 md:w-1/2 ${flipped ? "md:text-right" : ""}`}>
