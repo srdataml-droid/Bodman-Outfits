@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import type {
   UpdateAppointmentStatusDto,
@@ -31,7 +32,10 @@ interface AppointmentRow {
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async createAppointment(input: CreateAppointmentDto): Promise<AppointmentReceiptDto> {
     // Public: customers submit these unauthenticated.
@@ -54,6 +58,24 @@ export class AppointmentsService {
       // Prisma returns every column and Postgres refuses the insert.
       select: { id: true, status: true },
     });
+    // Not awaited, and never able to reject. See NotificationsService: a
+    // notification failure must never cost the customer their booking.
+    // Built from `input` because the public role cannot SELECT these columns
+    // back out of the row it just wrote.
+    void this.notifications.notifyNewSubmission({
+      kind: "appointment",
+      recordId: appointment.id,
+      customerName: input.name,
+      details: [
+        ["Category", input.category],
+        ["Preferred date", input.preferredDate],
+        ["Preferred time", input.preferredTime],
+        ["Phone", input.phone],
+        ["Email", input.email ?? "not given"],
+        ["Notes", input.notes ?? "none"],
+      ],
+    });
+
     return { id: appointment.id, status: appointment.status };
   }
 

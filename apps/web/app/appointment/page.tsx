@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { StaggerText } from "../../components/stagger-text";
 import { AppointmentForm } from "../../components/appointment-form";
 import { SiteFooter } from "../../components/site-footer";
 import { SiteHeader } from "../../components/site-header";
@@ -20,9 +21,11 @@ export default async function AppointmentPage(): Promise<React.ReactElement> {
         <section className="mx-auto max-w-[1280px] px-5 pb-28 pt-16 md:px-16 md:pb-32 md:pt-28">
           <header className="mx-auto max-w-2xl text-center animate-[catalogue-enter_700ms_cubic-bezier(0.16,1,0.3,1)_both]">
             <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">BOOK AN APPOINTMENT</p>
-            <h1 className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl">
-              Let&apos;s find a time that works.
-            </h1>
+            <StaggerText
+              as="h1"
+              text="Let’s find a time that works."
+              className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl"
+            />
             <p className="mt-7 text-lg leading-8 text-[var(--muted-ink)] md:text-[22px] md:leading-9">
               Tell us a little about what you&apos;re looking for and a preferred time. We&apos;ll confirm the
               details with you personally.

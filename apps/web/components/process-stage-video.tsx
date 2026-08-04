@@ -107,40 +107,48 @@ export function ProcessStageVideo({
   return (
     <div
       ref={wrapperRef}
-      className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-[rgb(210_180_140_/_45%)] bg-[#e8ebea]"
+      // The mask is not decoration: iOS Safari lets a composited child escape
+      // a rounded ancestor's overflow clip, which would show square corners
+      // on the parallax layer. A mask clips where overflow alone does not.
+      className="process-stage-frame relative aspect-[3/4] overflow-hidden rounded-2xl border border-[rgb(210_180_140_/_45%)] bg-[#e8ebea] [mask-image:radial-gradient(white,black)]"
     >
-      {/* Always rendered, and never removed. It is the poster, the fallback
-          for a missing file, and the entire reduced-motion experience. Served
-          through next/image so it is optimised, unlike a raw `poster`
-          attribute which would ship the full-size original. */}
-      <Image
-        src={poster}
-        alt={posterAlt}
-        fill
-        priority={priority}
-        loading={priority ? undefined : "lazy"}
-        sizes="(min-width: 768px) 45vw, 100vw"
-        className="object-cover"
-      />
+      {/* Poster and clip share one parallax layer so they drift together.
+          Animating them separately would let them slide apart during the
+          opacity cross-fade, which is exactly when both are visible. */}
+      <div className="process-parallax absolute inset-0">
+        {/* Always rendered, and never removed. It is the poster, the fallback
+            for a missing file, and the entire reduced-motion experience. Served
+            through next/image so it is optimised, unlike a raw `poster`
+            attribute which would ship the full-size original. */}
+        <Image
+          src={poster}
+          alt={posterAlt}
+          fill
+          priority={priority}
+          loading={priority ? undefined : "lazy"}
+          sizes="(min-width: 768px) 45vw, 100vw"
+          className="object-cover"
+        />
 
-      {reducedMotion === false ? (
-        <video
-          ref={videoRef}
-          preload="none"
-          muted
-          loop
-          playsInline
-          aria-hidden="true"
-          onCanPlay={() => setCanPlay(true)}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out ${
-            canPlay ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          {/* Rendered only after the observer fires. Until then the element
-              has no source and therefore nothing to request. */}
-          {shouldLoad ? <source src={videoSrc} type="video/mp4" /> : null}
-        </video>
-      ) : null}
+        {reducedMotion === false ? (
+          <video
+            ref={videoRef}
+            preload="none"
+            muted
+            loop
+            playsInline
+            aria-hidden="true"
+            onCanPlay={() => setCanPlay(true)}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out ${
+              canPlay ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            {/* Rendered only after the observer fires. Until then the element
+                has no source and therefore nothing to request. */}
+            {shouldLoad ? <source src={videoSrc} type="video/mp4" /> : null}
+          </video>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
+import { StaggerText } from "../../../../components/stagger-text";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GarmentFigure } from "../../../../components/garment-figure";
 import { SiteFooter } from "../../../../components/site-footer";
 import { SiteHeader } from "../../../../components/site-header";
-import { garments, getCategory, getGarment } from "../../../../lib/garments";
+import {
+  formatStartingPrice,
+  garments,
+  getCategory,
+  getGarment,
+  PRICING_QUALIFIER,
+} from "../../../../lib/garments";
 
 interface ItemPageProps {
   params: Promise<{ category: string; item: string }>;
@@ -67,12 +74,32 @@ export default async function ItemPage({ params }: ItemPageProps): Promise<React
               <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">
                 {garment.detail.toUpperCase()}
               </p>
-              <h1 className="mt-5 font-[Fraunces] text-4xl font-medium leading-[1.05] tracking-[-0.03em] text-[var(--everglade)] md:text-6xl">
-                {garment.name}
-              </h1>
+              <StaggerText
+                as="h1"
+                text={garment.name}
+                className="mt-5 font-[Fraunces] text-4xl font-medium leading-[1.05] tracking-[-0.03em] text-[var(--everglade)] md:text-6xl"
+              />
               <p className="mt-6 max-w-lg text-lg leading-8 text-[var(--muted-ink)]">
                 {garment.description}
               </p>
+
+              {/* The single most misleading page if this were omitted: a
+                  customer is looking at ONE piece, so an outfit price shown
+                  here without its qualifier would read as the price of that
+                  piece alone. Item-priced lines get the plain figure. */}
+              <div className="mt-8 border-l-2 border-[var(--copper)] pl-5">
+                <p className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">
+                  {formatStartingPrice(category.price)}
+                </p>
+                <p className="mt-2 max-w-lg text-base leading-7 text-[var(--muted-ink)]">
+                  {category.price.unit === "outfit"
+                    ? `${category.name} is priced as a complete outfit, shirt and trousers together. This piece is part of that outfit rather than priced on its own.`
+                    : `Starting price for this piece.`}
+                </p>
+                <p className="mt-3 max-w-lg text-sm leading-6 text-[var(--muted-ink)]">
+                  {PRICING_QUALIFIER}
+                </p>
+              </div>
 
               <div className="mt-9 flex flex-col gap-4 sm:flex-row">
                 <Link

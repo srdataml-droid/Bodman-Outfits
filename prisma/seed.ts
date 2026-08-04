@@ -22,9 +22,16 @@ const SINGLETON_ID = "singleton";
 // own process. Em-dashes removed throughout at the owner's instruction (three
 // of the four previous answers used one).
 //
+// Revised 2026-08-04 at the owner's instruction: the page no longer tells
+// customers that policies are still being decided, because the admin app is
+// where policies get written and published. The deposit and alterations
+// answers dropped that framing. Note what did NOT happen: neither answer
+// gained a deposit amount, a payment method, or an alterations guarantee.
+// They now point the reader at a conversation instead of announcing an
+// unfinished policy, which is a change of framing, not of fact.
+//
 // If you edit these, keep that discipline: rewrite the voice, never the
-// facts. Anything still marked unconfirmed in docs/business-requirements.md
-// must stay unconfirmed here.
+// facts. Do not add a policy detail here that the owner has not confirmed.
 const FAQ_SEED_DATA = [
   {
     id: "turnaround-time",
@@ -47,7 +54,7 @@ const FAQ_SEED_DATA = [
     category: "Pricing & Deposits",
     question: "Do I need to pay a deposit, and what payment methods do you accept?",
     answer:
-      "We are still settling our deposit and the payment methods we will accept, so we would rather tell you directly than post something here we might have to change next month. Ask us before you place an order, and please treat nothing on this page as final pricing policy.",
+      "Talk to us before you place an order and we will confirm the deposit and the payment method that works best for you. It is a short conversation rather than paperwork.",
     sortOrder: 3,
   },
   {
@@ -55,7 +62,7 @@ const FAQ_SEED_DATA = [
     category: "Measurements & Fit",
     question: "What if the fit isn't right when the garment is ready?",
     answer:
-      "Our written alterations policy is not finished yet, though the short version is simpler than a policy anyway. If the fit is not right, come back and tell us. A garment that does not sit properly is not finished work. The full details will follow once they are settled.",
+      "Come back and tell us. A garment that does not sit properly is not finished work, so we will put it right. That is the whole of it.",
     sortOrder: 4,
   },
 ] as const;

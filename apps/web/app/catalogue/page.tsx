@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
+import { ScrollReveal } from "../../components/scroll-reveal";
+import { StaggerText } from "../../components/stagger-text";
 import Image from "next/image";
 import Link from "next/link";
 import { GarmentFigure } from "../../components/garment-figure";
 import { SiteFooter } from "../../components/site-footer";
 import { SiteHeader } from "../../components/site-header";
-import { categories } from "../../lib/garments";
+import {
+  categories,
+  formatStartingPrice,
+  priceUnitLabel,
+  PRICING_QUALIFIER,
+} from "../../lib/garments";
 
 export const metadata: Metadata = {
   title: "The Catalogue",
@@ -21,9 +28,11 @@ export default function CataloguePage(): React.ReactElement {
             <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">
               THE HOUSE EDIT
             </p>
-            <h1 className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl">
-              The Catalogue
-            </h1>
+            <StaggerText
+              as="h1"
+              text="The Catalogue"
+              className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl"
+            />
             <p className="mt-7 max-w-xl text-lg leading-8 text-[var(--muted-ink)] md:text-[22px] md:leading-9">
               A curated collection of our signature silhouettes, where heritage meets the modern wardrobe. Explore the depth of our craftsmanship across every category.
             </p>
@@ -33,12 +42,18 @@ export default function CataloguePage(): React.ReactElement {
             <h2 id="catalogue-categories" className="sr-only">
               Garment categories
             </h2>
-            <div className="grid gap-x-12 gap-y-16 md:grid-cols-2 md:gap-y-24">
+            <p className="max-w-xl text-base leading-7 text-[var(--muted-ink)]">{PRICING_QUALIFIER}</p>
+            <div className="mt-12 grid gap-x-12 gap-y-16 md:grid-cols-2 md:gap-y-24">
               {categories.map((category, index) => (
-                <article
+                // Scroll-triggered, not load-triggered. The old
+                // `catalogue-enter` fired on page load, so every card below
+                // the fold had already finished animating before the reader
+                // ever reached it, and nothing arrived as you scrolled.
+                <ScrollReveal
+                  as="article"
                   key={category.slug}
-                  className={`group animate-[catalogue-enter_700ms_cubic-bezier(0.16,1,0.3,1)_both] ${index % 2 === 1 ? "md:mt-24" : ""}`}
-                  style={{ animationDelay: `${120 + index * 90}ms` }}
+                  delayMs={(index % 2) * 70}
+                  className={`group ${index % 2 === 1 ? "md:mt-24" : ""}`}
                 >
                   <Link
                     href={`/catalogue/${category.slug}`}
@@ -56,12 +71,19 @@ export default function CataloguePage(): React.ReactElement {
                       <p className="mt-2 text-base leading-7 text-[var(--muted-ink)]">
                         {category.description}
                       </p>
+                      {/* This grid is where the outfit-priced lines sit
+                          directly beside the item-priced ones, so the unit
+                          qualifier is doing real work here, not decoration. */}
+                      <p className="mt-4 text-base text-[var(--everglade)]">
+                        <span className="font-medium">{formatStartingPrice(category.price)}</span>{" "}
+                        <span className="text-[var(--muted-ink)]">{priceUnitLabel(category.price)}</span>
+                      </p>
                       <span className="mt-6 inline-flex items-center gap-2 text-sm font-medium tracking-[0.1em] text-[var(--copper)] transition-[gap] duration-300 group-hover:gap-4">
                         VIEW COLLECTION <span aria-hidden="true">→</span>
                       </span>
                     </div>
                   </Link>
-                </article>
+                </ScrollReveal>
               ))}
             </div>
           </section>

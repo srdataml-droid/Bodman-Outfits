@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-03 (scoped DB roles wired in; RLS now genuinely constrains the API)
+Last updated: 2026-08-04 (admin dashboard record corrected — nine screens exist and are listed below)
 
 This is a living snapshot of what's actually built and working, verified by
 reading the code — not aspirational. Update it whenever a feature moves
@@ -38,22 +38,48 @@ file is a summary/index, not a replacement for those.
 |---|---|---|
 | `health.controller.ts` | Done | None (appropriate — public health check) |
 | `shop-settings/` | Done | GET public, **PUT now guarded by `AdminAuthGuard`** |
-| `faq/` | Done — GET only, no writes | None needed (read-only public content, no write endpoints exist to guard) |
+| `faq/` | Done — full CRUD | `GET` public; `POST`/`PUT :id`/`DELETE :id` **admin-guarded** |
 | `auth/` | Done — login/logout, session cookie, rate-limited | `POST /api/auth/login` public, `POST /api/auth/logout` admin |
-| `appointments/` | Done | `POST` public + rate-limited, `GET` **admin-guarded** |
-| `enquiries/` | Done | `POST` public + rate-limited, `GET` **admin-guarded** |
+| `appointments/` | Done | `POST` public + rate-limited, `GET`/`PATCH :id` **admin-guarded** |
+| `enquiries/` | Done | `POST` public + rate-limited, `GET`/`PATCH :id` **admin-guarded** |
 | `custom-requests/` | Done | `POST` public + rate-limited, `GET`/`PATCH` **admin-guarded** |
 | `orders/` | Done | **entirely admin-guarded**, no public route |
 | `prisma/` | Done (infra, not a route) | N/A |
 
-No Order or CustomRequest modules exist yet. No `apps/admin` dashboard yet
-(auth backend is built; nothing consumes it as a UI yet).
+Every module above exists, including `orders/` and `custom-requests/`. All of
+them are consumed by the admin dashboard described below.
 
 ## Admin dashboard
 
-**Does not exist.** No `apps/admin`. The auth backend (login/logout, session
-cookie, guard) is built and already protects `PUT /api/shop-settings`, but
-there is still no UI for a non-technical person to use it.
+**Exists and is built.** It lives at `apps/web/app/admin/` — inside the
+existing web app, **not** as a separate `apps/admin` package. That is worth
+noting because earlier entries in this file (and in `docs/`) refer to a
+planned `apps/admin` that was never created; the route group replaced it.
+
+Nine screens:
+
+| Route | Screen | What it does |
+|---|---|---|
+| `/admin` | Index | Not a screen — redirects into the dashboard |
+| `/admin/login` | Login | Email + password, renders outside the auth shell to avoid a redirect loop |
+| `/admin/appointments` | Appointments | Fitting requests, newest first; status changes via `PATCH /api/appointments/:id` |
+| `/admin/enquiries` | Enquiries | Contact-page messages; mark replied via `PATCH /api/enquiries/:id` |
+| `/admin/custom-requests` | Custom requests | Review queue, accept or decline-with-reason |
+| `/admin/orders` | Orders | List, create from an accepted request, edit total/deposit/currency/notes |
+| `/admin/faqs` | FAQs | Full CRUD against the guarded FAQ endpoints |
+| `/admin/shop-settings` | Shop settings | Edits the values that feed the public site |
+| `/admin/account` | Account | Change password, change email, view current session |
+
+Shared infrastructure lives in `apps/web/components/admin/`:
+`admin-shell.tsx` (the authenticated shell — one place decides "session is
+gone, go to login"), `record-screen.tsx` (the generic list/detail/status
+screen that `appointments` and `enquiries` are both thin wrappers over),
+`admin-ui.tsx`, and `use-focus-param.ts` (reads the `?focus=<id>` deep link
+that notification emails point at, selects that row and scrolls to it).
+
+**Not verified in a browser.** The screens typecheck clean and the endpoints
+they call are verified, but the dashboard itself has not been click-tested
+end-to-end against the real database this session.
 
 ## Auth
 
@@ -111,11 +137,15 @@ table in `logs/decisions.md`. Contract detail in `docs/api.md`,
 
 ## Known blockers / open items (continued)
 
-**No admin UI exists for any of this data.** Appointments and enquiries can
-be submitted by customers and read by an authenticated admin over the API,
-but there is still no `apps/admin`, and no endpoint yet to confirm/decline an
-appointment or mark an enquiry replied. Submissions currently accumulate with
-no workflow to act on them.
+~~**No admin UI exists for any of this data.**~~ Resolved — the dashboard at
+`apps/web/app/admin/` reads and acts on all of it, and the status endpoints
+(`PATCH /api/appointments/:id`, `PATCH /api/enquiries/:id`) exist. Submissions
+no longer accumulate without a workflow.
+
+Two caveats that are **not** bugs but do limit the workflow: confirming an
+appointment or marking an enquiry replied **records your decision only — it
+does not notify the customer.** Both screens say so in their own description
+text. Contacting the customer is still manual.
 
 8. **Real shop details still unconfirmed** and therefore still empty in the
    database: address, opening hours, phone, email, pricing note, deposit
@@ -145,11 +175,74 @@ no workflow to act on them.
   checklist, and the scoped-role SQL. No host chosen, no host-specific config
   written.
 
-### Not started (requested 2026-08-03, not reached this session)
+### Requested 2026-08-03 — all three since delivered
 
-- **Admin dashboard UI** and the FAQ write endpoints it would consume.
-  This remains the single largest gap: every guarded endpoint now exists and
-  is verified, but there is still no interface, so the business cannot read
-  an appointment or reply to an enquiry without `curl`.
-- **CustomRequest module.**
-- **Order model.**
+- ~~**Admin dashboard UI** and the FAQ write endpoints it would consume.~~
+  Done. Nine screens at `apps/web/app/admin/`, and `faq/` now has guarded
+  `POST`/`PUT :id`/`DELETE :id`. The business no longer needs `curl` to read
+  an appointment or reply to an enquiry.
+- ~~**CustomRequest module.**~~ Done — `apps/api/src/custom-requests/`, with
+  the review queue at `/admin/custom-requests`.
+- ~~**Order model.**~~ Done — `apps/api/src/orders/`, migration
+  `20260803020000_add_custom_requests_and_orders`, admin screen at
+  `/admin/orders`. Customer-facing checkout is still absent (blocked on
+  pricing and payments), so this is the admin half only.
+
+## Added 2026-08-04
+
+### Pricing (live in code, not yet in the database)
+Five confirmed starting prices, all minimums, all rendered as "From ₦X":
+Kaftan 25,000 · Suits 70,000 · Agbada 70,000 (per item);
+Casuals 90,000 · Corporate 120,000 (per COMPLETE OUTFIT, shirt + trousers).
+
+Source of truth is `apps/web/lib/garments.ts` on the existing `Category`
+type. There was no per-category pricing model to reuse: `ShopSettings` has a
+single free-text `pricingNote` and a `depositPercentage`, nothing per line.
+Formatting goes through `formatStartingPrice` / `priceUnitLabel` /
+`priceUnitDetail` so "From" and the item-vs-outfit qualifier cannot be
+dropped at a call site.
+
+Rendered on: hero carousel (including the accessible name), `/catalogue`
+cards, `/catalogue/[category]` header, `/catalogue/[category]/[item]`, and
+the `/faq` price list. Verified against built HTML: every naira figure on
+every page is preceded by "From", and no bare figure exists anywhere.
+
+`ShopSettings.pricingNote` remains admin-editable and **is still not rendered
+anywhere on the public site**. Unchanged by this work, flagged as an
+opportunity rather than acted on.
+
+### Email notifications (built, partially verified)
+`apps/api/src/notifications/` sends a plain-text alert to the owner when an
+Appointment, Enquiry or CustomRequest is submitted. `resend@^6.18.1` added to
+`apps/api`. Emails deep-link to `/admin/<list>?focus=<id>`; the admin screens
+read that parameter, select the row and scroll to it.
+
+**Configuration required before this works in production:**
+- `NOTIFICATION_EMAIL` — **not currently set, and nothing sends without it.**
+  `ADMIN_BOOTSTRAP_EMAIL` is the documented fallback but is also absent from
+  the API's runtime environment, so the fallback does not save this.
+- `NOTIFICATION_FROM` — not set. Falls back to `onboarding@resend.dev`,
+  Resend's shared test sender, which only delivers to the address owning the
+  Resend account. Needs an address on a verified domain.
+- `RESEND_API_KEY` — confirmed present.
+
+### Staggered heading reveal
+`apps/web/components/stagger-text.tsx`. Word-by-word fade and rise on four
+headings: the hero, the signature-garments heading, the process heading and
+the closing call to action. Same IntersectionObserver geometry and failsafe
+as `ScrollReveal`, no new scroll system, no library.
+
+## Known blockers / open items (2026-08-04)
+
+1. **Notification recipient is unset.** Nothing will be emailed until
+   `NOTIFICATION_EMAIL` is configured. Needs an address from the owner.
+2. **Notification sender is unset.** `NOTIFICATION_FROM` on a Resend-verified
+   domain is needed before production.
+3. **The success path of email sending is unverified.** The failure path is
+   verified; a real send was never made because there is no recipient.
+4. **Two live FAQ rows still carry the old "policies pending" wording.** The
+   seed file was rewritten on 2026-08-04 but the database was not; the rows
+   written on 2026-08-02 are unchanged. Owner can edit them in the admin app.
+5. **A test enquiry row exists in the production database**, id
+   `cmsef1n6d0000npijcfq1kxwa`, name "Claude Test (delete me)". Created
+   deliberately to verify the notification failure path. Safe to delete.

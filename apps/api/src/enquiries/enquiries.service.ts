@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import type {
   UpdateEnquiryStatusDto,
@@ -26,7 +27,10 @@ interface EnquiryRow {
 
 @Injectable()
 export class EnquiriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async createEnquiry(input: CreateEnquiryDto): Promise<EnquiryReceiptDto> {
     // Public: customers submit these unauthenticated.
@@ -45,6 +49,29 @@ export class EnquiriesService {
       // Prisma returns every column and Postgres refuses the insert.
       select: { id: true, status: true },
     });
+
+    /*
+     * Fired after the row is committed, and deliberately NOT awaited. The
+     * customer's response must not wait on Resend, and a failed send must not
+     * turn a saved enquiry into a 500. `notifyNewSubmission` never rejects,
+     * which is what makes bare `void` safe here rather than an unhandled
+     * rejection waiting to happen.
+     *
+     * Built from `input` rather than from the created row: the public role
+     * cannot SELECT these columns back (see the select above).
+     */
+    void this.notifications.notifyNewSubmission({
+      kind: "enquiry",
+      recordId: enquiry.id,
+      customerName: input.name,
+      details: [
+        ["Subject", input.subject],
+        ["Email", input.email],
+        ["Phone", input.phone ?? "not given"],
+        ["Message", input.message],
+      ],
+    });
+
     return { id: enquiry.id, status: enquiry.status };
   }
 

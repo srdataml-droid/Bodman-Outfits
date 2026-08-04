@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useSessionAwareError } from "./admin-shell";
+import { useFocusParam } from "./use-focus-param";
 import { ADMIN_FONT, Button, Notice, Panel, PageTitle, StatusPill } from "./admin-ui";
 import type { AdminResult } from "../../lib/admin-api";
 
@@ -73,6 +74,9 @@ export function RecordScreen<T extends { id: string; status: string; createdAt: 
     void refresh();
   }, [refresh]);
 
+  // `?focus=<id>` deep link from the submission notification emails.
+  const { rowRefs, focusMissing } = useFocusParam(rows, setSelectedId);
+
   const selected = rows?.find((r) => r.id === selectedId) ?? null;
 
   async function changeStatus(next: string): Promise<void> {
@@ -97,6 +101,14 @@ export function RecordScreen<T extends { id: string; status: string; createdAt: 
       {error ? (
         <Panel className="mb-4">
           <Notice tone="error">{error}</Notice>
+        </Panel>
+      ) : null}
+
+      {focusMissing ? (
+        <Panel className="mb-4">
+          <Notice>
+            The record from that link is not in this list. It may be older than the most recent 200.
+          </Notice>
         </Panel>
       ) : null}
 
@@ -130,6 +142,10 @@ export function RecordScreen<T extends { id: string; status: string; createdAt: 
                     return (
                       <tr
                         key={row.id}
+                        ref={(node) => {
+                          if (node) rowRefs.current.set(row.id, node);
+                          else rowRefs.current.delete(row.id);
+                        }}
                         onClick={() => setSelectedId(row.id)}
                         tabIndex={0}
                         onKeyDown={(e) => {

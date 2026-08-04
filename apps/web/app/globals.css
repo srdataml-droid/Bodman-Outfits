@@ -99,6 +99,106 @@ button {
 }
 
 /*
+ * Staggered heading reveal. See components/stagger-text.tsx.
+ *
+ * Same easing and duration as [data-reveal], so a staggered heading and the
+ * block reveals around it read as one motion vocabulary rather than two.
+ *
+ * One span per word, and `display: inline-block` because a transform does
+ * nothing to a plain inline box. The spaces between words are text nodes
+ * BETWEEN these spans rather than inside them: whitespace at the end of an
+ * inline-block is trimmed, which is exactly how the words ran together on
+ * first attempt. See the component for the full note.
+ *
+ * Hidden state lives inside `no-preference`, exactly like [data-reveal], so
+ * a reduced-motion reader never has a hidden state to recover from. The
+ * component also stops splitting entirely in that case, so this is a second
+ * line of defence rather than the only one.
+ */
+[data-stagger-word] {
+  display: inline-block;
+  transition:
+    opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-stagger="hidden"] [data-stagger-word] {
+    opacity: 0;
+    /* em, not px, so the rise scales with the heading it belongs to. */
+    transform: translateY(0.4em);
+  }
+}
+
+/*
+ * Process clips: depth by inner parallax, not by rotation.
+ *
+ * The layer holding the poster and the clip is scaled slightly larger than
+ * its frame and slid a few percent against the scroll, so the image travels
+ * at a different rate than the crop that holds it. That is the one depth cue
+ * that is honest about this footage: nothing about the image geometry is
+ * altered. Tilting the frame in CSS perspective was considered and rejected
+ * — a video already carries the camera's perspective, and adding a second
+ * one skews the garment's vertical lines and makes the shot read as a photo
+ * print being tilted. See decisions.md for the full comparison.
+ *
+ * Driven entirely by `animation-timeline: view()`, so there is no scroll
+ * listener, no library, and the work happens off the main thread.
+ *
+ * Two gates, both of which fail to the same place — the static crop that
+ * shipped before this existed:
+ *   1. prefers-reduced-motion: the rule is never declared, so the fallback
+ *      is genuinely static rather than a slowed-down version of the effect.
+ *   2. @supports: Firefox stable still has scroll-driven animations behind a
+ *      flag, so those readers simply see the clip without the drift.
+ *
+ * `scale` is set as its own property rather than inside the keyframes, so the
+ * frame is only over-cropped when the animation is actually going to run.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /*
+     * The timeline is NAMED on the frame rather than an anonymous `view()` on
+     * the layer, and that is load-bearing. Measured in Chrome 150, scrolled to
+     * the same position, on the same element:
+     *
+     *   anonymous view()  ->  progress 0.381, computed transform: none
+     *   named --process-stage -> progress 0.381, transform: matrix(...,-9.64)
+     *
+     * Same progress, but only the named form actually applies. The likely
+     * reason is that an anonymous `view()` makes the layer itself the subject,
+     * and the layer is `position: absolute` inside an `overflow: hidden`
+     * frame; naming the timeline on the frame makes the frame the subject,
+     * which is also the box we actually want to track. That explanation is
+     * inferred, not proven. The measurement is the reason for the choice.
+     */
+    .process-stage-frame {
+      view-timeline-name: --process-stage;
+    }
+
+    .process-parallax {
+      scale: 1.16;
+      animation: process-parallax linear both;
+      /* Must come after the shorthand: `animation` resets this to `auto`. */
+      animation-timeline: --process-stage;
+    }
+  }
+}
+
+/*
+ * ±6% of a layer scaled to 1.16 stays inside the 8% of overflow that scale
+ * creates on each edge, so the frame never shows through at either end.
+ */
+@keyframes process-parallax {
+  from {
+    transform: translate3d(0, -6%, 0);
+  }
+  to {
+    transform: translate3d(0, 6%, 0);
+  }
+}
+
+/*
  * Garment hover: flat cloth resolving into the garment on a form.
  * A crossfade only, with a very slight settle on the incoming image. No
  * scale bounce, no rotation. 420ms is slower than a UI micro-interaction on

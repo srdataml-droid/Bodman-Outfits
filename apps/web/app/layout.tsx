@@ -29,10 +29,18 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="en">
       <head>
         {/* Without JavaScript nothing would ever reveal scroll-revealed
-            content, so force it visible rather than leaving it hidden. */}
+            content, so force it visible rather than leaving it hidden. This
+            covers staggered headings too: they are server-rendered already
+            split and already marked hidden, so without this rule a no-JS
+            reader would get a page whose main headings never appear. */}
         <noscript>
           {/* eslint-disable-next-line react/no-danger */}
-          <style dangerouslySetInnerHTML={{ __html: '[data-reveal]{opacity:1!important;transform:none!important}' }} />
+          <style
+            dangerouslySetInnerHTML={{
+              __html:
+                "[data-reveal]{opacity:1!important;transform:none!important}[data-stagger-word]{opacity:1!important;transform:none!important}",
+            }}
+          />
         </noscript>
       </head>
       <body>

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import type {
   CreateCustomRequestDto,
@@ -26,7 +27,10 @@ interface Row {
 
 @Injectable()
 export class CustomRequestsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async create(input: CreateCustomRequestDto): Promise<CustomRequestReceiptDto> {
     const created = await this.prisma.publicDb.customRequest.create({
@@ -41,6 +45,19 @@ export class CustomRequestsService {
       // holds. Returning every column would fail with a permission error.
       select: { id: true, status: true },
     });
+    // Not awaited, and never able to reject. See NotificationsService.
+    void this.notifications.notifyNewSubmission({
+      kind: "custom-request",
+      recordId: created.id,
+      customerName: input.name,
+      details: [
+        ["Category", input.category ?? "not specified"],
+        ["Email", input.email],
+        ["Phone", input.phone ?? "not given"],
+        ["Description", input.description],
+      ],
+    });
+
     return { id: created.id, status: created.status };
   }
 

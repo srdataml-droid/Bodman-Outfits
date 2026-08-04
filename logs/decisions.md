@@ -1313,3 +1313,341 @@ scrolling started.
 slowly through the six stages, and confirm requests arrive one at a time.
 Everything structural is in place for that to be true; what could not be done
 here is watch it happen cleanly.
+
+## 2026-08-04 — Depth/motion on the process clips: full option comparison (research only, not yet implemented)
+
+Asked to research the real range of options for adding depth/motion to the six
+process clips before writing any code. No implementation has been done; this
+entry records the comparison and the recommendation awaiting go-ahead.
+
+### The six options, measured against this project
+
+| Option | What it actually produces | Cost | Fit here |
+|---|---|---|---|
+| **Native CSS scroll-driven animations** (`animation-timeline: scroll()` / `view()`) | Any transform scrubbed against scroll or element-visibility progress: inner parallax, scale, opacity, and 3D transforms too. Runs **off the main thread**. | **0 bytes.** No runtime, no hydration, no scroll listener. | Chrome/Edge 115+, Safari 26+. **Firefox stable still has it behind `layout.css.scroll-driven-animations.enabled` as of FF 152 (June 2026)**; it is an Interop 2026 priority. ~82% global. Not Baseline. Degrades to *nothing happens*, which for a garnish is the correct failure. `@media (prefers-reduced-motion: no-preference)` wrapping gives a real static fallback with zero extra logic. |
+| **CSS 3D transforms** (`perspective`, `rotateX/Y/Z`, `translateZ`, `preserve-3d`) | Genuine perspective projection of a flat plane. True 3D *space*, but the content stays a flat rectangle in it. | 0 bytes. | Universal support, years of Baseline. But it is only a *vocabulary* — something still has to drive it over scroll (a scroll-driven timeline, or JS). A static tilt with no driver reads as decoration for its own sake. |
+| **Framer Motion / Motion** (`useScroll` + `useTransform`) | Same visual range as the above, driven by JS motion values that bypass React re-render. | ~30 kB gz full; ~15 kB with `LazyMotion`; the 4.6 kB figure requires `m` + a feature bundle that `useScroll`/`useTransform` largely negate. Main-thread rAF. | Ergonomic and `useReducedMotion` is built in. But it buys API convenience over ~15 lines of CSS, and this app currently ships **zero runtime dependencies beyond Next/React**. |
+| **GSAP + ScrollTrigger** | The most control: scrub, pin, snap, timelines, 3D. Industry standard. | ~22–23 kB gz core + ~12 kB ScrollTrigger ≈ **34 kB gz**. Now fully free including ScrollTrigger. | Nominated by the frontend skill and already declined once for ScrollReveal (see 2026-08-02 entry). Nothing about "make the clips feel like they have depth" needs pinning or timeline sequencing. Declining it again is consistent, not a new deviation. |
+| **React Three Fiber / Three.js** | True WebGL. For *video* it means a `VideoTexture` on a mesh — a flat plane in a real 3D scene. Actual dimensionality would need depth maps or displacement, which on live footage of a person and cloth produces melting/smearing artefacts. | **~150 kB+ gz** for three alone, plus R3F; three does not tree-shake well. Plus a GL context and decode→texture upload per clip, times six. | Wrong on every axis: weight, the "no tech demo" standard, mobile GPU/battery, and it does not even deliver more than CSS does for this content. Strong no. |
+| **IntersectionObserver + manual transform** (what exists) | Discrete state changes at threshold crossings — reveal, play/pause. Scrubbing requires adding a rAF scroll handler. | 0 bytes; already written. | Already load-bearing here and correct for what it does. Extending it to per-frame scrub means main-thread scroll work on mobile, which is exactly the jank the native timelines exist to avoid. |
+
+### The honest finding about "real 3D" on this specific footage
+
+A video frame is already a photographic projection: the camera lens has
+baked one perspective into the image. Rotating that rectangle in CSS
+perspective adds a *second, contradictory* projection on top. On abstract UI
+(cards, panels, text) that reads as depth, because those have no perspective
+of their own to contradict. On a mannequin shot it does the opposite — the
+garment's vertical seams and shoulder line skew, the eye reads "a photo
+print being tilted," and the flatness of the image becomes *more* obvious,
+not less. On the close-up craft shots (hands, needle, shears) it is worse:
+the shallow depth of field already implies a plane, and tilting it makes the
+blur fall in a direction the optics do not support.
+
+Rule of thumb from this: at ~2° the tilt is subliminal and pointless; by ~6°
+it visibly skews the garment and reads as a slide in a deck. There is no
+useful window in between.
+
+### Recommendation
+
+**No library.** Native CSS scroll-driven animations, and specifically
+**inner parallax, not rotation.**
+
+The video sits at ~110% scale inside its existing fixed 3/4 frame and
+translates a few percent on Y against scroll, scrubbed by `view()`. That
+produces depth through the one cue that is honest about this content:
+content moving at a different rate than the frame that crops it — the same
+reason a window in a moving train reads as depth. Nothing about the image
+geometry is altered. No shear, no second perspective, no distortion of the
+garment. Optionally a 1.06 → 1.00 settle as the stage centres.
+
+Cost: zero bytes, zero main-thread work, no new dependency, ~15 lines of
+CSS plus one class in `process-stage-video.tsx`. Firefox users see the
+current static crop until the flag flips; that is an absent garnish, not a
+broken page. Reduced motion is a `@media (prefers-reduced-motion:
+no-preference)` wrapper — the animation is never declared, so the fallback
+is the genuinely static poster/clip already shipping, not a slowed-down
+version of the effect.
+
+Identical on mobile and desktop; nothing hover-dependent.
+
+### Known implementation hazards, recorded now so they are not rediscovered
+
+- The frame is `overflow-hidden rounded-2xl`. iOS Safari has a long-standing
+  bug where a transformed/composited child escapes a rounded ancestor's
+  clip. Needs a mask or an isolation layer, verified on real iOS.
+- The stage frame is `aspect-[3/4]` — on a phone it is close to viewport
+  height, which compresses `view()` progress badly. Needs an explicit
+  `animation-range` rather than the default cover range.
+- The parallax must animate a node *inside* the frame, not the `<li>`.
+  `ScrollReveal` already transitions `transform` on the `<li>`; animating
+  the same property on the same node would clobber the reveal.
+- The `<video>` is opacity-cross-faded on `canplay`. The parallax has to
+  apply to both the poster `<Image>` and the video, or the two will drift
+  apart during that fade.
+
+**Status: approved and implemented, same day.**
+
+### What was built
+
+`.process-parallax` in `apps/web/app/globals.css`: `scale: 1.12` plus a
+`translate3d(0, -4%, 0)` → `translate3d(0, 4%, 0)` keyframe on
+`animation-timeline: view()`. ±4% of a 1.12 layer stays inside the 6% of
+overflow the scale creates per edge, so the frame never shows through.
+Double-gated by `prefers-reduced-motion: no-preference` and
+`@supports (animation-timeline: view())`; both gates fail to the same static
+crop that shipped before.
+
+In `process-stage-video.tsx` the poster and the clip were moved into **one
+shared parallax layer** rather than being animated separately, so they cannot
+drift apart during the `canplay` cross-fade — the one moment both are
+visible. The `<li>` transform used by `ScrollReveal` is untouched. The frame
+gained `[mask-image:radial-gradient(white,black)]` for the iOS Safari bug
+where a composited child escapes a rounded ancestor's overflow clip.
+
+No dependency added; `apps/web` still ships only Next and React. Typecheck
+and `next build` both clean.
+
+**Not verified here:** the effect on a real Chrome/Safari scroll, and the iOS
+corner clip on real hardware. Both need a human look.
+
+## 2026-08-04 — Parallax: a wrong diagnosis, corrected, and what is actually verified
+
+Owner reported seeing no effect at all. Debugging in the automated Chrome
+context produced **two false conclusions before a true one**, recorded here
+because the failure mode will recur.
+
+**False conclusion 1: "`overflow: hidden` makes the frame a scroll container,
+so `view()` resolved against a box that never scrolls."** Plausible, and a
+real gotcha in general, but *not what was happening here*. It was asserted
+from readings of an element roughly 4600px below the fold, because
+`scrollIntoView()` and `window.scrollTo()` are **silently no-ops** in this
+harness: `scrollTop` stayed 0 throughout. Every "progress: null, transform:
+none" reading simply meant "element is off screen".
+
+A/B once real scrolling worked: `overflow: hidden` on the section, on the
+frame, or on neither gave **identical progress (0.381)**. The `overflow-clip`
+change was reverted. It fixed nothing.
+
+**False conclusion 2:** mid-session readings after several rapid edits (all
+six stages reporting progress 1, transform none) were **HMR-corrupted state**,
+not real. Only readings taken after a full reload are trustworthy here.
+
+**What is actually true.** Real wheel scroll works where programmatic scroll
+does not. On a clean load, scrolled to the process section, all six stages
+scrub with distinct per-stage progress and live transforms.
+
+The **named** timeline is kept over an anonymous `view()` on measurement, not
+theory: same element, same scroll position, anonymous `view()` gave progress
+0.381 with computed `transform: none`, while `view-timeline-name` on the
+frame gave progress 0.381 with `matrix(..., -9.64)`. The mechanism is
+inferred in the CSS comment and labelled as inferred.
+
+Amplitude raised from scale 1.12 / ±4% to **scale 1.16 / ±6%**, since the
+original was tuned to be nearly subliminal and the owner could not see it.
+
+**Not certified:** per-stage timing. Readings were inconsistent across runs in
+this harness. Needs a human eye on a normal browser. Also still unknown
+whether the owner is on Firefox, where the feature is flag-gated and the
+effect is correctly absent.
+
+---
+
+## 2026-08-04 — FAQ: prices published, "policies pending" framing removed
+
+**Owner instruction:** stop telling customers policies are still being made
+(the admin app is where policies get written), and do not discourage
+customers, because pricing *is* available.
+
+**Prices, given by the owner, in Naira:** Kaftan 25,000; Suits 70,000;
+Agbada 70,000; Casuals from 90,000; Corporate 120,000. These map one-to-one
+onto the five catalogue lines in `apps/web/lib/garments.ts`.
+
+Only Casuals was quoted as "upwards", so only Casuals reads "from". **Flagged
+for confirmation:** whether the other four are starting figures too, and
+whether Casuals at 90,000 really exceeds Suits at 70,000, which is unusual
+enough to be worth a second look.
+
+`apps/web/app/faq/page.tsx`: the grey "some answers are pending" notice is
+replaced by a "What it costs" list, ordered lowest first so it opens on the
+most approachable number, followed by a line that the final figure moves with
+cloth and detail. Subtitle now reads "How we work, what it costs, and how to
+begin."
+
+`prisma/seed.ts`: the deposit answer and the alterations answer dropped the
+"still being settled" framing. **Neither gained a fact** — no deposit amount,
+no payment method, no alterations guarantee. They point at a conversation
+instead of announcing an unfinished policy.
+
+**Not published.** The seed rewrite does not touch the live database, whose
+`Faq` rows were written on 2026-08-02. The two old answers are still live as
+written. Fixing that is either an owner edit in the admin app, which is what
+the owner pointed at, or an approved database write. Not run.
+
+## 2026-08-04 — Pricing: one source, and a unit qualifier that cannot be dropped
+
+**Checked before building, as instructed.** There was no per-category pricing
+model to reuse. `ShopSettings` carries a single free-text `pricingNote` and a
+`depositPercentage`; the five catalogue lines are not in the database at all,
+they are `apps/web/lib/garments.ts`. So the prices went onto the existing
+`Category` type in that file rather than into a new model or a stretched
+singleton. `pricingNote` was left alone; it is still unrendered publicly.
+
+**The decision that shaped everything else:** the item/outfit distinction is
+modelled as data (`PriceUnit`), not written into prose at each call site.
+Casuals at 90,000 sits directly beside Suits at 70,000 in the carousel and on
+the catalogue index, and a bare figure there invites a customer to read
+90,000 as the price of one shirt. Three formatters exist so a call site
+cannot get this wrong: `formatStartingPrice` always prefixes "From",
+`priceUnitLabel` gives the short qualifier for dense layouts, and
+`priceUnitDetail` gives the full "shirt and trousers together, not either
+piece on its own" for pages where someone is actually deciding.
+
+The riskiest surface is `/catalogue/casuals` and `/catalogue/corporate`,
+where the outfit price is followed by a grid of individually named pieces
+("Casual Shirt", "Casual Trousers"). That grid reads exactly like per-item
+pricing, so it gets an explicit contradiction above it. The single item pages
+get the same treatment for the same reason.
+
+**Deliberately not built:** any quantity discount logic. The copy says
+pricing is negotiable on larger orders and names no structure, because none
+has been decided.
+
+**Also fixed:** the FAQ price list added earlier the same day kept its own
+hand-written copy of the five figures and had already drifted, marking only
+Casuals as a starting price. It now sorts a view of the shared data.
+
+**Verified** against built HTML across all five category pages, both listing
+pages, the item pages and the FAQ: every naira figure is preceded by "From",
+and a search for a bare figure returns nothing.
+
+---
+
+## 2026-08-04 — Resend notifications: the failure path is the feature
+
+**Fire-and-forget, enforced in the service rather than at the call site.**
+`NotificationsService.notifyNewSubmission` never throws and never rejects:
+every path ends in a log line and a resolved promise. That contract is what
+makes `void this.notifications.notifyNewSubmission(...)` safe in the three
+services instead of an unhandled rejection waiting to happen.
+
+**A subtlety worth recording:** the Resend SDK reports API-level failures in
+`result.error` rather than by throwing, so a try/catch alone would have
+treated an expired key or an unverified sender as a successful send. Both the
+returned-error branch and the thrown-error branch are handled.
+
+**Email content is built from the submitted DTO, not re-read from the row.**
+All three create paths write through `publicDb`, whose role holds a
+column-level SELECT grant on `id` and `status` only. Re-reading the record
+would have meant a second query on the elevated `adminDb` connection purely
+to populate a notification, which is a privilege escalation for no gain.
+
+**Recipient: `NOTIFICATION_EMAIL`, not `ADMIN_BOOTSTRAP_EMAIL`.** The task
+left this to judgement. Starting the API revealed the answer rather than
+settling it by taste: **`ADMIN_BOOTSTRAP_EMAIL` is not present in the API's
+runtime environment at all**, so building on it would have meant
+notifications that silently never send. It is kept as a fallback because it
+costs nothing, but it is not the mechanism.
+
+**Deep links** go to `/admin/<list>?focus=<id>`. There are no per-record
+admin routes and inventing three of them was well beyond the ask, so the
+existing list/detail screens learned to read the parameter, select that row
+and scroll to it. Extracted to `useFocusParam` once there were two call sites
+(the shared `RecordScreen`, and the bespoke custom-requests page). It is
+one-shot on purpose: a deep link that re-selected its record on every refresh
+would fight an admin who clicked something else.
+
+`window.location.search` rather than `useSearchParams`, because the admin
+screens are statically prerendered and the router hook would force a Suspense
+boundary on every page that used it.
+
+### Verified, and what was not
+
+**Verified end to end:** with a deliberately broken `RESEND_API_KEY`, a
+`POST /api/enquiries` returned **HTTP 201**, the row was created
+(`cmsef1n6d0000npijcfq1kxwa`), and the service logged
+`application_error: Unable to fetch data` without touching the response. That
+is the guarantee the task actually cared about, and it holds.
+
+**NOT verified: that an email arrives.** No send was ever attempted, because
+there is no recipient configured and `ADMIN_BOOTSTRAP_EMAIL` is absent. The
+address was not guessed. `NOTIFICATION_FROM` is also unset, so the sender
+would currently be Resend's shared test address, which only delivers to the
+Resend account owner. Both need setting before this works.
+
+**A test row was created in the production database** to run the above. Id
+and name recorded in project-status.md so it can be deleted.
+
+**Process note:** an API was already listening on :4000. A broad `pkill`
+was used at one point which could have caught it; it did not, confirmed by
+PID and parent before continuing. Later cleanup targeted PIDs directly. The
+lesson is the obvious one: no pattern-matched kills on a machine running the
+owner's own server.
+
+---
+
+## 2026-08-04 — Staggered headings: four, not everywhere
+
+Applied to exactly four headings: the hero, the signature-garments heading,
+the process heading, and the closing call to action. **Not** applied to the
+six process stage titles, which was tempting and would have been wrong:
+repeating the effect six times down one column turns a considered detail into
+a tic. Not applied to body copy or FAQ answers either, per the brief.
+
+45ms between words. A seven-word heading finishes in about a third of a
+second, which reads as the line settling rather than as an intro sequence.
+
+**The screen reader guard is explicit, not hopeful.** Splitting a sentence
+into per-word elements can make assistive tech announce it in fragments. The
+container carries `aria-label` with the whole original string and every word
+span is `aria-hidden`, so assistive tech reads the sentence and never sees
+the split. Verified in built HTML: all four headings expose the full sentence
+as their accessible name, across 29 aria-hidden word spans.
+
+**Reduced motion returns the plain string in a plain element** with no spans,
+no observer and no transition. The fallback is the real text, not a stilled
+version of the effect.
+
+**A bug caught during verification and fixed:** the split markup is
+server-rendered already marked hidden, so with JavaScript disabled the
+headings would have stayed at opacity 0 permanently. The existing `<noscript>`
+rule covered `[data-reveal]` only; it now covers `[data-stagger-inner]` too.
+Confirmed present in the built HTML.
+
+**Not verified:** how the stagger actually feels at normal scroll speed. That
+is a judgement call needing a human eye, and the automated browser context
+in this session has already proved unreliable for scroll behaviour.
+
+## 2026-08-04 — Stagger spacing bug, and extending the motion sitewide
+
+**The bug, and it was mine.** The first staggered headings rendered as
+`Clothcutfortheperson,notthemarket.` The space between words was a child of
+the word's wrapper span, and that span is `display: inline-block` so it can
+be transformed. **Whitespace at the end of an inline-block is trimmed**, so
+every space vanished. Fixed by making the space a SIBLING of the word span
+rather than a child, where it is ordinary inline whitespace: it renders at
+the font's natural width and the line still wraps between words, which
+`&nbsp;` would have broken. The two nested spans collapsed into one at the
+same time, since the outer one existed only to hold that space.
+
+**Extended on request.** `StaggerText` now also drives the h1 on catalogue,
+category, item, FAQ, about, contact and appointment. Verified in built HTML
+that each exposes its full sentence as the accessible name, including the
+dynamic ones (`Casuals`, `Casual Shirt`).
+
+**The garment grids were the real find.** Every page except home used
+`catalogue-enter`, a **load-time** CSS animation with a staggered
+`animationDelay`. That looks like a scroll effect on the first screen and is
+nothing of the sort: cards below the fold finish animating before the reader
+ever reaches them, so scrolling revealed already-settled content. The
+category cards on `/catalogue` and the garment cards on
+`/catalogue/[category]` now use `ScrollReveal` instead, so the clothes
+actually arrange as you scroll.
+
+Stagger resets per row (`index % 2` on the two-column index, `index % 3` on
+the three-column grid) rather than accumulating down the list, so a long line
+never ends on a card that waits most of a second to appear.
+
+Page headers deliberately keep `catalogue-enter`: they are above the fold,
+where a load-time entrance is the correct behaviour and a scroll trigger
+would do nothing.

@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
+import { ScrollReveal } from "../../../components/scroll-reveal";
+import { StaggerText } from "../../../components/stagger-text";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GarmentFigure } from "../../../components/garment-figure";
 import { SiteFooter } from "../../../components/site-footer";
 import { SiteHeader } from "../../../components/site-header";
-import { categories, getCategory, getGarmentsByCategory } from "../../../lib/garments";
+import {
+  categories,
+  formatStartingPrice,
+  getCategory,
+  getGarmentsByCategory,
+  priceUnitDetail,
+  PRICING_QUALIFIER,
+} from "../../../lib/garments";
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
@@ -44,12 +53,30 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
             >
               ← THE CATALOGUE
             </Link>
-            <h1 className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl">
-              {category.name}
-            </h1>
+            <StaggerText
+              as="h1"
+              text={category.name}
+              className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl"
+            />
             <p className="mt-7 max-w-xl text-lg leading-8 text-[var(--muted-ink)] md:text-[22px] md:leading-9">
               {category.description}
             </p>
+
+            {/* The price block. On casuals and corporate this is the one place
+                a customer can be told, in full, that the figure buys shirt AND
+                trousers together. `priceUnitDetail` spells that out rather
+                than relying on the word "outfit" carrying it. */}
+            <div className="mt-8 border-l-2 border-[var(--copper)] pl-5">
+              <p className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)] md:text-3xl">
+                {formatStartingPrice(category.price)}
+              </p>
+              <p className="mt-2 max-w-md text-base leading-7 text-[var(--muted-ink)]">
+                {priceUnitDetail(category.price)}.
+              </p>
+              <p className="mt-3 max-w-md text-sm leading-6 text-[var(--muted-ink)]">
+                {PRICING_QUALIFIER}
+              </p>
+            </div>
           </header>
 
           <section aria-labelledby="category-garments" className="mt-20 md:mt-28">
@@ -67,12 +94,31 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
                 note and we&apos;ll talk through what you have in mind.
               </p>
             ) : null}
+
+            {/* The riskiest spot on the whole site for a pricing
+                misunderstanding: below this line the outfit-priced lines
+                break into individually named pieces ("Casual Shirt",
+                "Casual Trousers"), which reads exactly like per-item pricing
+                unless it is contradicted here. */}
+            {category.price.unit === "outfit" && garments.length > 0 ? (
+              <p className="mb-10 max-w-xl rounded-xl bg-[#e8ebea] px-5 py-4 text-base leading-7 text-[var(--everglade)]">
+                The pieces below are shown separately so you can see the cut, but{" "}
+                {category.name.toLowerCase()} is priced as a complete outfit:{" "}
+                <span className="font-medium">{formatStartingPrice(category.price)}</span> covers the
+                shirt and the trousers together, not either one on its own.
+              </p>
+            ) : null}
+
             <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
               {garments.map((garment, index) => (
-                <article
+                // Staggered across the row rather than across the whole
+                // list: the delay resets every three cards so a long line
+                // never ends with a card that waits most of a second.
+                <ScrollReveal
+                  as="article"
                   key={garment.slug}
-                  className="group animate-[catalogue-enter_700ms_cubic-bezier(0.16,1,0.3,1)_both]"
-                  style={{ animationDelay: `${index * 90}ms` }}
+                  delayMs={(index % 3) * 70}
+                  className="group"
                 >
                   <Link
                     href={`/catalogue/${category.slug}/${garment.slug}`}
@@ -91,7 +137,7 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
                       </span>
                     </div>
                   </Link>
-                </article>
+                </ScrollReveal>
               ))}
             </div>
           </section>

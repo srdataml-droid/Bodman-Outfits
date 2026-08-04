@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { categories } from "../lib/garments";
+import { categories, formatStartingPrice, priceUnitLabel } from "../lib/garments";
 
 /**
  * How long each slide is held before advancing.
@@ -118,7 +118,10 @@ export function CategoryCarousel(): React.ReactElement {
               href={`/catalogue/${category.slug}`}
               aria-hidden={!isActive}
               tabIndex={isActive ? 0 : -1}
-              aria-label={`${category.name}. ${category.tagline}. View the ${category.name} line.`}
+              // The price is in the accessible name too. A sighted user reads
+              // it off the slide, so a screen reader user must get it from the
+              // link rather than have to open the page to find out.
+              aria-label={`${category.name}. ${category.tagline}. ${formatStartingPrice(category.price)} ${priceUnitLabel(category.price)}. View the ${category.name} line.`}
               className={`absolute inset-0 block transition-opacity duration-500 ease-out focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-[var(--copper)] ${
                 isActive ? "opacity-100" : "pointer-events-none opacity-0"
               }`}
@@ -143,6 +146,15 @@ export function CategoryCarousel(): React.ReactElement {
                 </span>
                 <span className="mt-1.5 block text-sm text-[rgb(255_255_255_/_82%)]">
                   {category.tagline}
+                </span>
+                {/* Unit qualifier travels with the figure, never without it.
+                    Casuals and corporate are outfit-priced and sit in the same
+                    rotation as the item-priced lines. */}
+                <span className="mt-3 block text-sm font-medium text-white">
+                  {formatStartingPrice(category.price)}{" "}
+                  <span className="font-normal text-[rgb(255_255_255_/_72%)]">
+                    {priceUnitLabel(category.price)}
+                  </span>
                 </span>
               </span>
             </Link>

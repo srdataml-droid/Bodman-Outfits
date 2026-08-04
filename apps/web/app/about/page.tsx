@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { StaggerText } from "../../components/stagger-text";
 import Image from "next/image";
 import Link from "next/link";
 import { SiteFooter } from "../../components/site-footer";
@@ -35,9 +36,11 @@ export default function AboutPage(): React.ReactElement {
         <section className="mx-auto max-w-[1280px] px-5 pb-20 pt-16 md:px-16 md:pb-28 md:pt-28">
           <div className="mx-auto max-w-2xl text-center animate-[catalogue-enter_700ms_cubic-bezier(0.16,1,0.3,1)_both]">
             <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">THE HOUSE</p>
-            <h1 className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl">
-              Built on patience, not shortcuts.
-            </h1>
+            <StaggerText
+              as="h1"
+              text="Built on patience, not shortcuts."
+              className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.04] tracking-[-0.03em] text-[var(--everglade)] md:text-7xl"
+            />
             <p className="mt-7 text-lg leading-8 text-[var(--muted-ink)] md:text-[22px] md:leading-9">
               A Lagos house working in menswear. Suits, agbada, kaftans, casuals and corporate pieces, all cut
               for the person wearing them rather than assembled for the market.

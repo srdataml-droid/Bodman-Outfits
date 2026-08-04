@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProcessStageVideo } from "./process-stage-video";
 import { processStages } from "../lib/process";
 import { ScrollReveal } from "./scroll-reveal";
+import { StaggerText } from "./stagger-text";
 
 /**
  * The home page's primary storytelling section: how a garment is made,
@@ -31,9 +32,14 @@ export function ProcessNarrative(): React.ReactElement {
       <div className="mx-auto max-w-[1080px]">
         <ScrollReveal className="max-w-2xl">
           <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">THE MAKING</p>
-          <h2 className="mt-5 font-[Fraunces] text-4xl font-medium leading-[1.08] tracking-[-0.025em] text-[var(--everglade)] md:text-[56px]">
-            Six stages, one garment, one person.
-          </h2>
+          {/* The one heading here that earns the stagger. The six stage
+              titles below deliberately do not use it: repeating the effect
+              six times down a single column would turn a considered detail
+              into a tic. */}
+          <StaggerText
+            text="Six stages, one garment, one person."
+            className="mt-5 font-[Fraunces] text-4xl font-medium leading-[1.08] tracking-[-0.025em] text-[var(--everglade)] md:text-[56px]"
+          />
           <p className="mt-6 text-lg leading-8 text-[var(--muted-ink)]">
             Nothing here is rushed and nothing is skipped. This is the order the work happens in.
           </p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StaggerText } from "../components/stagger-text";
 import { CategoryCarousel } from "../components/category-carousel";
 import { GarmentFigure } from "../components/garment-figure";
 import { ProcessNarrative } from "../components/process-narrative";
@@ -17,9 +18,11 @@ export default function HomePage(): React.ReactElement {
             <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">
               BESPOKE TAILORING · LAGOS
             </p>
-            <h1 className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.02] tracking-[-0.035em] text-[var(--everglade)] md:text-7xl">
-              Cloth cut for the person, not the market.
-            </h1>
+            <StaggerText
+              as="h1"
+              text="Cloth cut for the person, not the market."
+              className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.02] tracking-[-0.035em] text-[var(--everglade)] md:text-7xl"
+            />
             <p className="mt-7 max-w-xl text-lg leading-8 text-[var(--muted-ink)] md:text-[22px] md:leading-9">
               Bespoke tailoring from Lagos. We measure once, cut once, and build garments that fit your life.
             </p>
@@ -47,9 +50,10 @@ export default function HomePage(): React.ReactElement {
           <div className="mx-auto max-w-[1280px]">
             <div className="mx-auto max-w-xl text-center">
               <p className="text-sm font-medium tracking-[0.14em] text-[var(--copper)]">SIGNATURE GARMENTS</p>
-              <h2 className="mt-5 font-[Fraunces] text-4xl font-medium leading-tight tracking-[-0.025em] text-[var(--everglade)] md:text-5xl">
-                A selection from the house, cut for a single person.
-              </h2>
+              <StaggerText
+                text="A selection from the house, cut for a single person."
+                className="mt-5 font-[Fraunces] text-4xl font-medium leading-tight tracking-[-0.025em] text-[var(--everglade)] md:text-5xl"
+              />
             </div>
             <div className="mt-16 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((category, index) => (
@@ -81,9 +85,10 @@ export default function HomePage(): React.ReactElement {
 
         <section className="bg-[#e8ebea] px-5 py-24 text-center md:px-16 md:py-[120px]">
           <ScrollReveal className="mx-auto max-w-xl">
-            <h2 className="font-[Fraunces] text-4xl font-medium leading-tight tracking-[-0.025em] text-[var(--everglade)] md:text-5xl">
-              Ready for a perfect fit?
-            </h2>
+            <StaggerText
+              text="Ready for a perfect fit?"
+              className="font-[Fraunces] text-4xl font-medium leading-tight tracking-[-0.025em] text-[var(--everglade)] md:text-5xl"
+            />
             <p className="mt-6 text-lg leading-8 text-[var(--muted-ink)]">
               A person&apos;s clothes should never be a compromise. Come to the house and let us build something true.
             </p>

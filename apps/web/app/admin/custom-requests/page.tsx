@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useFocusParam } from "../../../components/admin/use-focus-param";
 import { adminApi, CUSTOM_REQUEST_STATUSES, type CustomRequest, type CustomRequestStatus } from "../../../lib/admin-api";
 import { useSessionAwareError } from "../../../components/admin/admin-shell";
 import { formatDateTime } from "../../../components/admin/record-screen";
@@ -40,6 +41,9 @@ export default function CustomRequestsPage(): React.ReactElement {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  // `?focus=<id>` deep link from the submission notification emails.
+  const { rowRefs, focusMissing } = useFocusParam(rows, setSelectedId);
 
   const selected = rows?.find((r) => r.id === selectedId) ?? null;
 
@@ -91,6 +95,12 @@ export default function CustomRequestsPage(): React.ReactElement {
 
       {error ? <Panel className="mb-4"><Notice tone="error">{error}</Notice></Panel> : null}
 
+      {focusMissing ? (
+        <Panel className="mb-4">
+          <Notice>The record from that link is not in this list. It may be older than the most recent 200.</Notice>
+        </Panel>
+      ) : null}
+
       <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr] lg:items-start">
         <Panel className="overflow-hidden">
           {rows === null ? (
@@ -111,6 +121,10 @@ export default function CustomRequestsPage(): React.ReactElement {
                   {rows.map((row) => (
                     <tr
                       key={row.id}
+                      ref={(node) => {
+                        if (node) rowRefs.current.set(row.id, node);
+                        else rowRefs.current.delete(row.id);
+                      }}
                       onClick={() => { setSelectedId(row.id); setShowDecline(false); setOrderMsg(null); }}
                       tabIndex={0}
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedId(row.id); } }}

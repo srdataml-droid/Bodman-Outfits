@@ -31,13 +31,73 @@ export interface GarmentImagePair {
   altOnForm: string;
 }
 
+/**
+ * What a starting price is actually charged against.
+ *
+ * This distinction is not cosmetic and must never be dropped from a price
+ * display. Suits, agbada and kaftan are priced per garment. Casuals and
+ * corporate are priced per COMPLETE OUTFIT, meaning shirt and trousers
+ * together, not either piece alone. The five lines sit next to each other on
+ * the catalogue index and in the hero carousel, so a bare figure would invite
+ * a customer to read casuals at 90,000 as the price of one shirt.
+ */
+export type PriceUnit = "item" | "outfit";
+
+export interface CategoryPrice {
+  /**
+   * Naira. ALWAYS a minimum, never a fixed or final figure: the real price
+   * moves up with the specific piece and is negotiable on quantity. Anything
+   * rendering this must say "From", which is why `formatStartingPrice` below
+   * exists and why no component should format the number itself.
+   */
+  from: number;
+  unit: PriceUnit;
+}
+
 export interface Category {
   slug: CategorySlug;
   name: string;
   tagline: string;
   description: string;
+  /** Confirmed by the owner on 2026-08-04. See logs/decisions.md. */
+  price: CategoryPrice;
   images: GarmentImagePair;
 }
+
+/**
+ * The single place a naira figure becomes display text.
+ *
+ * Centralised so "From" can never be forgotten at a call site. Every one of
+ * the five prices is a starting point, so there is no variant of this that
+ * renders a bare amount.
+ */
+export function formatStartingPrice(price: CategoryPrice): string {
+  return `From ₦${price.from.toLocaleString("en-NG")}`;
+}
+
+/** Short qualifier, for use directly beside the figure. */
+export function priceUnitLabel(price: CategoryPrice): string {
+  return price.unit === "outfit" ? "per complete outfit" : "per item";
+}
+
+/**
+ * The unambiguous version, for the category pages where a customer is
+ * actually deciding. Spells out what an outfit contains rather than assuming
+ * "outfit" is self-explanatory.
+ */
+export function priceUnitDetail(price: CategoryPrice): string {
+  return price.unit === "outfit"
+    ? "for the complete outfit, shirt and trousers together, not either piece on its own"
+    : "per item";
+}
+
+/**
+ * Shown wherever a price is. Says prices move upward and are negotiable in
+ * quantity WITHOUT naming a discount structure, because no discount structure
+ * has been decided. Deliberately not a calculator.
+ */
+export const PRICING_QUALIFIER =
+  "Starting prices. The final figure depends on the piece, the cloth and the detail you choose, and is negotiable on larger orders.";
 
 export interface Garment {
   slug: string;
@@ -68,6 +128,7 @@ export const categories: Category[] = [
     name: "Suits",
     tagline: "Business, wedding & event",
     description: "Two- and three-piece suiting cut for the boardroom, the aisle, and everything between.",
+    price: { from: 70000, unit: "item" },
     images: placeholderPair("category-suits", "the suits line"),
   },
   {
@@ -75,6 +136,7 @@ export const categories: Category[] = [
     name: "Agbada",
     tagline: "Ceremonial & occasion",
     description: "Flowing, layered pieces for the occasions that ask for them.",
+    price: { from: 70000, unit: "item" },
     images: placeholderPair("category-agbada", "the agbada line"),
   },
   {
@@ -82,6 +144,7 @@ export const categories: Category[] = [
     name: "Kaftan",
     tagline: "Everyday & occasion",
     description: "Clean-lined kaftans, cut to move.",
+    price: { from: 25000, unit: "item" },
     images: placeholderPair("category-kaftan", "the kaftan line"),
   },
   {
@@ -89,6 +152,7 @@ export const categories: Category[] = [
     name: "Casuals",
     tagline: "Shirts & trousers",
     description: "Off-duty pieces that keep the same discipline of cut, just without the tie.",
+    price: { from: 90000, unit: "outfit" },
     images: placeholderPair("category-casuals", "the casuals line"),
   },
   {
@@ -96,6 +160,7 @@ export const categories: Category[] = [
     name: "Corporate",
     tagline: "Shirts & trousers",
     description: "Separates built for the working week. Mix, match, and repeat without the garment giving up on you.",
+    price: { from: 120000, unit: "outfit" },
     images: placeholderPair("category-corporate", "the corporate line"),
   },
 ];
