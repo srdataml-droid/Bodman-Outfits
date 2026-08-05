@@ -1,6 +1,8 @@
 # Project Status
 
-Last updated: 2026-08-04 (admin dashboard record corrected — nine screens exist and are listed below)
+Last updated: 2026-08-05 (shop details confirmed, published and verified on the
+rendered pages — see `docs/shop-details-rollout.md`; admin dashboard record
+corrected, nine screens listed below; direct connection on 5432 unreachable)
 
 This is a living snapshot of what's actually built and working, verified by
 reading the code — not aspirational. Update it whenever a feature moves
@@ -115,7 +117,7 @@ table in `logs/decisions.md`. Contract detail in `docs/api.md`,
 4. ~~No RLS anywhere.~~ Resolved 2026-08-03, and it was worse than recorded: `anon`/`authenticated` held full SELECT/INSERT/UPDATE/DELETE/TRUNCATE on **every** table including `Admin` password hashes, with PostgREST live on the public internet. Grants revoked, default privileges fixed so future migrations cannot re-grant, RLS enabled and forced, policies added. Verified with nine hostile probes as `anon`, all blocked. ~~**Remaining:** RLS does not constrain `apps/api` itself.~~ **Resolved 2026-08-03** — the two-role split is implemented. `apps/api` now connects as `atelier_api_public` for unauthenticated paths and `atelier_api_admin` for guarded ones; neither holds BYPASSRLS, so policies genuinely apply. Verified with 20 database probes, a 16-check API regression, and a deliberate miswiring test proving a misrouted admin read fails loudly with zero rows leaked.
 5. ~~Admin/AdminSession migration not yet applied to the real Supabase database.~~ Resolved 2026-08-02 — `prisma migrate deploy` applied `20260802210000_add_admin_auth` after explicit go-ahead. Verified `Admin`/`AdminSession` exist with 0 rows on the real database.
 6. ~~No admin account exists yet.~~ Resolved 2026-08-02 — real admin account created for `samuelirenikase@gmail.com`, credentials in the gitignored `docs/admin-access.local.md`. Auth verified end-to-end against the real database.
-7. **New:** `ShopSettings` still has **0 rows** on the real database, so `PUT /api/shop-settings` returns a bare 500 (`P2025`, no row to update) even when correctly authenticated, and `GET` returns 500 too. Seeding it is a business decision (which real shop details to publish) — see `docs/business-requirements.md` for which values are still unconfirmed. `Faq` is likewise empty (`GET /api/faqs` returns `[]`).
+7. ~~`ShopSettings` still has **0 rows**.~~ Resolved. The singleton row exists and is fully populated as of 2026-08-04; `GET` and `PUT` both work. `Faq` holds four rows.
 
 ## Home page / visual system (2026-08-02)
 
@@ -147,9 +149,15 @@ appointment or marking an enquiry replied **records your decision only — it
 does not notify the customer.** Both screens say so in their own description
 text. Contacting the customer is still manual.
 
-8. **Real shop details still unconfirmed** and therefore still empty in the
-   database: address, opening hours, phone, email, pricing note, deposit
-   percentage. These are business facts pending the owner, not bugs.
+8. ~~**Real shop details still unconfirmed**~~ Resolved 2026-08-04/05. The
+   owner confirmed address, opening hours, phone, email, WhatsApp, pricing
+   note and deposit percentage. All are stored, rendered and verified on the
+   rendered pages. Full record in `docs/shop-details-rollout.md`.
+
+   That work also fixed a real bug: the fields had **no public consumer at
+   all**. `/contact` carried hardcoded prose saying the address and hours
+   were "still being finalized", so no admin save could ever have shown up.
+   Nothing was wrong with the write path.
 9. ~~Contact enquiry form simulated.~~ Resolved 2026-08-02 — real
    `POST /api/enquiries`, built as its own entity. Contract in `docs/api.md`.
 10. ~~Unreferenced off-brand catalogue imagery.~~ Deleted 2026-08-02 (4.4 MB).
@@ -207,9 +215,11 @@ cards, `/catalogue/[category]` header, `/catalogue/[category]/[item]`, and
 the `/faq` price list. Verified against built HTML: every naira figure on
 every page is preceded by "From", and no bare figure exists anywhere.
 
-`ShopSettings.pricingNote` remains admin-editable and **is still not rendered
-anywhere on the public site**. Unchanged by this work, flagged as an
-opportunity rather than acted on.
+~~`ShopSettings.pricingNote` is still not rendered anywhere on the public
+site.~~ Resolved 2026-08-04 — it now renders under the FAQ price list. Note
+it overlaps with `PRICING_QUALIFIER` in `lib/garments.ts`, which already ends
+"and is negotiable on larger orders"; both are the owner's copy, but only
+`pricingNote` is editable without a deploy.
 
 ### Email notifications (built, partially verified)
 `apps/api/src/notifications/` sends a plain-text alert to the owner when an
@@ -232,6 +242,65 @@ headings: the hero, the signature-garments heading, the process heading and
 the closing call to action. Same IntersectionObserver geometry and failsafe
 as `ScrollReveal`, no new scroll system, no library.
 
+## Added 2026-08-05
+
+### Catalogue: casuals and corporate are one outfit each
+Reversed the earlier shirt/trouser split. `casual-shirt`/`casual-trousers` and
+`corporate-shirt`/`corporate-trousers` became `casual-full` ("Casual Outfit")
+and `corporate-full` ("Corporate Outfit"). The split contradicted the pricing:
+both lines are priced per COMPLETE OUTFIT, so listing a shirt alone under a
+₦90,000 line invited the exact misreading `priceUnitDetail` exists to prevent.
+
+The split lived **only** in `lib/garments.ts` — both category pages are
+data-driven via `getGarmentsByCategory` — so no page rebuild was needed. Copy
+on the category and item pages that described "the pieces below" was rewritten,
+since it now described a list that no longer exists.
+
+**Image consequence:** `casual-full-*` and `corporate-full-*` (4 files) do not
+exist yet. `shirt-*` and `trousers-*` are now orphaned. Full naming contract is
+in `docs/catalogue-images.md`.
+
+### Favorites (device-local)
+`lib/favorites.ts` (localStorage via `useSyncExternalStore`),
+`components/favorite-button.tsx`, `components/saved-list.tsx`, `/saved`, and a
+"Saved" nav entry. Keyed by `category/slug`, **not** a generated id, so
+favorites survive the later move of garments into the database.
+
+The device-only limitation is stated in the UI (`FAVORITES_SCOPE_NOTE`) on the
+saved page in both empty and populated states, because there is no account
+system and a customer would otherwise assume the list follows them.
+
+### Price → booking, never checkout
+Prices on the category and item pages are now links to
+`/appointment?category=…&garment=…`. **No payment trigger anywhere** — the real
+figure is only agreed after a fitting. Slugs are resolved against the catalogue
+**server-side** in `app/appointment/page.tsx`, so an unknown or hand-edited slug
+prefills nothing rather than echoing attacker-supplied text into the form.
+Verified: an injected `<script>` in the query produced 0 live script elements
+and an empty notes field.
+
+### FAQ
+New row `individual-pieces` (sortOrder 5): single shirts and trousers can still
+be made to order even though the catalogue lists outfits. Applied to both
+`prisma/seed.ts` and the live database.
+
+### Verified end-to-end
+Favorite toggle updates `aria-pressed` and the accessible name; two favorites
+persisted across a full reload; `/saved` rendered both with booking links
+carrying the garment; booking prefill selected the right category and filled
+the note; FAQ entry rendered. `apps/web` typechecks clean.
+
+### NOT built this session, and why
+- **Garment database model + admin CRUD.** Blocked: `prisma migrate` needs port
+  5432, which is unreachable. Garments remain in `lib/garments.ts`.
+- **Paystack payment flow.** Blocked: the only key in `.env` is
+  **`sk_live_`**, and the brief was explicit that all work happens against test
+  keys first. Nothing was built and the live key was never used. Needs an
+  `sk_test_` key.
+- **WhatsApp payment notification.** No WhatsApp API exists in this project (no
+  Business API token, no Twilio) — only Resend email. A real WhatsApp message
+  is not currently possible; a `wa.me` link inside an email is.
+
 ## Known blockers / open items (2026-08-04)
 
 1. **Notification recipient is unset.** Nothing will be emailed until
@@ -240,9 +309,29 @@ as `ScrollReveal`, no new scroll system, no library.
    domain is needed before production.
 3. **The success path of email sending is unverified.** The failure path is
    verified; a real send was never made because there is no recipient.
-4. **Two live FAQ rows still carry the old "policies pending" wording.** The
-   seed file was rewritten on 2026-08-04 but the database was not; the rows
-   written on 2026-08-02 are unchanged. Owner can edit them in the admin app.
-5. **A test enquiry row exists in the production database**, id
-   `cmsef1n6d0000npijcfq1kxwa`, name "Claude Test (delete me)". Created
-   deliberately to verify the notification failure path. Safe to delete.
+4. ~~**Two live FAQ rows still carry the old "policies pending" wording.**~~
+   Resolved 2026-08-04. `deposit-and-payment` and `alterations-policy` updated
+   in place to the seed wording, verified byte-exact against `prisma/seed.ts`.
+   Only `answer` had drifted; question, category and `sortOrder` already
+   matched. `updatedAt` was set explicitly, because it is `@updatedAt` in the
+   schema and therefore client-maintained — raw SQL does not touch it.
+
+   **Root cause, still present:** `prisma/seed.ts` upserts FAQs with
+   `update: {}`, so re-running the seed never corrects an existing row. The
+   seed can create the FAQ set but can never fix it. Editing the seed file
+   alone will silently do nothing to a populated database — change the rows
+   through `/admin/faqs` or SQL, or change the upsert.
+5. ~~**A test enquiry row exists in the production database.**~~ Deleted
+   2026-08-04 (`cmsef1n6d0000npijcfq1kxwa`, "Claude Test (delete me)"). It was
+   the only row in `Enquiry`; the table is now empty, which is correct — no
+   real customer enquiry has ever been submitted.
+6. **New: the direct database connection on port 5432 is unreachable.** The
+   pooler on **6543** works and served all of the above. `prisma migrate` and
+   anything using `directUrl` go to 5432 and currently fail with `P1001`; DNS
+   resolves and the TCP port accepts, so this is the database side, not the
+   network. **No migration can be applied until this is resolved.** Not
+   investigated further — flagged, not acted on.
+7. **Unreferenced home imagery still present.** The twelve
+   `apps/web/public/images/home/*.jpg` files (4.0 MB) remain unreferenced.
+   Deliberately left in place 2026-08-04 at the owner's instruction: flagged,
+   no urgency, do not delete without asking.

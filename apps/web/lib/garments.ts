@@ -165,23 +165,6 @@ export const categories: Category[] = [
   },
 ];
 
-// Shared placeholder imagery for shirts and trousers.
-//
-// OPEN QUESTION, flagged rather than guessed: only one shirt pair and one
-// trousers pair exist, and they are used for BOTH the casuals and corporate
-// lines. If a casual shirt and a corporate shirt are meant to be visually
-// distinct garments (different cloth, cut, formality) then this needs four
-// pairs, not two. That has to be settled before real photography, not after.
-// See logs/decisions.md.
-function sharedPair(kind: "shirt" | "trousers", subject: string): GarmentImagePair {
-  return {
-    flat: `/images/catalogue/${kind}-flat.png`,
-    onForm: `/images/catalogue/${kind}-on-form.png`,
-    altFlat: `Placeholder for a flat/detail photograph of ${subject}`,
-    altOnForm: `Placeholder for a photograph of ${subject} on the form`,
-  };
-}
-
 export const garments: Garment[] = [
   {
     slug: "navy-two-piece",
@@ -210,41 +193,38 @@ export const garments: Garment[] = [
       "An ivory wool-silk suit for the groom. Softly structured shoulders, finished with hand-stitched lapels.",
     images: placeholderPair("ivory-wedding-suit", "an ivory wedding suit"),
   },
-  // Casuals and Corporate are parent lines, each holding a shirt and a
-  // trouser. Descriptions stay deliberately general: the actual cloths and
-  // cuts that distinguish a casual shirt from a corporate one have not been
-  // confirmed, and inventing them here would be inventing product.
+  // Casuals and Corporate are each ONE complete outfit, not separate pieces.
+  //
+  // Confirmed 2026-08-05, reversing the earlier shirt/trouser split. The
+  // split actively contradicted the pricing: both lines are priced per
+  // COMPLETE OUTFIT (see PriceUnit above), so listing a shirt on its own
+  // under a 90,000 line invited exactly the misreading `priceUnitDetail`
+  // exists to prevent. One item per line removes the contradiction.
+  //
+  // This also settles the old open question about whether a casual shirt and
+  // a corporate shirt are visually distinct garments: they are no longer
+  // catalogued separately, so each line needs one image pair of its own
+  // rather than sharing a generic shirt and trouser pair between them.
+  //
+  // Individual pieces can still be made to order. The catalogue not listing
+  // them is not a statement that they are unavailable; the FAQ carries that.
   {
-    slug: "casual-shirt",
+    slug: "casual-full",
     category: "casuals",
-    name: "Casual Shirt",
+    name: "Casual Outfit",
     detail: "Casuals",
-    description: "A relaxed shirt cut with a little more room through the body, for days without a tie.",
-    images: sharedPair("shirt", "a casual shirt"),
+    description:
+      "Shirt and trousers cut as one relaxed outfit, keeping the same discipline of line as the tailoring, just without the tie.",
+    images: placeholderPair("casual-full", "a complete casual outfit, shirt and trousers together"),
   },
   {
-    slug: "casual-trousers",
-    category: "casuals",
-    name: "Casual Trousers",
-    detail: "Casuals",
-    description: "An easy trouser made to move between a Saturday errand and dinner out.",
-    images: sharedPair("trousers", "a pair of casual trousers"),
-  },
-  {
-    slug: "corporate-shirt",
+    slug: "corporate-full",
     category: "corporate",
-    name: "Corporate Shirt",
+    name: "Corporate Outfit",
     detail: "Corporate",
-    description: "A made-to-measure shirt built to hold its shape through a long working day.",
-    images: sharedPair("shirt", "a corporate shirt"),
-  },
-  {
-    slug: "corporate-trousers",
-    category: "corporate",
-    name: "Corporate Trousers",
-    detail: "Corporate",
-    description: "A tailored trouser cut for a clean line from waist to break.",
-    images: sharedPair("trousers", "a pair of corporate trousers"),
+    description:
+      "Shirt and trousers built as one outfit for the working week, holding their line from the first wear to the hundredth.",
+    images: placeholderPair("corporate-full", "a complete corporate outfit, shirt and trousers together"),
   },
   // Agbada and kaftan have no individual pieces listed yet. Rather than
   // invent garment names and descriptions for lines nobody has described,

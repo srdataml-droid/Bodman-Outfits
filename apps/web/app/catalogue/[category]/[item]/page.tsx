@@ -3,6 +3,7 @@ import { StaggerText } from "../../../../components/stagger-text";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FavoriteButton } from "../../../../components/favorite-button";
 import { GarmentFigure } from "../../../../components/garment-figure";
 import { SiteFooter } from "../../../../components/site-footer";
 import { SiteHeader } from "../../../../components/site-header";
@@ -56,12 +57,20 @@ export default async function ItemPage({ params }: ItemPageProps): Promise<React
                 to see both states, and on touch there is no hover to reveal
                 the second one. */}
             <div className="group animate-[catalogue-enter_700ms_cubic-bezier(0.16,1,0.3,1)_both]">
-              <GarmentFigure
-                images={garment.images}
-                sizes="(min-width: 768px) 50vw, 100vw"
-                priority
-                className="aspect-[4/5]"
-              />
+              <div className="relative">
+                <FavoriteButton
+                  category={category.slug}
+                  slug={garment.slug}
+                  name={garment.name}
+                  className="absolute right-4 top-4 z-10"
+                />
+                <GarmentFigure
+                  images={garment.images}
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  priority
+                  className="aspect-[4/5]"
+                />
+              </div>
               <p className="mt-3 text-sm leading-6 text-[var(--muted-ink)]">
                 Hover or focus the image to see the piece on the form.
               </p>
@@ -88,12 +97,26 @@ export default async function ItemPage({ params }: ItemPageProps): Promise<React
                   here without its qualifier would read as the price of that
                   piece alone. Item-priced lines get the plain figure. */}
               <div className="mt-8 border-l-2 border-[var(--copper)] pl-5">
-                <p className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">
+                {/* Booking entry point, never a checkout. No amount is
+                    payable here: the real figure is agreed after a fitting,
+                    so this goes to the appointment form carrying the garment
+                    with it, and its accessible name says as much. */}
+                <Link
+                  href={`/appointment?category=${category.slug}&garment=${garment.slug}`}
+                  aria-label={`${formatStartingPrice(category.price)} for the ${garment.name}. Book a fitting to discuss it.`}
+                  className="group/price inline-flex min-h-11 items-center font-[Fraunces] text-2xl font-medium text-[var(--everglade)] transition-colors duration-200 ease-out hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
+                >
                   {formatStartingPrice(category.price)}
-                </p>
+                  <span
+                    aria-hidden="true"
+                    className="ml-3 text-sm tracking-[0.1em] text-[var(--copper)] opacity-0 transition-opacity duration-200 ease-out group-hover/price:opacity-100 group-focus-visible/price:opacity-100"
+                  >
+                    BOOK A FITTING →
+                  </span>
+                </Link>
                 <p className="mt-2 max-w-lg text-base leading-7 text-[var(--muted-ink)]">
                   {category.price.unit === "outfit"
-                    ? `${category.name} is priced as a complete outfit, shirt and trousers together. This piece is part of that outfit rather than priced on its own.`
+                    ? `This is the complete ${category.name.toLowerCase()} outfit, shirt and trousers together. A single piece can still be made to order, so ask if that is what you want.`
                     : `Starting price for this piece.`}
                 </p>
                 <p className="mt-3 max-w-lg text-sm leading-6 text-[var(--muted-ink)]">
@@ -109,7 +132,7 @@ export default async function ItemPage({ params }: ItemPageProps): Promise<React
                   CUSTOMIZE THIS PIECE
                 </Link>
                 <Link
-                  href="/appointment"
+                  href={`/appointment?category=${category.slug}&garment=${garment.slug}`}
                   className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--everglade)] px-7 py-4 text-sm font-medium tracking-[0.1em] text-[var(--everglade)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--copper)] hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
                 >
                   BOOK A FITTING

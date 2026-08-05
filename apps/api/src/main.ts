@@ -24,7 +24,11 @@ async function bootstrap(): Promise<void> {
   });
   // Required for AdminAuthGuard: reads the session token from req.cookies.
   app.use(cookieParser());
-  await app.listen(Number(process.env.PORT ?? 4000));
+  // Bind 0.0.0.0 explicitly, not just a port. A container platform routes
+  // traffic to the container's external interface; a process listening only
+  // on loopback accepts nothing and the deploy fails its health check while
+  // the logs cheerfully report that the server started.
+  await app.listen(Number(process.env.PORT ?? 4000), "0.0.0.0");
 }
 
 void bootstrap();

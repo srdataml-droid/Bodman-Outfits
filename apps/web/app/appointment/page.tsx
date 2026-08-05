@@ -4,6 +4,7 @@ import { AppointmentForm } from "../../components/appointment-form";
 import { SiteFooter } from "../../components/site-footer";
 import { SiteHeader } from "../../components/site-header";
 import { WhatsAppIcon } from "../../components/whatsapp-icon";
+import { getCategory, getGarment } from "../../lib/garments";
 import { getWhatsAppLink } from "../../lib/shop-settings";
 
 export const metadata: Metadata = {
@@ -11,8 +12,41 @@ export const metadata: Metadata = {
   description: "Request a fitting or consultation appointment with Bodman Outfits.",
 };
 
-export default async function AppointmentPage(): Promise<React.ReactElement> {
-  const whatsappLink = await getWhatsAppLink("Hello Bodman Outfits, I'd like to book a fitting appointment.");
+/*
+ * Prefill arrives as query parameters from the catalogue, a garment price, or
+ * the saved list: /appointment?category=suits&garment=navy-two-piece
+ *
+ * Resolved HERE, on the server, rather than with useSearchParams in the form.
+ * The form stays a plain client component with no Suspense boundary to get
+ * wrong, and an unknown or hand-edited slug resolves to nothing rather than
+ * echoing a stranger's text back into the form.
+ */
+interface AppointmentPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+function firstValue(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function AppointmentPage({
+  searchParams,
+}: AppointmentPageProps): Promise<React.ReactElement> {
+  const [whatsappLink, params] = await Promise.all([
+    getWhatsAppLink("Hello Bodman Outfits, I'd like to book a fitting appointment."),
+    searchParams,
+  ]);
+
+  const categorySlug = firstValue(params.category);
+  const garmentSlug = firstValue(params.garment);
+
+  // Validated against the catalogue, never trusted as given.
+  const category = categorySlug ? getCategory(categorySlug) : undefined;
+  const garment =
+    categorySlug && garmentSlug ? getGarment(categorySlug, garmentSlug) : undefined;
+
+  const initialCategory = category?.slug;
+  const interestedIn = garment?.name ?? category?.name;
 
   return (
     <>
@@ -41,7 +75,7 @@ export default async function AppointmentPage(): Promise<React.ReactElement> {
               <h2 id="appointment-form-heading" className="sr-only">
                 Request an appointment
               </h2>
-              <AppointmentForm />
+              <AppointmentForm initialCategory={initialCategory} interestedIn={interestedIn} />
             </section>
 
             <aside

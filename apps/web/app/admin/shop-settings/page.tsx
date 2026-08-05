@@ -6,11 +6,16 @@ import { useSessionAwareError } from "../../../components/admin/admin-shell";
 import { Button, Field, inputClass, Notice, PageTitle, Panel } from "../../../components/admin/admin-ui";
 
 // Grouped the way someone actually thinks about them, not in schema order.
-// The `pending` flag marks the fields that are deliberately empty in the
-// database because the business has not confirmed them. The inputs exist so
-// they can be filled in the moment a decision is made; they are NOT
-// pre-filled with plausible-looking guesses, because an invented address or
-// deposit percentage published to a real site is worse than a blank one.
+//
+// The `pending` flag marks a field the business has NOT confirmed, so it is
+// deliberately blank rather than pre-filled with a plausible-looking guess:
+// an invented address or deposit percentage published to a real site is
+// worse than a blank one.
+//
+// As of 2026-08-04 no field carries it. The owner confirmed contact details,
+// opening hours, the pricing note and the deposit percentage, and all of them
+// are now filled and live. The flag is kept because the next field added may
+// well need it, not because anything is outstanding today.
 const GROUPS: Array<{
   heading: string;
   note?: string;
@@ -26,29 +31,29 @@ const GROUPS: Array<{
   },
   {
     heading: "Contact",
-    note: "The WhatsApp number drives the floating button and the contact page link. Phone and email are still blank on the live site.",
+    note: "The WhatsApp number drives the floating button and the contact page link. Phone, email and address are shown on the contact page; clearing any of them removes that line from the page rather than leaving a blank.",
     fields: [
       { key: "whatsappNumber", label: "WhatsApp number" },
-      { key: "phone", label: "Phone", pending: true },
-      { key: "email", label: "Email", pending: true },
-      { key: "address", label: "Address", multiline: true, pending: true },
+      { key: "phone", label: "Phone" },
+      { key: "email", label: "Email" },
+      { key: "address", label: "Address", multiline: true },
     ],
   },
   {
     heading: "Opening hours",
-    note: "All three are blank on the live site. The contact page omits the hours section entirely until they are filled in.",
+    note: "Shown on the contact page. Each line appears only if it has a value, so a blank day is omitted rather than shown as empty.",
     fields: [
-      { key: "hoursWeekday", label: "Weekdays", pending: true },
-      { key: "hoursSaturday", label: "Saturday", pending: true },
-      { key: "hoursSunday", label: "Sunday", pending: true },
+      { key: "hoursWeekday", label: "Weekdays" },
+      { key: "hoursSaturday", label: "Saturday" },
+      { key: "hoursSunday", label: "Sunday" },
     ],
   },
   {
     heading: "Pricing",
-    note: "Both are unconfirmed business policy. A deposit percentage of 0 is a placeholder, not a statement that no deposit is required.",
+    note: "The pricing note appears under the price list on the FAQ page. The deposit percentage is not displayed anywhere yet; the FAQ answer states it in prose instead.",
     fields: [
-      { key: "pricingNote", label: "Pricing note", multiline: true, pending: true },
-      { key: "depositPercentage", label: "Deposit percentage", numeric: true, pending: true },
+      { key: "pricingNote", label: "Pricing note", multiline: true },
+      { key: "depositPercentage", label: "Deposit percentage", numeric: true },
     ],
   },
 ];
@@ -95,7 +100,7 @@ export default function ShopSettingsPage(): React.ReactElement {
     <>
       <PageTitle
         title="Shop settings"
-        description="These values feed the public site directly. Fields marked pending are intentionally blank because the business has not confirmed them yet; the site is written to omit them rather than show a placeholder."
+        description="These values feed the public site directly. A field left blank is omitted from the page rather than shown as a placeholder. Saved changes can take up to 5 minutes to appear on the public site, which is normal and not a failed save."
       />
 
       {error ? (

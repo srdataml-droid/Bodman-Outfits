@@ -30,8 +30,19 @@ const SINGLETON_ID = "singleton";
 // They now point the reader at a conversation instead of announcing an
 // unfinished policy, which is a change of framing, not of fact.
 //
+// Revised again 2026-08-04: the owner CONFIRMED two policies that had been
+// deliberately vague until now, so the deposit answer states 60% before work
+// starts and refundable, and the alterations answer states that alterations
+// after delivery are free. These are stated because they are confirmed, not
+// because the vagueness was uncomfortable. Payment METHODS remain unconfirmed
+// and the deposit answer still declines to name any.
+//
 // If you edit these, keep that discipline: rewrite the voice, never the
 // facts. Do not add a policy detail here that the owner has not confirmed.
+//
+// AND: this seed upserts with `update: {}`, so editing a string above does
+// NOTHING to a database that already has the row. Every change here must be
+// applied to the live rows separately.
 const FAQ_SEED_DATA = [
   {
     id: "turnaround-time",
@@ -54,7 +65,7 @@ const FAQ_SEED_DATA = [
     category: "Pricing & Deposits",
     question: "Do I need to pay a deposit, and what payment methods do you accept?",
     answer:
-      "Talk to us before you place an order and we will confirm the deposit and the payment method that works best for you. It is a short conversation rather than paperwork.",
+      "Yes. We ask for 60% of the price before work starts, and that deposit is refundable. The balance is settled when the piece is ready. As for how you pay, talk to us and we will find the method that suits you best. It is a short conversation rather than paperwork.",
     sortOrder: 3,
   },
   {
@@ -62,8 +73,16 @@ const FAQ_SEED_DATA = [
     category: "Measurements & Fit",
     question: "What if the fit isn't right when the garment is ready?",
     answer:
-      "Come back and tell us. A garment that does not sit properly is not finished work, so we will put it right. That is the whole of it.",
+      "Come back and tell us. A garment that does not sit properly is not finished work, so we will put it right, and alterations after delivery are free. That is the whole of it.",
     sortOrder: 4,
+  },
+  {
+    id: "individual-pieces",
+    category: "Ordering",
+    question: "Can you make just a shirt, or just trousers, on their own?",
+    answer:
+      "Yes. The catalogue is organised around suits and complete outfits because that is how most people order, and the casuals and corporate prices cover a shirt and trousers together. That is how the listing is arranged, not a limit on what we make. A single shirt, one pair of trousers, or something not shown at all is ordinary work here. Ask us rather than assuming it is off the table.",
+    sortOrder: 5,
   },
 ] as const;
 

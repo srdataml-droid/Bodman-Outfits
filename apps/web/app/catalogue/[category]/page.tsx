@@ -4,6 +4,7 @@ import { StaggerText } from "../../../components/stagger-text";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FavoriteButton } from "../../../components/favorite-button";
 import { GarmentFigure } from "../../../components/garment-figure";
 import { SiteFooter } from "../../../components/site-footer";
 import { SiteHeader } from "../../../components/site-header";
@@ -67,9 +68,24 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
                 trousers together. `priceUnitDetail` spells that out rather
                 than relying on the word "outfit" carrying it. */}
             <div className="mt-8 border-l-2 border-[var(--copper)] pl-5">
-              <p className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)] md:text-3xl">
+              {/* The price is a booking entry point, NOT a checkout. Nothing
+                  is payable at this stage: the real figure is only settled
+                  after a fitting. The link therefore goes to the appointment
+                  form and says so in its accessible name, so nobody taps a
+                  naira figure expecting a payment screen. */}
+              <Link
+                href={`/appointment?category=${category.slug}`}
+                aria-label={`${formatStartingPrice(category.price)} for ${category.name}. Book a fitting to discuss it.`}
+                className="group/price inline-flex min-h-11 items-center font-[Fraunces] text-2xl font-medium text-[var(--everglade)] transition-colors duration-200 ease-out hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)] md:text-3xl"
+              >
                 {formatStartingPrice(category.price)}
-              </p>
+                <span
+                  aria-hidden="true"
+                  className="ml-3 text-sm tracking-[0.1em] text-[var(--copper)] opacity-0 transition-opacity duration-200 ease-out group-hover/price:opacity-100 group-focus-visible/price:opacity-100"
+                >
+                  BOOK A FITTING →
+                </span>
+              </Link>
               <p className="mt-2 max-w-md text-base leading-7 text-[var(--muted-ink)]">
                 {priceUnitDetail(category.price)}.
               </p>
@@ -95,17 +111,18 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
               </p>
             ) : null}
 
-            {/* The riskiest spot on the whole site for a pricing
-                misunderstanding: below this line the outfit-priced lines
-                break into individually named pieces ("Casual Shirt",
-                "Casual Trousers"), which reads exactly like per-item pricing
-                unless it is contradicted here. */}
+            {/* Kept, but for a different reason than it was written for.
+                It once contradicted a list that split an outfit-priced line
+                into "Casual Shirt" and "Casual Trousers"; that split was
+                reversed on 2026-08-05 and each line is now a single outfit.
+                What still needs saying is what the one figure buys, and that
+                a single piece is orderable even though it is not listed. */}
             {category.price.unit === "outfit" && garments.length > 0 ? (
               <p className="mb-10 max-w-xl rounded-xl bg-[#e8ebea] px-5 py-4 text-base leading-7 text-[var(--everglade)]">
-                The pieces below are shown separately so you can see the cut, but{" "}
-                {category.name.toLowerCase()} is priced as a complete outfit:{" "}
+                {category.name} is priced as a complete outfit:{" "}
                 <span className="font-medium">{formatStartingPrice(category.price)}</span> covers the
-                shirt and the trousers together, not either one on its own.
+                shirt and the trousers together, not either one on its own. We can still make a
+                single piece for you, so ask if that is what you want.
               </p>
             ) : null}
 
@@ -120,23 +137,35 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
                   delayMs={(index % 3) * 70}
                   className="group"
                 >
-                  <Link
-                    href={`/catalogue/${category.slug}/${garment.slug}`}
-                    className="block focus-visible:outline-none"
-                  >
-                    <GarmentFigure
-                      images={garment.images}
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className="aspect-[4/5]"
+                  {/* The heart sits outside the Link, layered over the
+                      figure, so it is a sibling of the anchor rather than a
+                      button nested inside one. Nesting interactive elements
+                      is invalid HTML and makes keyboard order unpredictable. */}
+                  <div className="relative">
+                    <FavoriteButton
+                      category={category.slug}
+                      slug={garment.slug}
+                      name={garment.name}
+                      className="absolute right-3 top-3 z-10"
                     />
-                    <div className="mt-5">
-                      <h3 className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">{garment.name}</h3>
-                      <p className="mt-1 text-sm text-[var(--muted-ink)]">{garment.detail}</p>
-                      <span className="mt-4 inline-flex items-center gap-2 text-sm font-medium tracking-[0.1em] text-[var(--copper)] transition-[gap] duration-300 group-hover:gap-4">
-                        VIEW GARMENT <span aria-hidden="true">→</span>
-                      </span>
-                    </div>
-                  </Link>
+                    <Link
+                      href={`/catalogue/${category.slug}/${garment.slug}`}
+                      className="block focus-visible:outline-none"
+                    >
+                      <GarmentFigure
+                        images={garment.images}
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        className="aspect-[4/5]"
+                      />
+                      <div className="mt-5">
+                        <h3 className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">{garment.name}</h3>
+                        <p className="mt-1 text-sm text-[var(--muted-ink)]">{garment.detail}</p>
+                        <span className="mt-4 inline-flex items-center gap-2 text-sm font-medium tracking-[0.1em] text-[var(--copper)] transition-[gap] duration-300 group-hover:gap-4">
+                          VIEW GARMENT <span aria-hidden="true">→</span>
+                        </span>
+                      </div>
+                    </Link>
+                  </div>
                 </ScrollReveal>
               ))}
             </div>

@@ -38,9 +38,32 @@ const failureMessages: Record<FailureReason, string> = {
     "We couldn't send that just now, so it has not reached us. Please try again, or reach us on WhatsApp.",
 };
 
-export function AppointmentForm(): React.ReactElement {
+interface AppointmentFormProps {
+  /** Catalogue slug to preselect, already validated by the page. */
+  initialCategory?: string;
+  /** Display name of the garment or line the customer came from. */
+  interestedIn?: string;
+}
+
+export function AppointmentForm({
+  initialCategory,
+  interestedIn,
+}: AppointmentFormProps = {}): React.ReactElement {
   const [status, setStatus] = useState<SubmitState>("idle");
   const [error, setError] = useState<FailureReason | null>(null);
+
+  /*
+   * Prefill is a STARTING POINT, not a lock: both the select and the notes
+   * are ordinary uncontrolled inputs with a default, so a customer who
+   * arrived from the Navy Two-Piece can still change their mind here without
+   * fighting the form. `defaultValue` also means React does not re-clobber
+   * their edit on re-render.
+   *
+   * The note is phrased as the customer's own words because that is what the
+   * atelier reads in the admin queue.
+   */
+  const defaultCategory = initialCategory ?? categoryOptions[0].value;
+  const defaultNotes = interestedIn ? `I'm interested in: ${interestedIn}.` : "";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -190,7 +213,7 @@ export function AppointmentForm(): React.ReactElement {
         <select
           id="category"
           name="category"
-          defaultValue={categoryOptions[0].value}
+          defaultValue={defaultCategory}
           className="mt-2 min-h-11 appearance-none rounded-none border-0 border-b border-[var(--outline)] bg-transparent py-3 text-base text-[var(--ink)] focus:border-[var(--copper)] focus:outline-none"
         >
           {categoryOptions.map((option) => (
@@ -209,6 +232,7 @@ export function AppointmentForm(): React.ReactElement {
           id="notes"
           name="notes"
           rows={3}
+          defaultValue={defaultNotes}
           placeholder="Tell us a bit about what you have in mind"
           className="mt-2 resize-none border-0 border-b border-[var(--outline)] bg-transparent py-3 text-base text-[var(--ink)] placeholder:text-[rgb(65_72_67_/_45%)] focus:border-[var(--copper)] focus:outline-none"
         />

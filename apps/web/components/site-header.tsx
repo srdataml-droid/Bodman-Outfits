@@ -4,6 +4,7 @@ import { getShopName } from "../lib/shop-settings";
 const navigationItems = [
   { href: "/about", label: "Heritage" },
   { href: "/catalogue", label: "Catalogue" },
+  { href: "/saved", label: "Saved" },
   { href: "/faq", label: "FAQ" },
 ];
 

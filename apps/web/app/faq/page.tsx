@@ -5,6 +5,7 @@ import { FaqList } from "../../components/faq-list";
 import { SiteFooter } from "../../components/site-footer";
 import { SiteHeader } from "../../components/site-header";
 import { getFaqEntries } from "../../lib/faq-data";
+import { getShopSettings } from "../../lib/shop-settings";
 import {
   categories,
   formatStartingPrice,
@@ -32,7 +33,19 @@ export const metadata: Metadata = {
 const priceList = [...categories].sort((a, b) => a.price.from - b.price.from);
 
 export default async function FaqPage(): Promise<React.ReactElement> {
-  const faqEntries = await getFaqEntries();
+  const [faqEntries, settings] = await Promise.all([getFaqEntries(), getShopSettings()]);
+
+  /*
+   * The Admin-editable pricing note, rendered here because this is the one
+   * place all five figures appear together. Omitted entirely when empty
+   * rather than reserving space for it.
+   *
+   * NOTE the overlap with PRICING_QUALIFIER above it, which already ends
+   * "and is negotiable on larger orders". Both strings are the owner's to
+   * control, but only this one is editable without a deploy. If they ever
+   * say the same thing, the qualifier is the one to trim — not this.
+   */
+  const pricingNote = settings?.pricingNote?.trim() ?? "";
 
   return (
     <>
@@ -93,6 +106,12 @@ export default async function FaqPage(): Promise<React.ReactElement> {
               </Link>{" "}
               and we will price it properly.
             </p>
+
+            {pricingNote ? (
+              <p className="mt-4 border-t border-[rgb(27_62_45_/_10%)] pt-4 text-center text-sm leading-6 text-[var(--muted-ink)]">
+                {pricingNote}
+              </p>
+            ) : null}
           </div>
 
           <div

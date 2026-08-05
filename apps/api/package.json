@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "pnpm -w exec prisma generate && tsc -p tsconfig.build.json",
     "dev": "nodemon --watch src --ext ts --exec \"ts-node src/main.ts\"",
     "start": "node dist/main.js",
     "lint": "tsc --noEmit",
