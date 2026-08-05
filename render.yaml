@@ -1,0 +1,55 @@
+# Render blueprint for the API (apps/api).
+#
+# The web app does NOT belong here — it goes to Vercel. This file describes
+# one service only.
+#
+# Every value below is safe to commit. Secrets use `sync: false`, which tells
+# Render to prompt for them in the dashboard rather than read them from here.
+services:
+  - type: web
+    name: bodman-api
+    runtime: node
+    plan: free
+    region: frankfurt # closest Render region to the eu-west-1 database
+
+    # `prisma generate` runs as part of the apps/api build script, which it
+    # must: generated/prisma is gitignored and untracked, and apps/api imports
+    # it, so a fresh clone cannot compile without it.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @atelier-haute/api build
+    startCommand: node apps/api/dist/main.js
+
+    healthCheckPath: /health
+
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+
+      # Required at BUILD time by `prisma generate`, which resolves it through
+      # prisma.config.ts and hard-fails if it is merely absent. It never opens
+      # a connection during generate.
+      - key: DIRECT_URL
+        sync: false
+
+      # Required at RUNTIME. The API refuses to boot without both — it
+      # deliberately does not fall back to DATABASE_URL, because that role
+      # holds BYPASSRLS.
+      - key: DATABASE_URL_PUBLIC
+        sync: false
+      - key: DATABASE_URL_ADMIN
+        sync: false
+
+      # CORS origin and the base for notification deep links. Must be the
+      # exact public site origin, e.g. https://yourdomain.com
+      - key: WEB_ORIGIN
+        sync: false
+
+      - key: RESEND_API_KEY
+        sync: false
+      - key: NOTIFICATION_EMAIL
+        sync: false
+      - key: NOTIFICATION_FROM
+        sync: false
+    # PORT is injected by Render. Do not set it. main.ts reads process.env.PORT
+    # and binds 0.0.0.0, which Render requires.
