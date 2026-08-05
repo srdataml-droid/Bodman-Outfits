@@ -3,15 +3,14 @@ import { StaggerText } from "../../../../components/stagger-text";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { garmentImages, getGarment, getGarments } from "../../../../lib/garments-data";
 import { FavoriteButton } from "../../../../components/favorite-button";
 import { GarmentFigure } from "../../../../components/garment-figure";
 import { SiteFooter } from "../../../../components/site-footer";
 import { SiteHeader } from "../../../../components/site-header";
 import {
   formatStartingPrice,
-  garments,
   getCategory,
-  getGarment,
   PRICING_QUALIFIER,
 } from "../../../../lib/garments";
 
@@ -19,13 +18,17 @@ interface ItemPageProps {
   params: Promise<{ category: string; item: string }>;
 }
 
-export function generateStaticParams(): Array<{ category: string; item: string }> {
+export async function generateStaticParams(): Promise<Array<{ category: string; item: string }>> {
+  // Reads the live catalogue at build time. If the API is unreachable this
+  // returns [], which is safe: dynamicParams is on by default, so pages are
+  // rendered on demand instead of 404ing.
+  const garments = await getGarments();
   return garments.map((garment) => ({ category: garment.category, item: garment.slug }));
 }
 
 export async function generateMetadata({ params }: ItemPageProps): Promise<Metadata> {
   const { category: categorySlug, item: itemSlug } = await params;
-  const garment = getGarment(categorySlug, itemSlug);
+  const garment = await getGarment(categorySlug, itemSlug);
   if (!garment) return {};
   return {
     title: garment.name,
@@ -36,7 +39,7 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
 export default async function ItemPage({ params }: ItemPageProps): Promise<React.ReactElement> {
   const { category: categorySlug, item: itemSlug } = await params;
   const category = getCategory(categorySlug);
-  const garment = getGarment(categorySlug, itemSlug);
+  const garment = await getGarment(categorySlug, itemSlug);
   if (!category || !garment) notFound();
 
   return (
@@ -65,7 +68,7 @@ export default async function ItemPage({ params }: ItemPageProps): Promise<React
                   className="absolute right-4 top-4 z-10"
                 />
                 <GarmentFigure
-                  images={garment.images}
+                  images={garmentImages(garment)}
                   sizes="(min-width: 768px) 50vw, 100vw"
                   priority
                   className="aspect-[4/5]"

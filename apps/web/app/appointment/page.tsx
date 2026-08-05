@@ -4,7 +4,8 @@ import { AppointmentForm } from "../../components/appointment-form";
 import { SiteFooter } from "../../components/site-footer";
 import { SiteHeader } from "../../components/site-header";
 import { WhatsAppIcon } from "../../components/whatsapp-icon";
-import { getCategory, getGarment } from "../../lib/garments";
+import { getCategory } from "../../lib/garments";
+import { getGarment } from "../../lib/garments-data";
 import { getWhatsAppLink } from "../../lib/shop-settings";
 
 export const metadata: Metadata = {
@@ -43,7 +44,7 @@ export default async function AppointmentPage({
   // Validated against the catalogue, never trusted as given.
   const category = categorySlug ? getCategory(categorySlug) : undefined;
   const garment =
-    categorySlug && garmentSlug ? getGarment(categorySlug, garmentSlug) : undefined;
+    categorySlug && garmentSlug ? await getGarment(categorySlug, garmentSlug) : null;
 
   const initialCategory = category?.slug;
   const interestedIn = garment?.name ?? category?.name;

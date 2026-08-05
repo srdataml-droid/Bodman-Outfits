@@ -1651,3 +1651,51 @@ never ends on a card that waits most of a second to appear.
 Page headers deliberately keep `catalogue-enter`: they are above the fold,
 where a load-time entrance is the correct behaviour and a scroll trigger
 would do nothing.
+
+## 2026-08-05 — The 5432 connection, and garments moving into the database
+
+**The connection was never a paused project.** `psql` against `DIRECT_URL` on
+port 5432 succeeded 8 times out of 8, and all three A records for the pooler
+host accept TCP on 5432. What actually happens is that Prisma's connect
+*intermittently* times out and reports it as `P1001`: `prisma migrate status`
+succeeded, `prisma migrate deploy` failed seconds later on the same URL, and a
+retry of the same command then succeeded on the first attempt. So the endpoint
+is up and the failure is a flaky connect, not an outage. **Retry before
+concluding anything is down.**
+
+`DIRECT_URL` is correct as it stands. It points at
+`aws-0-eu-west-1.pooler.supabase.com:5432`, which is the pooler in SESSION
+mode rather than the true direct host `db.<ref>.supabase.co:5432`. That is the
+right choice on Supabase now: the true direct host needs the IPv4 add-on,
+while session mode supports migrations. Port 6543 is transaction mode and
+cannot run them.
+
+**Garments moved to the database; categories deliberately did not.** The five
+lines carry confirmed prices, the item-vs-outfit price unit and signed-off
+copy, so `Garment.category` is a validated string rather than a foreign key.
+Moving categories is a separate decision, not a side effect of making garments
+editable.
+
+**`startingPrice` is nullable and means "inherit the category price".** The
+five confirmed prices are per line, not per garment. Storing a copy of the
+line price on each row would have created a second source of truth that drifts
+silently. The admin field is explicit that blank is not zero, because a
+garment published at ₦0 is worse than one showing its line's price.
+
+**The `active = true` filter lives in the RLS policy, not only the query.**
+`atelier_api_public` can physically only see active rows: verified by querying
+a deactivated row as that role directly and getting 0 back, with no
+application filter involved. A future endpoint that forgets `where: { active }`
+therefore cannot leak a withdrawn piece.
+
+**Verified at the data layer, not just by typecheck:** RLS enabled and forced;
+ACL is `atelier_api_public=r` and `atelier_api_admin=arwd` with nothing for
+anon/authenticated; a public-role INSERT is denied; insert → public API shows
+6 → deactivate → public API shows 5 while the admin role still counts 1 →
+delete → back to 5. Catalogue pages render suits (3), casuals (1) and the
+honest empty state for agbada.
+
+**Not verified:** the admin dashboard's own login-and-create flow in a browser.
+The admin password is deliberately recoverable from nowhere (only a bcrypt
+hash exists), so this session could not authenticate as the admin. The guard
+itself is verified — `GET /api/garments/all` returns 401 unauthenticated.

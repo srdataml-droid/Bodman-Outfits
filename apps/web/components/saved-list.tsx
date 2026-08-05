@@ -4,7 +4,8 @@ import Link from "next/link";
 import { GarmentFigure } from "./garment-figure";
 import { FavoriteButton } from "./favorite-button";
 import { FAVORITES_SCOPE_NOTE, parseFavoriteId, useFavorites } from "../lib/favorites";
-import { formatStartingPrice, getCategory, getGarment } from "../lib/garments";
+import { formatStartingPrice, getCategory } from "../lib/garments";
+import { garmentImages, type GarmentRecord } from "../lib/garments-data";
 
 /**
  * The saved list.
@@ -18,14 +19,20 @@ import { formatStartingPrice, getCategory, getGarment } from "../lib/garments";
  * Rendered entirely client-side because the server cannot know what is in
  * this browser. The first paint is therefore the empty state; that is honest
  * rather than a flash of wrong content, and the list appears on hydration.
+ *
+ * Garments arrive as a PROP from the server page rather than being fetched
+ * here: only the browser knows what is favorited, but the catalogue itself is
+ * public server data, and re-fetching it client-side would be a second round
+ * trip for content the server already had.
  */
-export function SavedList(): React.ReactElement {
+export function SavedList({ garments }: { garments: GarmentRecord[] }): React.ReactElement {
   const ids = useFavorites();
+  const byKey = new Map(garments.map((g) => [`${g.category}/${g.slug}`, g]));
 
   const items = ids.flatMap((id) => {
     const parsed = parseFavoriteId(id);
     if (!parsed) return [];
-    const garment = getGarment(parsed.category, parsed.slug);
+    const garment = byKey.get(id);
     const category = getCategory(parsed.category);
     if (!garment || !category) return [];
     return [{ id, garment, category }];
@@ -67,7 +74,7 @@ export function SavedList(): React.ReactElement {
                 className="block focus-visible:outline-none"
               >
                 <GarmentFigure
-                  images={garment.images}
+                  images={garmentImages(garment)}
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="aspect-[4/5]"
                 />

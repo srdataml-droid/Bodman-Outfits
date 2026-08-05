@@ -92,6 +92,26 @@ export type CustomRequestStatus = (typeof CUSTOM_REQUEST_STATUSES)[number];
 export const ORDER_STATUSES = ["draft", "in_production", "ready", "completed", "cancelled"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
+export interface Garment {
+  id: string;
+  slug: string;
+  category: string;
+  name: string;
+  detail: string;
+  description: string;
+  imageFlat: string;
+  imageOnForm: string;
+  altFlat: string;
+  altOnForm: string;
+  /** Naira. Null means "inherit the category's confirmed starting price". */
+  startingPrice: number | null;
+  active: boolean;
+  sortOrder: number;
+}
+
+/** Mirrors GARMENT_CATEGORIES in apps/api/src/garments/garments.schema.ts. */
+export const GARMENT_CATEGORIES = ["suits", "agbada", "kaftan", "casuals", "corporate"] as const;
+
 export type AdminResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number; message: string };
@@ -196,6 +216,20 @@ export const adminApi = {
       method: "PATCH",
       body: JSON.stringify({ status, ...(declineReason ? { declineReason } : {}) }),
     }),
+
+  // "all" rather than the public list: the dashboard must show deactivated
+  // garments, which the public endpoint deliberately cannot return.
+  garments: () => adminFetch<Garment[]>("/api/garments/all"),
+  createGarment: (input: Omit<Garment, "id">) =>
+    adminFetch<Garment>("/api/garments", { method: "POST", body: JSON.stringify(input) }),
+  updateGarment: (id: string, patch: Partial<Omit<Garment, "id">>) =>
+    adminFetch<Garment>(`/api/garments/${id}`, { method: "PUT", body: JSON.stringify(patch) }),
+  setGarmentActive: (id: string, active: boolean) =>
+    adminFetch<Garment>(`/api/garments/${id}/active`, {
+      method: "PATCH",
+      body: JSON.stringify({ active }),
+    }),
+  deleteGarment: (id: string) => adminFetch<void>(`/api/garments/${id}`, { method: "DELETE" }),
 
   orders: () => adminFetch<Order[]>("/api/orders"),
   createOrder: (input: {

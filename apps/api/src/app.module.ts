@@ -7,6 +7,7 @@ import { CustomRequestsModule } from "./custom-requests/custom-requests.module";
 import { OrdersModule } from "./orders/orders.module";
 import { EnquiriesModule } from "./enquiries/enquiries.module";
 import { FaqModule } from "./faq/faq.module";
+import { GarmentsModule } from "./garments/garments.module";
 import { HealthController } from "./health.controller";
 import { ShopSettingsModule } from "./shop-settings/shop-settings.module";
 
@@ -18,6 +19,7 @@ import { ShopSettingsModule } from "./shop-settings/shop-settings.module";
     AuthModule,
     ShopSettingsModule,
     FaqModule,
+    GarmentsModule,
     AppointmentsModule,
     EnquiriesModule,
     CustomRequestsModule,

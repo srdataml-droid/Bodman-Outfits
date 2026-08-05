@@ -4,6 +4,7 @@ import { StaggerText } from "../../../components/stagger-text";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { garmentImages, getGarmentsByCategory } from "../../../lib/garments-data";
 import { FavoriteButton } from "../../../components/favorite-button";
 import { GarmentFigure } from "../../../components/garment-figure";
 import { SiteFooter } from "../../../components/site-footer";
@@ -12,7 +13,6 @@ import {
   categories,
   formatStartingPrice,
   getCategory,
-  getGarmentsByCategory,
   priceUnitDetail,
   PRICING_QUALIFIER,
 } from "../../../lib/garments";
@@ -40,7 +40,7 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
   const category = getCategory(categorySlug);
   if (!category) notFound();
 
-  const garments = getGarmentsByCategory(categorySlug);
+  const garments = await getGarmentsByCategory(categorySlug);
 
   return (
     <>
@@ -153,7 +153,7 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
                       className="block focus-visible:outline-none"
                     >
                       <GarmentFigure
-                        images={garment.images}
+                        images={garmentImages(garment)}
                         sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                         className="aspect-[4/5]"
                       />

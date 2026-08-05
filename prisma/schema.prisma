@@ -3,7 +3,6 @@
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -72,31 +71,31 @@ enum AppointmentStatus {
 }
 
 model Appointment {
-  id    String  @id @default(cuid())
-  name  String
-  phone String
-  email String?
+  id            String            @id @default(cuid())
+  name          String
+  phone         String
+  email         String?
   // Date-only (@db.Date), not a timestamp: the customer picks a calendar
   // day, not an instant, so storing a time component would invent precision
   // they never gave and risk a timezone shifting the date by one day.
-  preferredDate DateTime        @db.Date
+  preferredDate DateTime          @db.Date
   preferredTime AppointmentTime
   // Plain String rather than a database enum, unlike the two above: these
   // values mirror the catalogue categories in apps/web/lib/garments.ts,
   // which are editable business content expected to change. A Postgres enum
   // would need a migration every time the catalogue gains a category.
   // Validated against an explicit allowlist in appointments.schema.ts.
-  category String
-  notes    String?
-  status   AppointmentStatus @default(pending)
+  category      String
+  notes         String?
+  status        AppointmentStatus @default(pending)
   // timestamptz, unlike the older tables in this schema which use plain
   // timestamp. Timezone-aware is the correct choice (see the Supabase
   // Postgres best-practices skill) and matters here because these rows will
   // be read directly in the Supabase dashboard, not only through Prisma.
   // The earlier tables should follow in their own migration — see
   // docs/database.md.
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime          @updatedAt @db.Timestamptz(3)
 
   orders Order[]
 
@@ -119,13 +118,13 @@ enum EnquiryStatus {
 }
 
 model Enquiry {
-  id    String  @id @default(cuid())
-  name  String
+  id        String        @id @default(cuid())
+  name      String
   // Required here, unlike on Appointment where phone is the required
   // channel. This mirrors the existing contact form exactly rather than
   // standardising the two forms against each other.
-  email   String
-  phone   String?
+  email     String
+  phone     String?
   // Plain String rather than a Postgres enum. The wire values come from the
   // existing form and include "custom-request", whose hyphen is not a legal
   // Postgres enum identifier. A native enum would therefore need @map plus a
@@ -133,18 +132,17 @@ model Enquiry {
   // Zod allowlist that already guards this boundary would be a second copy
   // of the same constraint. Same call as Appointment.category, for a
   // different reason.
-  subject String
-  message String
-  status  EnquiryStatus @default(unread)
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  subject   String
+  message   String
+  status    EnquiryStatus @default(unread)
+  createdAt DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime      @updatedAt @db.Timestamptz(3)
 
   orders Order[]
 
   // Admin lists newest-first.
   @@index([createdAt])
 }
-
 
 // Customer-originated design requests: someone starts from their own idea
 // rather than an existing catalogue piece. Spec'd in the atelier-frontend
@@ -157,31 +155,31 @@ enum CustomRequestStatus {
 }
 
 model CustomRequest {
-  id String @id @default(cuid())
+  id            String              @id @default(cuid())
   // Contact fields are NOT in the skill's field list, which names only
   // description, reference image and category. They are added because
   // customers have no accounts: without a name and a way to reply, an
   // accepted request cannot be acted on and a declined one cannot be
   // answered. Mirrors what Appointment and Enquiry already collect.
-  name  String
-  email String
-  phone String?
-  description String
+  name          String
+  email         String
+  phone         String?
+  description   String
   // Optional link to a catalogue category, as a plain String for the same
   // reason as Appointment.category: these mirror editable catalogue content
   // and a database enum would need a migration every time it changes.
-  category String?
-  status   CustomRequestStatus @default(pending_review)
+  category      String?
+  status        CustomRequestStatus @default(pending_review)
   // Per the skill: declining requires a reason. Enforced in the service
   // rather than by the database, because "required only when status is
   // declined" is a conditional constraint the schema cannot express cleanly.
   declineReason String?
   // Which admin reviewed it. Nullable because it is unset until reviewed.
-  reviewedById String?
-  reviewedBy   Admin?  @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
-  reviewedAt   DateTime? @db.Timestamptz(3)
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  reviewedById  String?
+  reviewedBy    Admin?              @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt    DateTime?           @db.Timestamptz(3)
+  createdAt     DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime            @updatedAt @db.Timestamptz(3)
 
   orders Order[]
 
@@ -203,16 +201,16 @@ enum OrderStatus {
 }
 
 model Order {
-  id String @id @default(cuid())
+  id              String         @id @default(cuid())
   // Exactly one source should be set. Modelled as three nullable foreign
   // keys rather than a polymorphic (type, id) pair so the database still
   // enforces that the referenced row exists; the "exactly one" rule is
   // enforced in the service, since a CHECK across three columns would have
   // to be hand-written outside Prisma's schema language.
-  appointmentId String?
-  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
-  enquiryId String?
-  enquiry   Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+  appointmentId   String?
+  appointment     Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  enquiryId       String?
+  enquiry         Enquiry?       @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
   customRequestId String?
   customRequest   CustomRequest? @relation(fields: [customRequestId], references: [id], onDelete: SetNull)
 
@@ -245,11 +243,11 @@ model Order {
 // Product Policies). Real email+password login, never a PIN or hard-coded
 // bypass. passwordHash is a bcrypt hash — never store or return plaintext.
 model Admin {
-  id           String         @id @default(cuid())
-  email        String         @unique
+  id           String          @id @default(cuid())
+  email        String          @unique
   passwordHash String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
   sessions     AdminSession[]
   reviewed     CustomRequest[]
 }
@@ -267,4 +265,47 @@ model AdminSession {
   createdAt DateTime @default(now())
 
   @@index([adminId])
+}
+
+/// Catalogue garments, moved out of apps/web/lib/garments.ts so the business
+/// can add pieces without a deploy.
+///
+/// CATEGORIES DELIBERATELY STAY IN CODE. The five lines (suits, agbada,
+/// kaftan, casuals, corporate) carry confirmed prices, the item-vs-outfit
+/// price unit, and per-line copy the owner signed off. `category` here is a
+/// plain string validated against that list in the API, not a foreign key —
+/// moving categories to the database is a separate decision, not a side
+/// effect of making garments editable.
+///
+/// `startingPrice` is NULLABLE and means "inherit this line's price". The
+/// five confirmed prices are per CATEGORY, not per garment; a non-null value
+/// here is an override the owner has explicitly typed, never a copy of the
+/// category price that can silently drift from it.
+model Garment {
+  id            String   @id @default(cuid())
+  slug          String
+  /// One of the CategorySlug values in apps/web/lib/garments.ts.
+  category      String
+  name          String
+  /// Short label under the name on a card, e.g. "Suits".
+  detail        String
+  description   String
+  /// Paths under apps/web/public, e.g. /images/catalogue/navy-two-piece-flat.png
+  imageFlat     String
+  imageOnForm   String
+  altFlat       String
+  altOnForm     String
+  /// Naira. Null inherits the category's confirmed starting price.
+  startingPrice Int?
+  /// Deactivating hides a garment from the public catalogue without deleting
+  /// it, so a piece can be withdrawn and brought back without losing its copy.
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  // timestamptz, matching Appointment/Enquiry/CustomRequest/Order rather than
+  // the older plain-timestamp tables. See the note on Appointment.createdAt.
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+
+  @@unique([category, slug])
+  @@index([category, active])
 }

@@ -99,15 +99,6 @@ export function priceUnitDetail(price: CategoryPrice): string {
 export const PRICING_QUALIFIER =
   "Starting prices. The final figure depends on the piece, the cloth and the detail you choose, and is negotiable on larger orders.";
 
-export interface Garment {
-  slug: string;
-  category: CategorySlug;
-  name: string;
-  detail: string;
-  description: string;
-  images: GarmentImagePair;
-}
-
 // All imagery below is design-system placeholder, not photography. It is
 // deliberately non-photographic so it cannot be mistaken for a real picture
 // of a real garment from this house. Real photography replaces these paths;
@@ -165,80 +156,6 @@ export const categories: Category[] = [
   },
 ];
 
-export const garments: Garment[] = [
-  {
-    slug: "navy-two-piece",
-    category: "suits",
-    name: "Navy Two-Piece",
-    detail: "Suits",
-    description:
-      "A single-breasted two-piece in a deep navy wool blend. Built for the boardroom, cut close through the waist.",
-    images: placeholderPair("navy-two-piece", "a navy two-piece suit"),
-  },
-  {
-    slug: "charcoal-three-piece",
-    category: "suits",
-    name: "Charcoal Three-Piece",
-    detail: "Suits",
-    description:
-      "Jacket, trouser, and waistcoat in charcoal wool. A formal silhouette that still moves with the wearer.",
-    images: placeholderPair("charcoal-three-piece", "a charcoal three-piece suit"),
-  },
-  {
-    slug: "ivory-wedding-suit",
-    category: "suits",
-    name: "Ivory Wedding Suit",
-    detail: "Suits",
-    description:
-      "An ivory wool-silk suit for the groom. Softly structured shoulders, finished with hand-stitched lapels.",
-    images: placeholderPair("ivory-wedding-suit", "an ivory wedding suit"),
-  },
-  // Casuals and Corporate are each ONE complete outfit, not separate pieces.
-  //
-  // Confirmed 2026-08-05, reversing the earlier shirt/trouser split. The
-  // split actively contradicted the pricing: both lines are priced per
-  // COMPLETE OUTFIT (see PriceUnit above), so listing a shirt on its own
-  // under a 90,000 line invited exactly the misreading `priceUnitDetail`
-  // exists to prevent. One item per line removes the contradiction.
-  //
-  // This also settles the old open question about whether a casual shirt and
-  // a corporate shirt are visually distinct garments: they are no longer
-  // catalogued separately, so each line needs one image pair of its own
-  // rather than sharing a generic shirt and trouser pair between them.
-  //
-  // Individual pieces can still be made to order. The catalogue not listing
-  // them is not a statement that they are unavailable; the FAQ carries that.
-  {
-    slug: "casual-full",
-    category: "casuals",
-    name: "Casual Outfit",
-    detail: "Casuals",
-    description:
-      "Shirt and trousers cut as one relaxed outfit, keeping the same discipline of line as the tailoring, just without the tie.",
-    images: placeholderPair("casual-full", "a complete casual outfit, shirt and trousers together"),
-  },
-  {
-    slug: "corporate-full",
-    category: "corporate",
-    name: "Corporate Outfit",
-    detail: "Corporate",
-    description:
-      "Shirt and trousers built as one outfit for the working week, holding their line from the first wear to the hundredth.",
-    images: placeholderPair("corporate-full", "a complete corporate outfit, shirt and trousers together"),
-  },
-  // Agbada and kaftan have no individual pieces listed yet. Rather than
-  // invent garment names and descriptions for lines nobody has described,
-  // the category pages say so honestly. See getGarmentsByCategory callers.
-];
-
 export function getCategory(slug: string): Category | undefined {
   return categories.find((category) => category.slug === slug);
-}
-
-export function getGarmentsByCategory(slug: string): Garment[] {
-  return garments.filter((garment) => garment.category === slug);
-}
-
-export function getGarment(categorySlug: string, itemSlug: string): Garment | undefined {
-  return garments.find((garment) => garment.category === categorySlug && garment.slug === itemSlug);
 }

@@ -86,6 +86,90 @@ const FAQ_SEED_DATA = [
   },
 ] as const;
 
+/**
+ * The five catalogue garments, migrated out of apps/web/lib/garments.ts.
+ *
+ * These are the EXISTING confirmed pieces copied across verbatim, not new
+ * product. Agbada and kaftan appear nowhere here because they have no
+ * individual garments — they are categories with no pieces described, and
+ * inventing rows for them would be inventing product.
+ *
+ * `startingPrice` is null on every row on purpose: the five confirmed prices
+ * are per category, and a per-garment figure would be an invented fact that
+ * could silently drift from the line price.
+ */
+const GARMENT_SEED_DATA = [
+  {
+    slug: "navy-two-piece",
+    category: "suits",
+    name: "Navy Two-Piece",
+    detail: "Suits",
+    description:
+      "A single-breasted two-piece in a deep navy wool blend. Built for the boardroom, cut close through the waist.",
+    imageFlat: "/images/catalogue/navy-two-piece-flat.png",
+    imageOnForm: "/images/catalogue/navy-two-piece-on-form.png",
+    altFlat: "Placeholder for a flat/detail photograph of a navy two-piece suit",
+    altOnForm: "Placeholder for a photograph of a navy two-piece suit on the form",
+    sortOrder: 1,
+  },
+  {
+    slug: "charcoal-three-piece",
+    category: "suits",
+    name: "Charcoal Three-Piece",
+    detail: "Suits",
+    description:
+      "Jacket, trouser, and waistcoat in charcoal wool. A formal silhouette that still moves with the wearer.",
+    imageFlat: "/images/catalogue/charcoal-three-piece-flat.png",
+    imageOnForm: "/images/catalogue/charcoal-three-piece-on-form.png",
+    altFlat: "Placeholder for a flat/detail photograph of a charcoal three-piece suit",
+    altOnForm: "Placeholder for a photograph of a charcoal three-piece suit on the form",
+    sortOrder: 2,
+  },
+  {
+    slug: "ivory-wedding-suit",
+    category: "suits",
+    name: "Ivory Wedding Suit",
+    detail: "Suits",
+    description:
+      "An ivory wool-silk suit for the groom. Softly structured shoulders, finished with hand-stitched lapels.",
+    imageFlat: "/images/catalogue/ivory-wedding-suit-flat.png",
+    imageOnForm: "/images/catalogue/ivory-wedding-suit-on-form.png",
+    altFlat: "Placeholder for a flat/detail photograph of an ivory wedding suit",
+    altOnForm: "Placeholder for a photograph of an ivory wedding suit on the form",
+    sortOrder: 3,
+  },
+  {
+    slug: "casual-full",
+    category: "casuals",
+    name: "Casual Outfit",
+    detail: "Casuals",
+    description:
+      "Shirt and trousers cut as one relaxed outfit, keeping the same discipline of line as the tailoring, just without the tie.",
+    imageFlat: "/images/catalogue/casual-full-flat.png",
+    imageOnForm: "/images/catalogue/casual-full-on-form.png",
+    altFlat:
+      "Placeholder for a flat/detail photograph of a complete casual outfit, shirt and trousers together",
+    altOnForm:
+      "Placeholder for a photograph of a complete casual outfit, shirt and trousers together on the form",
+    sortOrder: 1,
+  },
+  {
+    slug: "corporate-full",
+    category: "corporate",
+    name: "Corporate Outfit",
+    detail: "Corporate",
+    description:
+      "Shirt and trousers built as one outfit for the working week, holding their line from the first wear to the hundredth.",
+    imageFlat: "/images/catalogue/corporate-full-flat.png",
+    imageOnForm: "/images/catalogue/corporate-full-on-form.png",
+    altFlat:
+      "Placeholder for a flat/detail photograph of a complete corporate outfit, shirt and trousers together",
+    altOnForm:
+      "Placeholder for a photograph of a complete corporate outfit, shirt and trousers together on the form",
+    sortOrder: 1,
+  },
+] as const;
+
 async function main(): Promise<void> {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
   const prisma = new PrismaClient({ adapter });
@@ -124,8 +208,21 @@ async function main(): Promise<void> {
     });
   }
 
+  // Unlike the FAQ upsert above, this one DOES write on conflict. Garment
+  // copy lives in this file until an admin edits it, so re-running the seed
+  // should restore the seeded text rather than quietly do nothing. Anything
+  // the admin has since changed in the dashboard will be overwritten by a
+  // re-run — that is the trade, and it is why this is a seed and not a sync.
+  for (const garment of GARMENT_SEED_DATA) {
+    await prisma.garment.upsert({
+      where: { category_slug: { category: garment.category, slug: garment.slug } },
+      update: garment,
+      create: garment,
+    });
+  }
+
   await prisma.$disconnect();
-  console.log("ShopSettings and FAQs seeded.");
+  console.log("ShopSettings, FAQs and Garments seeded.");
 }
 
 main().catch((error: unknown) => {

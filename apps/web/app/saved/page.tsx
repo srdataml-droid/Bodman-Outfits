@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SavedList } from "../../components/saved-list";
+import { getGarments } from "../../lib/garments-data";
 import { SiteFooter } from "../../components/site-footer";
 import { SiteHeader } from "../../components/site-header";
 import { StaggerText } from "../../components/stagger-text";
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
   description: "The garments you have saved on this device at Bodman Outfits.",
 };
 
-export default function SavedPage(): React.ReactElement {
+export default async function SavedPage(): Promise<React.ReactElement> {
+  const garments = await getGarments();
+
   return (
     <>
       <SiteHeader />
@@ -24,7 +27,7 @@ export default function SavedPage(): React.ReactElement {
             />
           </header>
 
-          <SavedList />
+          <SavedList garments={garments} />
         </section>
       </main>
       <SiteFooter />
