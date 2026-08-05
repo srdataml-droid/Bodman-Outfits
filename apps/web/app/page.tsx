@@ -24,7 +24,7 @@ export default function HomePage(): React.ReactElement {
               className="mt-5 font-[Fraunces] text-5xl font-medium leading-[1.02] tracking-[-0.035em] text-[var(--everglade)] md:text-7xl"
             />
             <p className="mt-7 max-w-xl text-lg leading-8 text-[var(--muted-ink)] md:text-[22px] md:leading-9">
-              Bespoke tailoring from Lagos. We measure once, cut once, and build garments that fit your life.
+              Bespoke tailoring from Lagos. We measure once, cut once, and build garments that fit you.
             </p>
             <Link
               href="/appointment"

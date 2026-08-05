@@ -1712,6 +1712,7 @@ this was scoped to visible customer copy.
 
 | Where | Was | Now |
 |---|---|---|
+| `app/page.tsx` (hero) | "…build garments that **fit your life**." | "…build garments that **fit you**." |
 | `components/process-narrative.tsx` | "And then it belongs to **someone**." | "And then it belongs to **you**." |
 | `app/about/page.tsx` | "The fuller story of the house, how it started and who started it, **is still being written**. What we can tell you today is how we work…" | "We would rather be known for how we work than for how we talk about ourselves… Come in for a fitting and you will see the whole of it." |
 | `app/appointment/page.tsx` | "This form sends a request, not a confirmed booking. **We don't yet run a live calendar**, so a member of the house will get back to you…" | "A member of the house reads every request personally… Fittings are arranged by a person, not a calendar slot, so tell us what works and we will build the day around it." |
