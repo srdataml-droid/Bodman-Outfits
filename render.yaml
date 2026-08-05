@@ -25,7 +25,12 @@ services:
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec prisma generate && pnpm --filter @atelier-haute/api build
     startCommand: node apps/api/dist/main.js
 
-    healthCheckPath: /health
+    # /api/health, NOT /health. Every controller in this API is mounted under
+    # an `api/` prefix, health included (@Controller("api/health")). Pointing
+    # Render at /health makes it poll a 404 forever: the build succeeds, the
+    # process boots fine, and the deploy still fails with "Timed out after
+    # waiting for internal health check to return a successful response code".
+    healthCheckPath: /api/health
 
     envVars:
       - key: NODE_VERSION

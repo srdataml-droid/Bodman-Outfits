@@ -152,7 +152,7 @@ Already correct elsewhere, verified in code:
 Run in order. Each step's failure points at a different cause.
 
 **Infrastructure**
-- [ ] `https://api.YOURDOMAIN.com/health` returns OK
+- [ ] `https://api.YOURDOMAIN.com/api/health` returns OK
 - [ ] `https://YOURDOMAIN.com` loads with images and styling
 - [ ] Both are HTTPS with valid certificates
 - [ ] Railway logs show **no** boot warning about `DATABASE_URL_PUBLIC`/`_ADMIN`
