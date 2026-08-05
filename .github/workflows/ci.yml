@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A second push to the same branch cancels the first run rather than queueing
+# behind it. On a small repo the older result is never the one you want.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    env:
+      # NOT a real credential and not a secret. `prisma generate` resolves
+      # DIRECT_URL through prisma.config.ts and hard-fails with
+      # PrismaConfigEnvError if the variable is merely absent — but it never
+      # opens a connection, so any syntactically valid URL satisfies it.
+      # Putting a real database URL in CI would hand every workflow run
+      # production credentials to typecheck a TypeScript file.
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      # The web build fetches the catalogue, shop settings and FAQs. There is
+      # no API in CI, so those fetches fail and every fetcher returns its
+      # empty fallback by design. The build must still succeed - that is
+      # precisely the backend-outage behaviour the site is written for.
+      API_URL: http://localhost:4000
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # generated/prisma is gitignored and untracked, and apps/api imports it.
+      # Without this step every later step fails on an unresolved import.
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Catches what typecheck cannot: Next.js build errors, bad route
+      # exports, and server/client component boundary mistakes.
+      - name: Build
+        run: pnpm build
+
+      # No test files exist in this repo yet (0 as of 2026-08-05), so this is
+      # a no-op that starts working the moment the first one lands. It is here
+      # deliberately rather than added later, so writing a test is enough to
+      # get it running in CI.
+      - name: Test
+        run: pnpm test
