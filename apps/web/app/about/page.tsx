@@ -64,8 +64,8 @@ export default function AboutPage(): React.ReactElement {
                 them. All of that happens before a single cut is made.
               </p>
               <p className="mt-6 text-lg leading-8 text-[var(--muted-ink)]">
-                The fuller story of the house, how it started and who started it, is still being written. What we
-                can tell you today is how we work: patiently, precisely, one client at a time.
+                We would rather be known for how we work than for how we talk about ourselves: patiently,
+                precisely, one client at a time. Come in for a fitting and you will see the whole of it.
               </p>
             </div>
             <div

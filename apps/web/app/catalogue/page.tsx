@@ -96,7 +96,7 @@ export default function CataloguePage(): React.ReactElement {
               Each piece is a dialogue between tailor and client.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-[var(--muted-ink)]">
-              Have something in mind that isn&apos;t here yet? Start from your own idea instead.
+              Have something in mind the catalogue doesn&apos;t show? Start from your own idea instead.
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link

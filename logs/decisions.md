@@ -1699,3 +1699,71 @@ honest empty state for agbada.
 The admin password is deliberately recoverable from nowhere (only a bcrypt
 hash exists), so this session could not authenticate as the admin. The guard
 itself is verified — `GET /api/garments/all` returns 401 unauthenticated.
+
+## 2026-08-05 — Site-wide confidence pass on customer-facing copy
+
+Brief: the site should read as a real operating business, not a work in
+progress. **Tone only. Not a single underlying fact changed**, and no new
+commitment, timeframe, price or capability was invented anywhere below.
+Internal docs deliberately stay honest about what is genuinely unconfirmed;
+this was scoped to visible customer copy.
+
+### Every instance found and changed
+
+| Where | Was | Now |
+|---|---|---|
+| `components/process-narrative.tsx` | "And then it belongs to **someone**." | "And then it belongs to **you**." |
+| `app/about/page.tsx` | "The fuller story of the house, how it started and who started it, **is still being written**. What we can tell you today is how we work…" | "We would rather be known for how we work than for how we talk about ourselves… Come in for a fitting and you will see the whole of it." |
+| `app/appointment/page.tsx` | "This form sends a request, not a confirmed booking. **We don't yet run a live calendar**, so a member of the house will get back to you…" | "A member of the house reads every request personally… Fittings are arranged by a person, not a calendar slot, so tell us what works and we will build the day around it." |
+| `app/custom-request/page.tsx` | "**We cannot accept image attachments through this form yet.** If you have a reference picture, mention it here…" | "Have a reference picture? Mention it in your description and we will ask you for it directly, so it reaches the person who will actually cut the piece." |
+| `app/custom-request/page.tsx` (meta) | "Commission a piece that does not exist in the catalogue **yet**." | "Commission a piece of your own design, made to your measurements." |
+| `app/catalogue/page.tsx` | "Have something in mind that **isn't here yet**?" | "Have something in mind the catalogue doesn't show?" |
+| `app/catalogue/[category]/page.tsx` | "Individual pieces from this line **aren't listed here yet**. Everything is cut to measure…" | "This line is cut to the person from the first measurement, so it begins with a conversation rather than a rail." |
+| FAQ `how-measurements-work` (seed **and** live row) | "We do not offer a self-measurement guide **yet**, so this part happens face to face **for now**." | "Bespoke begins from a body rather than a size chart, so this part happens face to face and we would not want it any other way." |
+
+The same fact survives every rewrite. The appointment form still says a person
+confirms rather than a calendar; the custom-request form still routes a
+reference picture through a follow-up; agbada and kaftan still list no
+individual pieces; measurements still happen only in person.
+
+### The strongest rewrite, and why
+
+`/appointment` and `/catalogue/[category]` both described a **limitation** that
+is genuinely a **feature of bespoke**. "We don't yet run a live calendar" is
+the same fact as "fittings are arranged by a person, not a calendar slot", but
+the first apologises for the absence of software and the second describes the
+service being sold. Neither invents anything.
+
+### Deliberately NOT changed
+
+- **"Not sure yet"** — two form dropdown options. The *customer* is describing
+  their own uncertainty, not the business hedging.
+- **"Nothing saved yet"** — empty state about the reader's own favorites list.
+- **`lib/garments.ts:5`** — an internal code comment, not customer-facing.
+- **FAQ `turnaround-time`** — already confident. "That is why we have not put a
+  single number on the wall. It would be honest for one garment and misleading
+  for the next" is a principled position, not an admission of a gap. Turnaround
+  ranges remain genuinely unconfirmed, and this is the right way to say so.
+
+### The FAQ "pending" notice did not exist
+
+The brief quoted a notice reading "Some answers below are marked pending.
+Final pricing, turnaround, and alteration policy are still being confirmed."
+**It is not in the codebase, not in the database, and not in the rendered
+page** — 0 occurrences in all three. It was removed on 2026-08-04 when the FAQ
+rows were rewritten. Nothing to do; reported rather than silently skipped.
+
+All five live FAQ items were audited: deposit (60%, refundable), alterations
+(free), individual pieces, and measurements now carry real confirmed answers.
+Only turnaround remains genuinely open, and it is framed as a choice.
+
+### A verification mistake worth recording
+
+The first rendered check reported every page "CLEAN". It was worthless: the
+web dev server had died, every response was **0 bytes**, and a test for the
+ABSENCE of old strings passes trivially against an empty document. Caught only
+because a presence check for the new copy also returned 0.
+
+**Test for the presence of what should be there, not just the absence of what
+should not.** Re-verified after restarting the server: HTTP 200, non-zero
+bodies, new copy present on all seven pages, old copy absent.

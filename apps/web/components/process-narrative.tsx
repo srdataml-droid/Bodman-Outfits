@@ -109,7 +109,7 @@ export function ProcessNarrative(): React.ReactElement {
             className="absolute left-0 top-1 h-[15px] w-[15px] rounded-full border border-[var(--copper)] bg-[var(--copper)] md:left-1/2 md:-top-4 md:-translate-x-1/2"
           />
           <p className="font-[Fraunces] text-2xl font-medium leading-snug text-[var(--everglade)] md:mt-6 md:text-3xl">
-            And then it belongs to someone.
+            And then it belongs to you.
           </p>
           <Link
             href="/catalogue"

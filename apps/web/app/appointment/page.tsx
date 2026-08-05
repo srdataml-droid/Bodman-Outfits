@@ -107,8 +107,9 @@ export default async function AppointmentPage({
               <div className="rounded-2xl border border-[var(--outline)] p-8">
                 <h3 className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">What happens next</h3>
                 <p className="mt-3 text-base leading-7 text-[var(--muted-ink)]">
-                  This form sends a request, not a confirmed booking. We don&apos;t yet run a live calendar, so a
-                  member of the house will get back to you to confirm the time, or suggest another that works.
+                  A member of the house reads every request personally and will come back to you to confirm your
+                  time, or offer another that suits you better. Fittings are arranged by a person, not a
+                  calendar slot, so tell us what works and we will build the day around it.
                 </p>
               </div>
             </aside>

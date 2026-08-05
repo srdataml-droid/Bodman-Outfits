@@ -100,14 +100,15 @@ export default async function CategoryPage({ params }: CategoryPageProps): Promi
               {category.name} garments
             </h2>
             {garments.length === 0 ? (
-              // Agbada and kaftan have no individual pieces listed yet.
-              // Saying so plainly beats inventing garment names for lines
-              // nobody has described, and matches how the rest of the site
-              // handles unconfirmed content.
+              // Agbada and kaftan carry no individual pieces. Rather than
+              // announce that as a gap in the catalogue, this frames it as
+              // what it actually is: these lines are cut to the person from
+              // the start, so the conversation IS the entry point. No
+              // invented garment names, and no apology either.
               <p className="max-w-xl text-lg leading-8 text-[var(--muted-ink)]">
-                Individual pieces from this line aren&apos;t listed here yet. Everything is cut to
-                measure, so the best place to start is a conversation. Book a fitting or send us a
-                note and we&apos;ll talk through what you have in mind.
+                This line is cut to the person from the first measurement, so it begins with a
+                conversation rather than a rail. Book a fitting or send us a note, and we&apos;ll
+                talk through exactly what you have in mind.
               </p>
             ) : null}
 

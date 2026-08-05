@@ -57,7 +57,7 @@ const FAQ_SEED_DATA = [
     category: "Measurements & Fit",
     question: "How do measurements work?",
     answer:
-      "Measurements are taken in person, at a fitting. We do not offer a self-measurement guide yet, so this part happens face to face for now. Book a fitting and we will walk you through it ourselves, one measurement at a time.",
+      "Measurements are taken in person, at a fitting. Bespoke begins from a body rather than a size chart, so this part happens face to face and we would not want it any other way. Book a fitting and we will walk you through it ourselves, one measurement at a time.",
     sortOrder: 2,
   },
   {

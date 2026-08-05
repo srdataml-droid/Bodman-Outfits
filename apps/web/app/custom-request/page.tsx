@@ -5,7 +5,7 @@ import { SiteHeader } from "../../components/site-header";
 
 export const metadata: Metadata = {
   title: "Custom Design Request",
-  description: "Commission a piece that does not exist in the catalogue yet.",
+  description: "Commission a piece of your own design, made to your measurements.",
 };
 
 export default function CustomRequestPage(): React.ReactElement {
@@ -51,8 +51,8 @@ export default function CustomRequestPage(): React.ReactElement {
                 </li>
               </ol>
               <p className="mt-8 text-sm leading-6 text-[rgb(65_72_67_/_70%)]">
-                We cannot accept image attachments through this form yet. If you have a reference
-                picture, mention it here and we will ask you for it directly.
+                Have a reference picture? Mention it in your description and we will ask you for it
+                directly, so it reaches the person who will actually cut the piece.
               </p>
             </aside>
           </div>
