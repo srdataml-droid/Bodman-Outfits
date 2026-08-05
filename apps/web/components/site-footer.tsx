@@ -19,13 +19,13 @@ export async function SiteFooter(): Promise<React.ReactElement> {
           ) : null}
         </div>
         <div className="flex flex-wrap gap-x-7 gap-y-3 text-sm leading-6 text-[var(--muted-ink)]">
-          <Link className="transition-colors hover:text-[var(--copper)]" href="/contact">
+          <Link className="inline-flex min-h-11 min-w-11 items-center justify-center transition-colors hover:text-[var(--copper)]" href="/contact">
             Enquiry
           </Link>
-          <Link className="transition-colors hover:text-[var(--copper)]" href="/faq">
+          <Link className="inline-flex min-h-11 min-w-11 items-center justify-center transition-colors hover:text-[var(--copper)]" href="/faq">
             FAQ
           </Link>
-          <span>© 2026 {shopName}</span>
+          <span className="inline-flex min-h-11 items-center">© 2026 {shopName}</span>
         </div>
       </div>
     </footer>

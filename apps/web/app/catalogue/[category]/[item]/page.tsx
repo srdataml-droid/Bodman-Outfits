@@ -49,7 +49,7 @@ export default async function ItemPage({ params }: ItemPageProps): Promise<React
         <section className="mx-auto max-w-[1280px] px-5 pb-28 pt-16 md:px-16 md:pb-32 md:pt-28">
           <Link
             href={`/catalogue/${category.slug}`}
-            className="text-sm font-medium tracking-[0.14em] text-[var(--copper)] transition-colors duration-300 hover:text-[var(--everglade)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
+            className="inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-[var(--copper)] transition-colors duration-300 hover:text-[var(--everglade)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
           >
             ← {category.name.toUpperCase()}
           </Link>

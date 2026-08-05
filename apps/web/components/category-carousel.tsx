@@ -173,7 +173,17 @@ export function CategoryCarousel(): React.ReactElement {
 
       {/* Slide indicators, also clickable. Each is a real button with an
           accessible name rather than a bare dot. */}
-      <div className="mt-4 flex items-center justify-center gap-2">
+      {/*
+        The BUTTON is 44x44; the dot inside it is the 10px visual. Measured on
+        a real 375px viewport these were 10x10 tappable, a quarter of the
+        44x44 minimum the project requires, on the home page's primary
+        navigation. Growing the visible dot would have wrecked the design, so
+        the hit area grows instead and the dot is an inert span.
+
+        `-mx-1.5` claws back the padding so the row still reads as tightly
+        spaced dots rather than five wide gaps.
+      */}
+      <div className="mt-1 flex items-center justify-center">
         {categories.map((category, i) => (
           <button
             key={category.slug}
@@ -186,10 +196,15 @@ export function CategoryCarousel(): React.ReactElement {
             }}
             aria-label={`Show ${category.name}`}
             aria-current={i === index ? "true" : undefined}
-            className={`h-2.5 rounded-full transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--copper)] ${
-              i === index ? "w-7 bg-[var(--everglade)]" : "w-2.5 bg-[rgb(27_62_45_/_25%)] hover:bg-[rgb(27_62_45_/_45%)]"
-            }`}
-          />
+            className="-mx-1.5 flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--copper)]"
+          >
+            <span
+              aria-hidden="true"
+              className={`h-2.5 rounded-full transition-all duration-200 ease-out ${
+                i === index ? "w-7 bg-[var(--everglade)]" : "w-2.5 bg-[rgb(27_62_45_/_25%)]"
+              }`}
+            />
+          </button>
         ))}
       </div>
 

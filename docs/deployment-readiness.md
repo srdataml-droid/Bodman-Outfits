@@ -209,3 +209,57 @@ Below the line, not blocking:
 - **Published turnaround times.** Unconfirmed, and the FAQ says so honestly.
 - **The AI concierge.** Permitted provider is fixed (Ollama Cloud) but the
   feature is unbuilt and unscoped.
+
+---
+
+## Backups — actual situation, 2026-08-05
+
+Checked against Supabase's published policy rather than assumed. **The answer
+depends entirely on which plan this project is on, which needs a look at the
+dashboard — this session has no access to it.**
+
+| Plan | Automatic daily backups | Retention |
+|---|---|---|
+| **Free** | **None.** Supabase's own guidance is that free projects "regularly export their data using the Supabase CLI `db dump` command and maintain off-site backups" | — |
+| Pro | Yes | last 7 days |
+| Team | Yes | last 14 days |
+| Enterprise | Yes | up to 30 days |
+
+Point-in-time recovery is **not included on any tier**. It is a paid add-on for
+Pro/Team/Enterprise: roughly **$100/mo for 7 days**, $200/mo for 14, $400/mo
+for 28 — and it additionally requires at least a Small compute add-on. For a
+database currently holding twelve rows of real content, PITR is not
+proportionate and is **not recommended yet**.
+
+**→ Action: check Settings → Subscription in the Supabase dashboard.** If it
+says Free, there are no backups at all and the section below is not optional.
+
+### If the project is on Free: the manual path, tested
+
+A `pg_dump` was run against this database on 2026-08-05 and **it works**:
+
+```
+pg_dump "$DIRECT_URL" --no-owner --no-acl -f backup.sql
+```
+
+- Exit 0, **192 KB**, 44 tables, all `COPY` data blocks present, `Garment`
+  included. Local `pg_dump` is 18.3 and had no version objection.
+- The whole database is **11 MB**, so a dump is trivially cheap to take and
+  store. There is no scale argument for putting this off.
+- Use `DIRECT_URL` (session mode, 5432), not the 6543 pooler.
+
+To automate it, the smallest thing that works is a scheduled GitHub Actions
+job on a cron running that command and uploading the artefact, with
+`DIRECT_URL` as a repository secret. That is a genuine credential in CI, which
+is why the existing `ci.yml` deliberately uses a fake one — a backup workflow
+should be a **separate** workflow with its own secret, not an extra step in
+the build.
+
+**Not built.** No backup automation exists in this repo today.
+
+### What a dump contains — handle it accordingly
+
+The dump includes the `Admin` table (bcrypt password hash) and `AdminSession`
+rows. It is a credential-bearing artefact: it must not be committed, attached
+to an issue, or stored anywhere the source is not already trusted. The test
+dump taken today was written to a temporary scratch directory and deleted.
