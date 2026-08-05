@@ -112,7 +112,7 @@ If you create the service manually instead:
 | Setting | Value |
 |---|---|
 | Runtime | Node |
-| Build command | `corepack enable && pnpm install --frozen-lockfile && pnpm --filter @atelier-haute/api build` |
+| Build command | `corepack enable && pnpm install --frozen-lockfile && pnpm exec prisma generate && pnpm --filter @atelier-haute/api build` |
 | Start command | `node apps/api/dist/main.js` |
 | Health check path | `/health` |
 
@@ -184,7 +184,8 @@ reason. Test admin on the real domain only.
 
 | Symptom | Cause |
 |---|---|
-| `Cannot find module '../../../../generated/prisma/client'` | `prisma generate` did not run. Build command is not going through the `apps/api` build script |
+| `Cannot find module '../../../../generated/prisma/client'` **plus a run of `TS7006 implicitly has an 'any' type`** | One root cause, not many: `prisma generate` did not run. Every implicit-any error is downstream of the unresolved import. Fixing the generate clears all of them |
+| `schema.prisma: file not found` during generate | The generate ran with the wrong working directory. Use `pnpm exec prisma generate` (repo root), **never** `pnpm --filter @atelier-haute/api exec prisma generate` — filtering sets cwd to `apps/api`, which has no `prisma.config.ts` and no schema |
 | `PrismaConfigEnvError: Cannot resolve environment variable: DIRECT_URL` | Either `DIRECT_URL` is not set on the host, **or** it is set but not declared in `turbo.json` `env` so Turborepo stripped it |
 | Turbo warns *"set on your Vercel project, but missing from turbo.json"* for `@atelier-haute/api#build` | **Vercel is building the API, which it should not be.** Set Root Directory to `apps/web`. The warning also means those vars were stripped from the build |
 | `No Output Directory named ".next" found` | Root Directory and `vercel.json` disagree. Pick one of the two Vercel paths above, not both |

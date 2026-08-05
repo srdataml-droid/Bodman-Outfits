@@ -12,10 +12,17 @@ services:
     plan: free
     region: frankfurt # closest Render region to the eu-west-1 database
 
-    # `prisma generate` runs as part of the apps/api build script, which it
-    # must: generated/prisma is gitignored and untracked, and apps/api imports
-    # it, so a fresh clone cannot compile without it.
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @atelier-haute/api build
+    # `prisma generate` appears here explicitly AND as a `prebuild` script in
+    # apps/api/package.json. The duplication is deliberate belt-and-braces;
+    # the generate is idempotent and takes ~150ms.
+    #
+    # NOTE THE CWD. It is `pnpm exec` (repo root), NOT
+    # `pnpm --filter @atelier-haute/api exec`. Filtering to the package runs
+    # it with cwd=apps/api, where there is no prisma.config.ts and no
+    # prisma/schema.prisma — that form fails with "schema.prisma: file not
+    # found". prisma.config.ts also does `import "dotenv/config"`, which reads
+    # .env relative to cwd, so root is the only correct place to run it.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec prisma generate && pnpm --filter @atelier-haute/api build
     startCommand: node apps/api/dist/main.js
 
     healthCheckPath: /health
