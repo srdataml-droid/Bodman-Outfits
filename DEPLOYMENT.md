@@ -39,6 +39,13 @@ Read these first — most first-deploy failures here are one of them.
    an empty fallback instead of throwing, so a build can **succeed** while the
    site shows no contact details, no FAQs and an empty catalogue. A green
    build is not proof the env vars are right.
+6. **Turborepo runs tasks in a strict environment.** A variable set on the
+   host is invisible to a task unless it is declared in `turbo.json`'s `env`.
+   Vercel reports this as *"set on your Vercel project, but missing from
+   turbo.json … WILL NOT be available"*. If `DIRECT_URL` is stripped this way,
+   the API build dies at `prisma generate` even though the variable is
+   correctly set. `turbo.json` now declares the build-time inputs. Runtime
+   secrets are deliberately **not** declared — see the comment in that file.
 
 ---
 
@@ -178,7 +185,8 @@ reason. Test admin on the real domain only.
 | Symptom | Cause |
 |---|---|
 | `Cannot find module '../../../../generated/prisma/client'` | `prisma generate` did not run. Build command is not going through the `apps/api` build script |
-| `PrismaConfigEnvError: Cannot resolve environment variable: DIRECT_URL` | `DIRECT_URL` not set on Render |
+| `PrismaConfigEnvError: Cannot resolve environment variable: DIRECT_URL` | Either `DIRECT_URL` is not set on the host, **or** it is set but not declared in `turbo.json` `env` so Turborepo stripped it |
+| Turbo warns *"set on your Vercel project, but missing from turbo.json"* for `@atelier-haute/api#build` | **Vercel is building the API, which it should not be.** Set Root Directory to `apps/web`. The warning also means those vars were stripped from the build |
 | `No Output Directory named ".next" found` | Root Directory and `vercel.json` disagree. Pick one of the two Vercel paths above, not both |
 | `ERR_PNPM_OUTDATED_LOCKFILE` | Lockfile out of date. Run `pnpm install` locally and commit `pnpm-lock.yaml` |
 | Unsupported/oldpnpm version | Corepack not honouring `packageManager`. Set `ENABLE_EXPERIMENTAL_COREPACK=1` on Vercel; Render uses `corepack enable` in the build command |

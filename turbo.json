@@ -3,7 +3,25 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**"]
+      "outputs": [".next/**", "dist/**"],
+      // Turborepo runs tasks in a STRICT environment: a variable set on the
+      // host is not visible to a task unless it is declared here. On Vercel
+      // this is enforced and reported as "set on your Vercel project, but
+      // missing from turbo.json ... WILL NOT be available".
+      //
+      // That is not cosmetic. `apps/api`'s build runs `prisma generate`,
+      // which resolves DIRECT_URL through prisma.config.ts and hard-fails
+      // with PrismaConfigEnvError if it cannot see it. Undeclared here, the
+      // API build dies even though the variable is correctly set on the host.
+      //
+      // ONLY BUILD-TIME INPUTS BELONG IN THIS LIST.
+      // DATABASE_URL, DATABASE_URL_PUBLIC, DATABASE_URL_ADMIN and
+      // RESEND_API_KEY are deliberately ABSENT: they are read at runtime, by
+      // the running server, and are never needed to compile anything. Adding
+      // them would push production database credentials into every build
+      // environment for no benefit. If a build appears to need one, the
+      // build is doing something it should not.
+      "env": ["NODE_ENV", "DIRECT_URL", "API_URL", "NEXT_PUBLIC_API_URL"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -13,7 +31,10 @@
       "outputs": ["coverage/**"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      // apps/api typechecks against the generated Prisma client, so the same
+      // DIRECT_URL reasoning applies whenever generate has to run first.
+      "dependsOn": ["^typecheck"],
+      "env": ["DIRECT_URL"]
     },
     "dev": {
       "cache": false,
