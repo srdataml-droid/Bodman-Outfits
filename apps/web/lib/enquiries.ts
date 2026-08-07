@@ -19,15 +19,24 @@ export type SubmitOutcome =
   | { ok: true; id: string }
   | { ok: false; reason: "invalid" | "rate-limited" | "unavailable" };
 
+// Same reasoning as lib/appointments.ts: bounded so a cold/asleep API
+// resolves to a clear "unavailable" state within 10s instead of leaving the
+// submit button spinning indefinitely.
+const SUBMIT_TIMEOUT_MS = 10000;
+
 // Returns a discriminated outcome rather than throwing. A silent success on
 // a failed request is the one unacceptable outcome here: it would tell a
 // customer their message was sent when the atelier never received it.
 export async function submitEnquiry(request: EnquiryRequest): Promise<SubmitOutcome> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
+
   try {
     const response = await fetch(`${API_URL}/api/enquiries`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
+      signal: controller.signal,
     });
 
     if (response.ok) {
@@ -39,5 +48,7 @@ export async function submitEnquiry(request: EnquiryRequest): Promise<SubmitOutc
     return { ok: false, reason: "unavailable" };
   } catch {
     return { ok: false, reason: "unavailable" };
+  } finally {
+    clearTimeout(timeout);
   }
 }
