@@ -43,17 +43,22 @@ export function garmentImages(garment: GarmentRecord): GarmentImagePair {
   };
 }
 
+const FETCH_TIMEOUT_MS = 5000;
+
 export async function getGarments(): Promise<GarmentRecord[]> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const response = await fetch(`${API_URL}/api/garments`, {
-      // Same 5-minute window as shop settings and FAQs, so an admin edit
-      // appears on the public site within five minutes without a deploy.
       next: { revalidate: 300 },
+      signal: controller.signal,
     });
     if (!response.ok) return [];
     return (await response.json()) as GarmentRecord[];
   } catch {
     return [];
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
