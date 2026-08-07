@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**"],
+      "outputs": [".next/**", "apps/web/.next/**", "dist/**"],
       // Turborepo runs tasks in a STRICT environment: a variable set on the
       // host is not visible to a task unless it is declared here. On Vercel
       // this is enforced and reported as "set on your Vercel project, but
