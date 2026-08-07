@@ -28,16 +28,26 @@ export type SubmitOutcome =
   | { ok: true; id: string }
   | { ok: false; reason: "invalid" | "rate-limited" | "unavailable" };
 
+// Longer than the server-side build-time timeouts elsewhere in this repo,
+// since this runs in a customer's browser rather than blocking a build — but
+// still bounded, so a cold/asleep API leaves the submit button in a clear
+// "unavailable" state within 10s rather than spinning indefinitely.
+const SUBMIT_TIMEOUT_MS = 10000;
+
 // Returns a discriminated outcome rather than throwing, so the form can show
 // a specific, honest message for each failure instead of a generic one. A
 // silent success on a failed request would be the worst option here: the
 // customer would believe a request was sent that the atelier never received.
 export async function submitAppointment(request: AppointmentRequest): Promise<SubmitOutcome> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
+
   try {
     const response = await fetch(`${API_URL}/api/appointments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
+      signal: controller.signal,
     });
 
     if (response.ok) {
@@ -49,5 +59,7 @@ export async function submitAppointment(request: AppointmentRequest): Promise<Su
     return { ok: false, reason: "unavailable" };
   } catch {
     return { ok: false, reason: "unavailable" };
+  } finally {
+    clearTimeout(timeout);
   }
 }
