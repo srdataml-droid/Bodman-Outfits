@@ -1768,3 +1768,86 @@ because a presence check for the new copy also returned 0.
 **Test for the presence of what should be there, not just the absence of what
 should not.** Re-verified after restarting the server: HTTP 200, non-zero
 bodies, new copy present on all seven pages, old copy absent.
+
+---
+
+## 2026-08-07 — Reconciling the logs with the repo after out-of-session commits
+
+Eleven commits landed on `main` through GitHub's web editor during a long
+deployment debugging session, outside any session of mine. The logs described
+a state the repo no longer had. This entry records what was verified by
+reading files and querying APIs, not what was reported to me.
+
+### Local `main` had diverged, and the divergence mattered
+
+`git pull --ff-only` refused: ten commits on `origin/main`, one local commit
+(`fix(render): health check path is /api/health`) not on the remote. No file
+overlap between the two sides, so a rebase was clean and the local commit is
+preserved on top. It is **still unpushed** — recorded as an open item rather
+than pushed unasked.
+
+### All five fetch timeouts verified present
+
+`shop-settings.ts`, `garments-data.ts`, `faq-data.ts` at 5s;
+`appointments.ts`, `enquiries.ts` at 10s. Every one uses the same shape —
+`AbortController`, `setTimeout` to abort, `clearTimeout` in a `finally`, and a
+catch that returns a fallback rather than rethrowing. The 5s/10s split is
+principled: 5s is server-side and blocks a build; 10s is browser-side and
+blocks a customer's click.
+
+The distinction `faq-data.ts` preserves is the one worth keeping. It returns
+`null`, not `[]`, because an empty array reads as "there are no FAQs" — a
+different and more misleading claim than "the FAQs failed to load."
+
+### The root `vercel.json` deletion was the actual fix
+
+Confirmed: no root `vercel.json` exists; `apps/web/vercel.json` does, scoped
+correctly with `outputDirectory: ".next"` relative to the app. The root file
+was conflicting with Root Directory = `apps/web` on the dashboard and
+producing `apps/web/apps/web/.next`.
+
+`turbo.json`'s added `"apps/web/.next/**"` output is confirmed present, and is
+**defensive, not causal**. Recording that distinction because a future reader
+finding both changes in the same session could easily credit the wrong one and
+then be afraid to remove a line that does nothing.
+
+### One change in the range was not in the brief, and is a no-op
+
+`e95deca "Update next.config.js"` removes the trailing newline from
+`module.exports = nextConfig;`. Zero behavioural effect. Noted so the commit
+range is fully accounted for rather than partially.
+
+### Verified independently, not taken on report
+
+- Vercel: latest production deploys **READY** at `1b1aefe`.
+- Supabase `dad's business` (`mthlflyzoqlpfsklrneg`): `ACTIVE_HEALTHY`,
+  security advisors return **zero lints**. The RLS and two-role work holds.
+- `apps/web` typechecks clean.
+- Copy pass: hero tagline, "belongs to you", and the FAQ deposit/payment row
+  all present in the files; zero occurrences of "still finalizing".
+
+### The one thing the brief did not mention, and should have
+
+**Two Vercel projects are connected to the same repository.**
+`bodman-outfits-web` and `bodman-outfits-web-gkny` both build production on
+every push to `main` — visible in the deployment history as paired builds of
+identical commits. This doubles build minutes and leaves two live URLs for one
+site.
+
+It is almost certainly an artifact of the debugging session: when builds keep
+failing, re-importing the repo as a fresh project is a natural thing to try,
+and the second project outlived the problem it was created for.
+
+Not acted on. Deleting a Vercel project is destructive and irreversible, and
+choosing which of the two is canonical is a decision about where a custom
+domain will eventually point — the owner's call, not mine. Flagged in
+`project-status.md` as open item 9.
+
+### Also flagged: the repo and the Render dashboard agree only by luck
+
+The running service has the correct `/api/health` path because it was fixed in
+the dashboard. `render.yaml` has it too — in a commit that has never been
+pushed. Nothing is broken today. But if the service is ever recreated from the
+blueprint before that commit lands, it comes back with the wrong path and the
+same misleading "health check timed out" failure that cost a debugging session
+already.

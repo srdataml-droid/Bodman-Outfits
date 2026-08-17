@@ -1,8 +1,9 @@
 # Project Status
 
-Last updated: 2026-08-05 (shop details confirmed, published and verified on the
-rendered pages — see `docs/shop-details-rollout.md`; admin dashboard record
-corrected, nine screens listed below; direct connection on 5432 unreachable)
+Last updated: 2026-08-07 (deployment unblocked — web is live on Vercel, build
+timeouts fixed with fetch timeouts, the doubled-output-path bug resolved by
+deleting the root `vercel.json`; reconciled against actual repo state after a
+run of commits made directly through GitHub's web editor)
 
 This is a living snapshot of what's actually built and working, verified by
 reading the code — not aspirational. Update it whenever a feature moves
@@ -107,7 +108,7 @@ table in `logs/decisions.md`. Contract detail in `docs/api.md`,
 |---|---|
 | Database | Real Supabase credentials present in `.env` as of 2026-08-02. Confirmed live and reachable (`prisma migrate deploy`). |
 | Migrations | All four migrations (`add_shop_settings`, `add_faq`, `add_admin_auth`, `add_appointments`) are applied to the real Supabase database. The first two were **already applied** to the real Supabase database — discovered 2026-08-02 via `prisma migrate deploy` reporting "No pending migrations to apply," not something applied by me this session. Schema (tables) exists; **both tables are empty, 0 rows** (verified via `$queryRaw`/`count()`). No seed data has been run against the real database. |
-| Deployment config | Missing — no Vercel/Railway/Docker config anywhere. |
+| Deployment config | **Done.** Web → Vercel (`apps/web/vercel.json`, Root Directory `apps/web` on the dashboard). API → Render (`render.yaml`, `healthCheckPath: /api/health`). See the Deployment section below. |
 
 ## Known blockers (see `docs/api.md` for full detail)
 
@@ -335,3 +336,116 @@ the note; FAQ entry rendered. `apps/web` typechecks clean.
    `apps/web/public/images/home/*.jpg` files (4.0 MB) remain unreferenced.
    Deliberately left in place 2026-08-04 at the owner's instruction: flagged,
    no urgency, do not delete without asking.
+
+## Deployment (2026-08-07) — reconciled against actual repo and dashboard state
+
+This section was written by reading the files and querying the Vercel and
+Supabase APIs directly, not from prior log entries. A run of commits landed
+through GitHub's web editor during a long debugging session and the logs had
+gone stale relative to the repo.
+
+### Build timeouts — fixed
+
+All five API-calling libs in `apps/web/lib` now bound their fetches with an
+`AbortController` + `setTimeout`, cleared in a `finally`:
+
+| File | Timeout | Fallback on timeout |
+|---|---|---|
+| `shop-settings.ts` | 5s | `null` → `SHOP_NAME_FALLBACK`, WhatsApp entry points degrade |
+| `garments-data.ts` | 5s | `[]` → honest empty catalogue |
+| `faq-data.ts` | 5s | `null` → "unavailable", deliberately distinct from "no FAQs" |
+| `appointments.ts` | 10s | `{ ok: false, reason: "unavailable" }` |
+| `enquiries.ts` | 10s | `{ ok: false, reason: "unavailable" }` |
+
+Root cause: Render's free plan sleeps the API. During Vercel static generation
+every page that touches the root layout calls `getShopSettings()`, so one cold
+start hung the whole build. The two 10s values are the browser-side submit
+paths — longer because they block a customer's click, not a build.
+
+### The doubled output path — fixed
+
+A root-level `vercel.json` was silently conflicting with Root Directory =
+`apps/web` set on the Vercel dashboard, producing `apps/web/apps/web/.next`
+and breaking every production build. The root file is **deleted**; a correctly
+scoped one now lives at `apps/web/vercel.json`:
+
+    installCommand: cd ../.. && pnpm install --frozen-lockfile
+    buildCommand:   cd ../.. && pnpm --filter @atelier-haute/web build
+    outputDirectory: .next
+
+`turbo.json`'s build `outputs` also gained `"apps/web/.next/**"` alongside
+`".next/**"` as a defensive measure during the same session. It is belt-and-
+braces, not the fix — the deleted root config was the fix.
+
+### Render health check — fixed in the dashboard, and in `render.yaml`
+
+`healthCheckPath` is `/api/health`, not the default `/health`. Every
+controller is mounted under an `api/` prefix, health included, so Render was
+polling a 404 and reporting healthy deploys as failed.
+
+### Current deployment state (verified via the Vercel API)
+
+- Latest production deploys are **READY** at commit `1b1aefe`.
+- **Two Vercel projects are connected to the same GitHub repo** —
+  `bodman-outfits-web` and `bodman-outfits-web-gkny`. Both build on every push
+  to `main`, both target production. See open items below.
+- Supabase project `dad's business` (`mthlflyzoqlpfsklrneg`) is
+  `ACTIVE_HEALTHY`. Security advisors return **zero lints** — the RLS and
+  scoped-role work still holds.
+- `apps/web` typechecks clean.
+
+### Copy/tone pass — confirmed live
+
+Verified by reading the files, not assumed: hero tagline ends "…build garments
+that fit you" (`app/page.tsx:27`), "And then it belongs to you"
+(`components/process-narrative.tsx:112`), and the FAQ deposit/payment row
+carries a real confirmed answer. Zero occurrences of "still finalizing"
+anywhere in `apps/web` or `prisma`. No further action.
+
+## Open items (2026-08-07)
+
+Carried forward and still open:
+
+1. **`NOTIFICATION_EMAIL` is unset.** Nothing will be emailed until an address
+   is configured. Needs a decision from the owner.
+2. **`NOTIFICATION_FROM` is unset.** Needs an address on a Resend-verified
+   domain before production.
+3. **The success path of email sending is unverified.** The failure path is
+   verified; a real send has never been made because there is no recipient.
+4. **`prisma/seed.ts` upserts FAQs with `update: {}`.** Re-running the seed
+   can create the FAQ set but can never correct an existing row. Editing the
+   seed file alone silently does nothing to a populated database.
+5. **Payment/deposit collection is not built.** Blocked on an `sk_test_`
+   Paystack key — the only key present is `sk_live_`, and it has never been
+   used.
+6. **Customer-facing order status lookup is not built.** Needs a decision on
+   what customers may see and whether a phone number alone identifies them.
+7. **Unreferenced home imagery.** Twelve `apps/web/public/images/home/*.jpg`
+   (4.0 MB) remain unreferenced. Left in place at the owner's instruction — do
+   not delete without asking.
+8. **`.env` holds several live-looking third-party keys in plaintext.**
+   Flagged for awareness, not acted on.
+
+New, found during this reconciliation:
+
+9. **Duplicate Vercel project.** `bodman-outfits-web` and
+   `bodman-outfits-web-gkny` are both connected to `srdataml-droid/Bodman-Outfits`
+   and both deploy production on every push to `main`. This doubles build
+   minutes and gives two live URLs for one site. Needs a decision on which is
+   canonical before a custom domain is attached; the other should be deleted
+   or disconnected. Not acted on — deleting a project is destructive.
+10. **`render.yaml`'s health-check fix is committed locally but unpushed.**
+    The running Render service is correct (it was fixed in the dashboard), so
+    nothing is broken today. But the repo and the dashboard only agree once
+    this is pushed — and if the service is ever recreated from the blueprint,
+    an unpushed fix means it comes back wrong.
+
+Resolved since the last update:
+
+- ~~Direct connection on port 5432 unreachable, blocking `prisma migrate`.~~
+  The Supabase project now reports `ACTIVE_HEALTHY`; the earlier `P1001` is
+  consistent with the project having been paused. **Not re-tested** — worth a
+  `prisma migrate status` before relying on it.
+- ~~Vercel builds timing out.~~ Fixed by the fetch timeouts above.
+- ~~Production builds broken by the doubled output path.~~ Fixed by deleting
+  the root `vercel.json`.
