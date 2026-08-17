@@ -11,7 +11,8 @@ interface Row {
   enquiryId: string | null;
   customRequestId: string | null;
   customerName: string;
-  customerPhone: string;
+  customerPhone: string | null;
+  customerEmail: string | null;
   status: OrderStatus;
   notes: string | null;
   totalAmount: unknown;
@@ -50,7 +51,8 @@ export class OrdersService {
         enquiryId: input.source === "enquiry" ? input.sourceId : null,
         customRequestId: input.source === "customRequest" ? input.sourceId : null,
         customerName: input.customerName,
-        customerPhone: input.customerPhone,
+        customerPhone: input.customerPhone ?? null,
+        customerEmail: input.customerEmail ?? null,
         notes: input.notes ?? null,
         totalAmount: input.totalAmount ?? null,
         depositAmount: input.depositAmount ?? null,
@@ -120,6 +122,7 @@ export class OrdersService {
       sourceId: r.appointmentId ?? r.enquiryId ?? r.customRequestId,
       customerName: r.customerName,
       customerPhone: r.customerPhone,
+      customerEmail: r.customerEmail,
       status: r.status,
       notes: r.notes,
       // Decimal is serialised as a string so no precision is lost passing it

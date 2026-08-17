@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Bodman Outfits">
+  <title>Bodman Outfits</title>
+  <desc>
+    The browser-tab mark. A circle rather than the wordmark in
+    public/brand/logo-light.svg: that logo is 66x34 and reads as "Bodman
+    Outfits" at full size, but scaled into a 16px tab it becomes an
+    illegible smudge. A tab icon has one job at one size, so this is drawn
+    for 16px and merely happens to also work at 512.
+
+    Colours are the site's own brand tokens (everglade #1b3e2d, copper
+    #c8763a) so the tab matches the page it opens. Note for anyone editing:
+    keep documentation in desc rather than an XML comment. A comment
+    mentioning a CSS custom property by name contains a double hyphen, which
+    is illegal inside an XML comment and silently renders the whole icon
+    unparseable - it still serves 200 with the right content type, and shows
+    nothing at all.
+
+    The letter is a serif B because at 16px a letter survives where a needle
+    and thread does not. Georgia and Times are the safest widely present
+    serifs; Fraunces is the brand face, but a webfont cannot be relied on
+    inside an icon, which renders outside the page's font context.
+  </desc>
+  <circle cx="32" cy="32" r="32" fill="#1b3e2d"/>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#c8763a" stroke-width="2" opacity="0.85"/>
+  <text x="32" y="33" fill="#f9f9f9" font-family="Georgia, 'Times New Roman', serif"
+        font-size="36" font-weight="500" text-anchor="middle" dominant-baseline="central">B</text>
+</svg>

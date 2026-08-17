@@ -236,7 +236,9 @@ export const adminApi = {
     source: "appointment" | "enquiry" | "customRequest";
     sourceId: string;
     customerName: string;
-    customerPhone: string;
+    // At least one of these; the API refuses an order with neither.
+    customerPhone?: string;
+    customerEmail?: string;
     notes?: string;
   }) => adminFetch<Order>("/api/orders", { method: "POST", body: JSON.stringify(input) }),
   updateOrder: (

@@ -11,6 +11,19 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: shopName, template: `%s | ${shopName}` },
     description: "Bespoke tailoring from Lagos.",
+    /*
+     * Declared rather than left to the file convention. `app/icon.svg` is
+     * served correctly at /icon.svg, but the automatic <link rel="icon"> was
+     * not being emitted into the head on this Next version, so the tab stayed
+     * blank while the file itself was fine. Naming it here is one line, is
+     * visible to whoever reads this next, and does not depend on convention
+     * detection surviving a version bump.
+     */
+    icons: {
+      icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+      shortcut: "/icon.svg",
+      apple: "/icon.svg",
+    },
   };
 }
 

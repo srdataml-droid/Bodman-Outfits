@@ -74,7 +74,11 @@ export default function CustomRequestsPage(): React.ReactElement {
       source: "customRequest",
       sourceId: selected.id,
       customerName: selected.name,
-      customerPhone: selected.phone ?? selected.email,
+      // Was `selected.phone ?? selected.email`, which wrote an email address
+      // into the phone column whenever a request carried no number - and left
+      // the order with no address, so it could never be told it was ready.
+      customerPhone: selected.phone ?? undefined,
+      customerEmail: selected.email,
       notes: `From custom request: ${selected.description.slice(0, 200)}`,
     });
     setBusy(false);

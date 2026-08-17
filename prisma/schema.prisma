@@ -219,7 +219,10 @@ model Order {
   // that loses the customer's name because a request was tidied up would be
   // worse than a little duplication.
   customerName  String
-  customerPhone String
+  /// Nullable since 2026-08-17: a custom request may carry no phone, and the
+  /// admin screen previously satisfied a NOT NULL by writing the email here.
+  /// At least one of phone or email is required, enforced in the schema layer.
+  customerPhone String?
   /// Snapshotted for the same reason as the name and phone above: the source
   /// request can be deleted and an order that loses the address cannot tell
   /// the customer their garment is ready. Nullable because `email` is

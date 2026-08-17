@@ -35,7 +35,22 @@ export const createOrderSchema = z
     source: z.enum(ORDER_SOURCES),
     sourceId: z.string().trim().min(1),
     customerName: z.string().trim().min(1).max(MAX_NAME),
-    customerPhone: z.string().trim().min(1).max(MAX_PHONE),
+    /*
+     * Both contact fields are optional individually and jointly required by
+     * the refinement below.
+     *
+     * `customerPhone` used to be mandatory, and that is exactly why the admin
+     * screen wrote `phone ?? email` into it: a custom request carries an
+     * optional phone and a required email, so the only way past the validator
+     * was to put an address in the phone column. That produced orders the shop
+     * would try to telephone at an email address, and - since nothing then
+     * filled `customerEmail` - orders that could never be told they were ready.
+     *
+     * What an order actually needs is a way to reach the customer, not a phone
+     * specifically. That is what is enforced now.
+     */
+    customerPhone: z.string().trim().max(MAX_PHONE).optional().or(z.literal("").transform(() => undefined)),
+    customerEmail: z.string().trim().email().max(254).optional().or(z.literal("").transform(() => undefined)),
     notes: z.string().trim().max(MAX_NOTES).optional().or(z.literal("").transform(() => undefined)),
     // All pricing is optional and stays that way. No pricing or deposit
     // policy exists, so an order can be tracked without one.
@@ -43,7 +58,11 @@ export const createOrderSchema = z
     depositAmount: money,
     currency: z.string().trim().max(MAX_CURRENCY).optional().or(z.literal("").transform(() => undefined)),
   })
-  .strict();
+  .strict()
+  .refine((o) => Boolean(o.customerPhone) || Boolean(o.customerEmail), {
+    message: "An order needs at least one of customerPhone or customerEmail - otherwise nobody can be told it is ready.",
+    path: ["customerPhone"],
+  });
 export type CreateOrderDto = z.infer<typeof createOrderSchema>;
 
 export const updateOrderSchema = z
@@ -62,7 +81,10 @@ export interface OrderDto {
   source: (typeof ORDER_SOURCES)[number] | null;
   sourceId: string | null;
   customerName: string;
-  customerPhone: string;
+  // Nullable to match the column. At least one of these is always present -
+  // the create schema refuses an order that nobody could be contacted about.
+  customerPhone: string | null;
+  customerEmail: string | null;
   status: OrderStatus;
   notes: string | null;
   totalAmount: string | null;
