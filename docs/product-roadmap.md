@@ -72,6 +72,43 @@ workshop. What the customer wants is an honest stage and an expected date.
 
 ---
 
+## Accounts and authentication — decided 2026-08-17
+
+**Progressive.** Browsing and asking stay open; anything that protects money
+or personal data requires an account.
+
+| Action | Account required |
+|---|---|
+| Browse catalogue, FAQ, prices | No |
+| Enquiry, custom request, book a fitting | No — name and phone only |
+| Track an order | **Yes** |
+| Make a purchase | **Yes** |
+| Stored measurements and history | **Yes** |
+
+**Why not gate everything:** customers arrive from a WhatsApp link to book a
+fitting. Every field before that booking loses some of them, and for a shop
+doing tens of orders a month an account wall likely costs more business than it
+organises.
+
+**Why gate those three:** identifying a customer by phone number alone is fine
+for *recognising* a returning customer and useless as *authentication* — anyone
+who knows Ada's number could read Ada's orders. Once money moves and personal
+data persists, that is the obvious attack and it has to be closed.
+
+### Phone + one-time code, not email + password
+
+- Everyone here has a phone and knows the number. Not everyone checks email —
+  `email` is nullable on every model precisely because of this.
+- No password storage, no reset flow, no credential stuffing. The admin side
+  does not even have password reset yet; adding that burden on the customer
+  side would be a step backwards.
+- The login key becomes the *same* key as the customer identity: one person,
+  one number, whether they walked in, messaged, or bought online. Email
+  becomes an optional contact detail rather than the account.
+
+This still needs the `Customer` model keyed on a normalised phone number, so
+that work comes first either way.
+
 ## Payments
 
 Paystack keys are in `.env` and **nothing references them** — zero matches
@@ -89,12 +126,58 @@ registration — Business Name or RC both accepted — the BVN of the owner or a
 director, a government-issued ID, and a Nigerian bank account for settlement.
 KYC clears in 1–3 business days. Settlement is T+1.
 
+**Status: deferred deliberately.** Not being built yet - documented now so the
+design decisions survive until keys arrive.
+
 **Refund policy: deliberately not drafted here.** It needs a conversation, not
 a template. A garment cut to one person's body cannot be resold, which makes
 the usual "14 days, no questions" actively wrong — and it is exactly the clause
 a customer will point at when something goes wrong. To be written together.
 
 ---
+
+## The assistant — replacing the WhatsApp button with something that answers
+
+The floating WhatsApp button hands every question to one person. That works
+until volume arrives, at which point the boss becomes the bottleneck for
+"do you make agbada" as much as for real decisions.
+
+**Shape:** a retrieval-backed assistant that answers from the shop's own data
+and hands over to a human on request.
+
+### The two things it must never invent
+
+**A price** and **a date.** Both create obligations the shop then has to
+honour, and a customer will quote either back verbatim. Refusal is the feature,
+not a limitation - the correct answer to a question it cannot ground is "let me
+put you through to the shop", every time.
+
+### Three design rules
+
+1. **Knowledge comes from the database, not the prompt.** FAQs are already a
+   `Faq` table; garments, prices and categories are already rows. Read those at
+   answer time and the assistant updates itself when the shop changes a price.
+   Bake prices into a system prompt and it will quote last month's figures with
+   total confidence, forever.
+2. **Escalation is one tap and always visible** - present in every reply, not
+   offered only once the assistant has failed. Its job is to absorb the routine
+   eighty percent, not to defend the gate.
+3. **Log every conversation.** It is the audit trail when a customer says "your
+   bot told me forty thousand", and it is the material that shows which
+   questions deserve a proper answer on the site itself.
+
+### Start narrow
+
+FAQs, "where is my order", and booking a fitting. Those three cover most
+message volume and each has a checkable answer. Everything else escalates.
+
+**Prior art in this account:** `docs-rag-service` - "RAG with verifiable
+citations and measured refusal, retrieval scored separately". That is the same
+discipline this needs, and the evaluation approach transfers directly.
+
+**Channel cost:** WhatsApp Business API bills per conversation. Worth pricing
+before committing, since the alternative - answering in the web chat only -
+loses the arrival path customers actually use.
 
 ## Legal and compliance
 
