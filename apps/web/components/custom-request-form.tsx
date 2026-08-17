@@ -42,6 +42,8 @@ export function CustomRequestForm(): React.ReactElement {
       phone: String(data.get("phone") ?? ""),
       description: String(data.get("description") ?? ""),
       category: String(data.get("category") ?? "") as CustomRequestSubmission["category"],
+      occasion: String(data.get("occasion") ?? ""),
+      neededBy: String(data.get("neededBy") ?? ""),
     };
     setStatus("submitting");
     setError(null);
@@ -125,6 +127,42 @@ export function CustomRequestForm(): React.ReactElement {
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
+        </div>
+      </div>
+
+      {/*
+        * The two questions a tailor asks first, asked here rather than left to
+        * the paragraph below. Both optional: someone who only knows they want
+        * "something like the navy one" should not be stopped from asking.
+        *
+        * The date is a native date input, so phones show a calendar and the
+        * value arrives as YYYY-MM-DD - which is what the API expects and what
+        * a queue can sort by. `min` is today, because a deadline in the past
+        * is never what anyone meant.
+        */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="flex flex-col">
+          <label htmlFor="cr-occasion" className={labelCls}>WHAT IS IT FOR? (OPTIONAL)</label>
+          <input
+            id="cr-occasion"
+            name="occasion"
+            type="text"
+            placeholder="A wedding, the office, a burial..."
+            className={inputCls}
+          />
+        </div>
+        <div className="flex flex-col">
+          <label htmlFor="cr-needed-by" className={labelCls}>WHEN DO YOU NEED IT? (OPTIONAL)</label>
+          <input
+            id="cr-needed-by"
+            name="neededBy"
+            type="date"
+            min={new Date().toISOString().slice(0, 10)}
+            className={inputCls}
+          />
+          <p className="mt-2 text-sm text-[var(--muted-ink)]">
+            Tell us even if it is soon. We would rather say so early than late.
+          </p>
         </div>
       </div>
 

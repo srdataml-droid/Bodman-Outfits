@@ -39,6 +39,8 @@ export class CustomRequestsService {
         email: input.email,
         phone: input.phone ?? null,
         description: input.description,
+        occasion: input.occasion ?? null,
+        neededBy: input.neededBy ? new Date(`${input.neededBy}T00:00:00.000Z`) : null,
         category: input.category ?? null,
       },
       // Narrow RETURNING to match the column-level grant the public role
@@ -53,6 +55,8 @@ export class CustomRequestsService {
       customerEmail: input.email,
       details: [
         ["Category", input.category ?? "not specified"],
+        ["Needed by", input.neededBy ?? "no date given"],
+        ["Occasion", input.occasion ?? "not specified"],
         ["Email", input.email],
         ["Phone", input.phone ?? "not given"],
         ["Description", input.description],

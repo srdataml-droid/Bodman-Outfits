@@ -13,6 +13,7 @@ const MAX_PHONE = 40;
 // Longer than an enquiry message: this field is where the customer describes
 // a garment that does not exist yet, which is the whole point of the form.
 const MAX_DESCRIPTION = 6000;
+const MAX_OCCASION = 120;
 
 const optional = (max: number) =>
   z.string().trim().max(max).transform((v) => (v === "" ? undefined : v)).optional();
@@ -24,6 +25,25 @@ export const createCustomRequestSchema = z.object({
   description: z.string().trim().min(1).max(MAX_DESCRIPTION),
   category: z
     .enum(CUSTOM_REQUEST_CATEGORIES)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  /*
+   * The two questions a tailor asks before anything else, captured as data
+   * rather than left inside the description paragraph.
+   *
+   * `neededBy` is the one that decides whether the job can be taken at all -
+   * a wedding in nine days is a different answer from one in nine weeks - and
+   * as a date it can be sorted and filtered, which a sentence cannot.
+   * `occasion` shapes the cut and the cloth.
+   *
+   * Both optional: a customer who only knows they want "something like the
+   * navy one" should not be blocked from asking.
+   */
+  occasion: optional(MAX_OCCASION),
+  neededBy: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD")
     .optional()
     .or(z.literal("").transform(() => undefined)),
 });

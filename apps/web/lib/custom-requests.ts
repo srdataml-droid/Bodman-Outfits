@@ -6,6 +6,9 @@ export interface CustomRequestSubmission {
   phone?: string;
   description: string;
   category?: (typeof CUSTOM_REQUEST_CATEGORIES)[number] | "";
+  occasion?: string;
+  /** YYYY-MM-DD, or "" when not given. */
+  neededBy?: string;
 }
 
 // Browser-visible, same as the other public forms, so the API's per-IP rate

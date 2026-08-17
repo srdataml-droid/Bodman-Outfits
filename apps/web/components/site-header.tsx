@@ -5,6 +5,12 @@ import { MobileMenu } from "./mobile-menu";
 const navigationItems = [
   { href: "/about", label: "Heritage" },
   { href: "/catalogue", label: "Catalogue" },
+  // Added 2026-08-18. With no pieces in the catalogue, commissioning IS the
+  // product: it is the only way a customer can say "make me this". It was
+  // reachable from one link on /catalogue and nowhere else - not the nav, not
+  // the footer - and the "Customize this piece" buttons that used to point at
+  // it lived on garment pages that no longer exist.
+  { href: "/custom-request", label: "Commission" },
   { href: "/saved", label: "Saved" },
   { href: "/faq", label: "FAQ" },
 ];

@@ -165,6 +165,13 @@ model CustomRequest {
   email         String
   phone         String?
   description   String
+  /// What the piece is for - a wedding, a burial, the office. Shapes the cut
+  /// and the cloth, and is the second thing any tailor asks.
+  occasion      String?
+  /// The first thing any tailor asks. Stored as a DATE rather than inside the
+  /// description so the review queue can be sorted and filtered by it: a
+  /// wedding in nine days is a different decision from one in nine weeks.
+  neededBy      DateTime?           @db.Date
   // Optional link to a catalogue category, as a plain String for the same
   // reason as Appointment.category: these mirror editable catalogue content
   // and a database enum would need a migration every time it changes.
