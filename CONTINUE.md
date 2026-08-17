@@ -11,11 +11,34 @@ nothing here has to be rediscovered.
 | Piece | Where | State |
 |---|---|---|
 | `apps/web` | Vercel `bodman-outfits-web` | **live and green**, auto-deploys from `main` |
-| `apps/api` | Render | config fixed but **unverified** — see task 1 |
-| Database | Supabase `dad's business`, eu-west-1, Postgres 17 | **ACTIVE_HEALTHY** as of 11:5x today |
+| `apps/api` | Render | **live**, `/api/health` returns ok, free tier (spins down) |
+| Database | Supabase `dad's business`, eu-west-1, Postgres 17 | **ACTIVE_HEALTHY**, 10 migrations applied |
 | Repo | `srdataml-droid/Bodman-Outfits`, public | `main` at the PR #1 merge |
 
-PR #1 merged today carried three commits:
+### Done since (2026-08-17, later)
+
+- **Customer notifications.** Submissions now confirm to the customer as well
+  as alerting the shop, and an order moving to `ready` emails "your garment is
+  ready" - on the transition only, so editing a note does not re-send.
+- **Order contact fixed.** The admin screen used to write a customer's *email
+  address into the phone column* when a custom request carried no number, which
+  also left the order with nowhere to send that ready notice. Both fields are
+  now optional individually and jointly required.
+- **A tab icon.** There was none; `/favicon.ico` 404'd.
+- **Migration applied to production.** `customerEmail` added, `customerPhone`
+  made nullable, recorded in `_prisma_migrations` with the checksum Prisma
+  computes so `migrate deploy` sees it as applied rather than pending.
+- **`railway.json` deleted** and the `logs/` records committed.
+
+Applied through the Supabase connector rather than `prisma migrate deploy`,
+because this sandbox cannot reach port 5432 - `P1001` on the pooler. The
+checksum method was validated first by reproducing an already-applied
+migration's recorded hash, so Prisma's history is consistent rather than
+merely populated. Verified after: both columns present with the expected
+nullability, `atelier_api_admin` holds SELECT/INSERT/UPDATE on both, the API
+answers `{"status":"ok"}`, and `/api/garments` returns 200.
+
+PR #1 merged earlier carried three commits:
 
 - `31d14c2` **your Render health-check fix**, which had been stranded unpushed
   on local `main` — `render.yaml` now says `healthCheckPath: /api/health`
@@ -149,3 +172,15 @@ only refuses to wrap from `sm` up.
 
 **Verify responsive work at 320px, not just 390.** The overflow this session
 introduced was invisible at 390 and 42px at 320.
+
+**A file can serve 200, with the right content type, and still be broken.**
+The first tab icon documented itself in an XML comment naming the CSS custom
+properties. A property name contains a double hyphen, which is illegal inside
+an XML comment, so the SVG was unparseable - and it still served 200 as
+`image/svg+xml` with all three `<link rel="icon">` tags present. It rendered
+nothing. Only opening it in a browser caught it. Keep notes in `<desc>`.
+
+**Kill the server before rebuilding - it happened twice.** The second time a
+`next start` had been running 5.6 hours, serving a build from before the icon
+existed, which is why three checks reported 404 on a file that was right
+there.
