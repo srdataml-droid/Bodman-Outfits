@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getShopName } from "../lib/shop-settings";
+import { MobileMenu } from "./mobile-menu";
 
 const navigationItems = [
   { href: "/about", label: "Heritage" },
@@ -14,11 +15,11 @@ export async function SiteHeader(): Promise<React.ReactElement> {
     <header className="sticky top-0 z-20 border-b border-[var(--outline)] bg-[#f9f9f9]/90 backdrop-blur-md">
       <nav
         aria-label="Main navigation"
-        className="mx-auto flex min-h-20 max-w-[1280px] items-center justify-between gap-4 px-5 md:min-h-24 md:px-16"
+        className="mx-auto flex min-h-20 max-w-[1280px] items-center justify-between gap-3 px-5 md:min-h-24 md:gap-4 md:px-16"
       >
         <Link
           href="/"
-          className="font-[Fraunces] text-xl font-medium uppercase tracking-[0.12em] text-[var(--everglade)] transition-colors duration-300 hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
+          className="font-[Fraunces] whitespace-nowrap text-lg font-medium uppercase tracking-[0.12em] text-[var(--everglade)] sm:text-xl transition-colors duration-300 hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
         >
           {shopName}
         </Link>
@@ -37,12 +38,17 @@ export async function SiteHeader(): Promise<React.ReactElement> {
             </Link>
           ))}
         </div>
-        <Link
-          href="/appointment"
-          className="flex min-h-11 items-center rounded-xl bg-[var(--everglade)] px-4 py-2.5 text-sm font-medium tracking-[0.08em] text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--copper)] hover:shadow-[0_12px_28px_rgb(200_118_58_/_22%)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)] md:px-6 md:py-3"
-        >
-          BOOK A CONSULTATION
-        </Link>
+        <div className="flex items-center gap-2 md:gap-4">
+          <Link
+            href="/appointment"
+            className="flex min-h-11 items-center rounded-xl bg-[var(--everglade)] px-4 py-2.5 text-sm font-medium tracking-[0.08em] text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--copper)] hover:shadow-[0_12px_28px_rgb(200_118_58_/_22%)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)] md:px-6 md:py-3"
+          >
+            <span className="sm:hidden">BOOK</span>
+            <span className="hidden sm:inline">BOOK A CONSULTATION</span>
+          </Link>
+
+          <MobileMenu items={navigationItems} />
+        </div>
       </nav>
     </header>
   );
