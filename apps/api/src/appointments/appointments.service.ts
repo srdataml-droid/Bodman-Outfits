@@ -66,6 +66,7 @@ export class AppointmentsService {
       kind: "appointment",
       recordId: appointment.id,
       customerName: input.name,
+      customerEmail: input.email,
       details: [
         ["Category", input.category],
         ["Preferred date", input.preferredDate],

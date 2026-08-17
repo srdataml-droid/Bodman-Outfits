@@ -19,12 +19,33 @@ export interface SubmissionNotification {
   /** The new row's id. Used to build the deep link. */
   recordId: string;
   customerName: string;
+  /**
+   * The customer's own address, when they gave one.
+   *
+   * Optional because the schema makes it optional: `email` is nullable on all
+   * three request models and `phone` is not. Most customers here arrive from
+   * WhatsApp and leave a number. So a confirmation sent by email reaches a
+   * subset by design, and the absence of an address is an ordinary case to be
+   * skipped quietly, never an error.
+   */
+  customerEmail?: string | null;
   /** Ordered label/value pairs, rendered as-is. Keep it to what an admin needs to triage. */
   details: Array<[label: string, value: string]>;
 }
 
 const KIND_LABEL: Record<SubmissionKind, string> = {
   appointment: "appointment request",
+  enquiry: "enquiry",
+  "custom-request": "custom design request",
+};
+
+/**
+ * How each kind is described back to the customer. Deliberately not the same
+ * strings as KIND_LABEL: "appointment request" is how the shop triages it,
+ * "fitting appointment" is what the customer thinks they booked.
+ */
+const CUSTOMER_LABEL: Record<SubmissionKind, string> = {
+  appointment: "fitting appointment",
   enquiry: "enquiry",
   "custom-request": "custom design request",
 };
@@ -144,12 +165,24 @@ export class NotificationsService {
         this.logger.error(
           `Failed to send ${notification.kind} notification for ${notification.recordId}: ${result.error.name}: ${result.error.message}`,
         );
-        return;
+      } else {
+        this.logger.log(
+          `Sent ${notification.kind} notification for ${notification.recordId} (message ${result.data?.id ?? "unknown"})`,
+        );
       }
 
-      this.logger.log(
-        `Sent ${notification.kind} notification for ${notification.recordId} (message ${result.data?.id ?? "unknown"})`,
-      );
+      /*
+       * The customer's receipt goes out whether or not the owner's alert did,
+       * and the `else` above exists for that reason - an early `return` here
+       * coupled the two, so a misconfigured NOTIFICATION_EMAIL would have
+       * silently denied every customer their confirmation as well. The two
+       * addresses fail independently, so they are attempted independently.
+       *
+       * The owner's alert is still sent first: if the provider dies between
+       * the two, the shop knowing about the job matters more than the
+       * customer's receipt.
+       */
+      await this.confirmToCustomer(notification);
     } catch (error) {
       // The outermost net. Network failure, DNS, a malformed payload, an SDK
       // bug: whatever it is, it stops here and never reaches the caller.
@@ -158,6 +191,57 @@ export class NotificationsService {
         error instanceof Error ? error.stack : String(error),
       );
     }
+  }
+
+  /**
+   * The customer's receipt: we have it, here is what you told us, here is
+   * what happens next.
+   *
+   * Three rules this follows, each of which is easy to get wrong:
+   *
+   * 1. **It never promises a time the shop has not committed to.** A booking
+   *    is created with `status: pending` precisely because the customer
+   *    cannot self-confirm, so this says the request was received - not that
+   *    the appointment is confirmed. Saying otherwise would have people
+   *    turning up to a fitting nobody scheduled.
+   * 2. **It contains no admin link.** `KIND_PATH` builds a deep link into the
+   *    dashboard; that belongs only in the owner's copy.
+   * 3. **No address is not a failure.** Email is optional on every model, so
+   *    this returns quietly rather than logging noise on the majority path.
+   */
+  private async confirmToCustomer(notification: SubmissionNotification): Promise<void> {
+    const to = notification.customerEmail?.trim();
+    if (!to || this.resend === null) return;
+
+    const label = CUSTOMER_LABEL[notification.kind];
+    const result = await this.resend.emails.send({
+      from: this.from,
+      to,
+      subject: `We have your ${label}`,
+      text: [
+        `Hello ${notification.customerName},`,
+        "",
+        `Thank you - we have received your ${label} and it is with us now.`,
+        "",
+        "This is what you sent:",
+        ...notification.details.map(([key, value]) => `  ${key}: ${value}`),
+        "",
+        "Someone from the shop will be in touch to confirm the details with",
+        "you. If anything above is wrong, simply reply to this message.",
+        "",
+        "Bodman Outfits",
+      ].join("\n"),
+    });
+
+    if (result.error) {
+      this.logger.error(
+        `Failed to send customer confirmation for ${notification.recordId}: ${result.error.name}: ${result.error.message}`,
+      );
+      return;
+    }
+    this.logger.log(
+      `Sent customer confirmation for ${notification.recordId} (message ${result.data?.id ?? "unknown"})`,
+    );
   }
 
   /**

@@ -64,6 +64,7 @@ export class EnquiriesService {
       kind: "enquiry",
       recordId: enquiry.id,
       customerName: input.name,
+      customerEmail: input.email,
       details: [
         ["Subject", input.subject],
         ["Email", input.email],

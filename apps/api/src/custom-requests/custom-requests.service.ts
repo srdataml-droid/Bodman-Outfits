@@ -50,6 +50,7 @@ export class CustomRequestsService {
       kind: "custom-request",
       recordId: created.id,
       customerName: input.name,
+      customerEmail: input.email,
       details: [
         ["Category", input.category ?? "not specified"],
         ["Email", input.email],
