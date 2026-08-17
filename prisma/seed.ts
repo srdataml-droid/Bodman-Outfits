@@ -98,77 +98,37 @@ const FAQ_SEED_DATA = [
  * are per category, and a per-garment figure would be an invented fact that
  * could silently drift from the line price.
  */
-const GARMENT_SEED_DATA = [
-  {
-    slug: "navy-two-piece",
-    category: "suits",
-    name: "Navy Two-Piece",
-    detail: "Suits",
-    description:
-      "A single-breasted two-piece in a deep navy wool blend. Built for the boardroom, cut close through the waist.",
-    imageFlat: "/images/catalogue/navy-two-piece-flat.png",
-    imageOnForm: "/images/catalogue/navy-two-piece-on-form.png",
-    altFlat: "Placeholder for a flat/detail photograph of a navy two-piece suit",
-    altOnForm: "Placeholder for a photograph of a navy two-piece suit on the form",
-    sortOrder: 1,
-  },
-  {
-    slug: "charcoal-three-piece",
-    category: "suits",
-    name: "Charcoal Three-Piece",
-    detail: "Suits",
-    description:
-      "Jacket, trouser, and waistcoat in charcoal wool. A formal silhouette that still moves with the wearer.",
-    imageFlat: "/images/catalogue/charcoal-three-piece-flat.png",
-    imageOnForm: "/images/catalogue/charcoal-three-piece-on-form.png",
-    altFlat: "Placeholder for a flat/detail photograph of a charcoal three-piece suit",
-    altOnForm: "Placeholder for a photograph of a charcoal three-piece suit on the form",
-    sortOrder: 2,
-  },
-  {
-    slug: "ivory-wedding-suit",
-    category: "suits",
-    name: "Ivory Wedding Suit",
-    detail: "Suits",
-    description:
-      "An ivory wool-silk suit for the groom. Softly structured shoulders, finished with hand-stitched lapels.",
-    imageFlat: "/images/catalogue/ivory-wedding-suit-flat.png",
-    imageOnForm: "/images/catalogue/ivory-wedding-suit-on-form.png",
-    altFlat: "Placeholder for a flat/detail photograph of an ivory wedding suit",
-    altOnForm: "Placeholder for a photograph of an ivory wedding suit on the form",
-    sortOrder: 3,
-  },
-  {
-    slug: "casual-full",
-    category: "casuals",
-    name: "Casual Outfit",
-    detail: "Casuals",
-    description:
-      "Shirt and trousers cut as one relaxed outfit, keeping the same discipline of line as the tailoring, just without the tie.",
-    imageFlat: "/images/catalogue/casual-full-flat.png",
-    imageOnForm: "/images/catalogue/casual-full-on-form.png",
-    altFlat:
-      "Placeholder for a flat/detail photograph of a complete casual outfit, shirt and trousers together",
-    altOnForm:
-      "Placeholder for a photograph of a complete casual outfit, shirt and trousers together on the form",
-    sortOrder: 1,
-  },
-  {
-    slug: "corporate-full",
-    category: "corporate",
-    name: "Corporate Outfit",
-    detail: "Corporate",
-    description:
-      "Shirt and trousers built as one outfit for the working week, holding their line from the first wear to the hundredth.",
-    imageFlat: "/images/catalogue/corporate-full-flat.png",
-    imageOnForm: "/images/catalogue/corporate-full-on-form.png",
-    altFlat:
-      "Placeholder for a flat/detail photograph of a complete corporate outfit, shirt and trousers together",
-    altOnForm:
-      "Placeholder for a photograph of a complete corporate outfit, shirt and trousers together on the form",
-    sortOrder: 1,
-  },
-] as const;
+/*
+ * EMPTY ON PURPOSE, 2026-08-17.
+ *
+ * This list previously held five garments whose imagery was AI-generated to
+ * fill the page while the site was being built. Shipped as-is that is a shop
+ * advertising clothes it does not make: a customer choosing a "Navy Two-Piece"
+ * from a picture would be choosing something that has never existed, and the
+ * first fitting would be the moment everyone found out.
+ *
+ * The rows were deactivated in the database and the imagery deleted from the
+ * repository rather than left dormant, because a placeholder that looks
+ * finished is the kind that ships.
+ *
+ * Real pieces go here - or better, get added through the admin screen, which
+ * already handles name, description, both images, a starting price and the
+ * active flag. An empty catalogue is not a gap to be filled with something
+ * plausible; the category pages already say the honest thing, that these
+ * lines are cut to the person and begin with a conversation.
+ */
+const GARMENT_SEED_DATA: ReadonlyArray<{
+  slug: string;
+  category: string;
+  name: string;
+  detail: string;
+  description: string;
+  imageFlat: string;
+  imageOnForm: string;
+  altFlat: string;
+  altOnForm: string;
+  sortOrder: number;
+}> = [];
 
 async function main(): Promise<void> {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });

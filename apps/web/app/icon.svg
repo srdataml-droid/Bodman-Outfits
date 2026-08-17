@@ -15,13 +15,16 @@
     unparseable - it still serves 200 with the right content type, and shows
     nothing at all.
 
-    The letter is a serif B because at 16px a letter survives where a needle
-    and thread does not. Georgia and Times are the safest widely present
+    The letter is an italic serif B: at 16px a letter survives where a needle
+    and thread does not, and the italic slant reads as a tailor's monogram
+    rather than a generic initial. Set one point larger than the roman to
+    compensate, since an italic occupies slightly less optical width. Georgia and Times are the safest widely present
     serifs; Fraunces is the brand face, but a webfont cannot be relied on
     inside an icon, which renders outside the page's font context.
   </desc>
   <circle cx="32" cy="32" r="32" fill="#1b3e2d"/>
   <circle cx="32" cy="32" r="29" fill="none" stroke="#c8763a" stroke-width="2" opacity="0.85"/>
   <text x="32" y="33" fill="#f9f9f9" font-family="Georgia, 'Times New Roman', serif"
-        font-size="36" font-weight="500" text-anchor="middle" dominant-baseline="central">B</text>
+        font-style="italic" font-size="37" font-weight="500"
+        text-anchor="middle" dominant-baseline="central">B</text>
 </svg>
