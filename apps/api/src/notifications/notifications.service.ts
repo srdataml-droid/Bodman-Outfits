@@ -245,6 +245,66 @@ export class NotificationsService {
   }
 
   /**
+   * "Your garment is ready."
+   *
+   * The single most valuable message this system sends. Everything else
+   * acknowledges that something was received; this one is the message that
+   * actually gets the customer through the door and the balance collected.
+   *
+   * Same guarantee as everything else here: it never throws. An order must
+   * never fail to be marked ready because an email provider is down - the
+   * status change is the record, the mail is a courtesy on top of it.
+   *
+   * Deliberately does not state a price or a balance. What is owed depends on
+   * what was agreed and on any deposit taken, and a figure invented by this
+   * function would be quoted back to the shop as if it were a promise.
+   */
+  async notifyOrderReady(order: {
+    id: string;
+    customerName: string;
+    customerEmail?: string | null;
+  }): Promise<void> {
+    try {
+      const to = order.customerEmail?.trim();
+      if (!to || this.resend === null) {
+        this.logger.debug(`Ready notice skipped (no address or not configured): order ${order.id}`);
+        return;
+      }
+
+      const result = await this.resend.emails.send({
+        from: this.from,
+        to,
+        subject: "Your garment is ready",
+        text: [
+          `Hello ${order.customerName},`,
+          "",
+          "Your piece is finished and ready for collection.",
+          "",
+          "Please come by the shop when it suits you, or reply to this",
+          "message and we will arrange a time that works.",
+          "",
+          "Bodman Outfits",
+        ].join("\n"),
+      });
+
+      if (result.error) {
+        this.logger.error(
+          `Failed to send ready notice for order ${order.id}: ${result.error.name}: ${result.error.message}`,
+        );
+        return;
+      }
+      this.logger.log(
+        `Sent ready notice for order ${order.id} (message ${result.data?.id ?? "unknown"})`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Unexpected error sending ready notice for order ${order.id}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
+  }
+
+  /**
    * Plain text only. This is an operational alert read on a phone between
    * jobs, not marketing: no HTML, no layout, no images to fail to load. The
    * link is a bare URL so every mail client makes it tappable.

@@ -220,6 +220,11 @@ model Order {
   // worse than a little duplication.
   customerName  String
   customerPhone String
+  /// Snapshotted for the same reason as the name and phone above: the source
+  /// request can be deleted and an order that loses the address cannot tell
+  /// the customer their garment is ready. Nullable because `email` is
+  /// optional on all three request models - most customers leave a number.
+  customerEmail String?
 
   status OrderStatus @default(draft)
   notes  String?

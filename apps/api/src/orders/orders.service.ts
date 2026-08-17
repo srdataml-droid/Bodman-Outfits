@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import type { CreateOrderDto, OrderDto, OrderStatus, UpdateOrderDto } from "./orders.schema";
 
@@ -21,7 +22,10 @@ interface Row {
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   // Admin-only throughout. There is no public order endpoint at all, so
   // every method here uses adminDb and the public role holds no grant on
@@ -57,7 +61,15 @@ export class OrdersService {
   }
 
   async update(id: string, input: UpdateOrderDto): Promise<OrderDto> {
-    const existing = await this.prisma.adminDb.order.findUnique({ where: { id }, select: { id: true } });
+    // `status` is selected as well as `id` because the ready notice must fire
+    // on the TRANSITION into `ready`, not on the state. Without the previous
+    // value, every later save on an already-ready order - correcting a note,
+    // recording a payment - would send the customer another "your garment is
+    // ready", which is how a helpful message becomes a nuisance.
+    const existing = await this.prisma.adminDb.order.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
     if (!existing) throw new NotFoundException(`No order with id ${id}`);
     const updated = await this.prisma.adminDb.order.update({
       where: { id },
@@ -69,6 +81,18 @@ export class OrdersService {
         ...(input.currency !== undefined ? { currency: input.currency } : {}),
       },
     });
+
+    // Not awaited, and it cannot reject: marking an order ready must never
+    // fail because an email provider is down. The status change is the
+    // record; the message is a courtesy on top of it.
+    if (input.status === "ready" && existing.status !== "ready") {
+      void this.notifications.notifyOrderReady({
+        id: updated.id,
+        customerName: updated.customerName,
+        customerEmail: updated.customerEmail,
+      });
+    }
+
     return this.toDto(updated as Row);
   }
 
