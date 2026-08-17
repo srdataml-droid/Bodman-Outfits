@@ -1,30 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Bodman Outfits">
   <title>Bodman Outfits</title>
   <desc>
-    The browser-tab mark. A circle rather than the wordmark in
-    public/brand/logo-light.svg: that logo is 66x34 and reads as "Bodman
-    Outfits" at full size, but scaled into a 16px tab it becomes an
-    illegible smudge. A tab icon has one job at one size, so this is drawn
-    for 16px and merely happens to also work at 512.
+    The browser-tab mark: an italic B in Fraunces, the site's own display
+    face, on the brand's everglade ground with a copper ring.
 
-    Colours are the site's own brand tokens (everglade #1b3e2d, copper
-    #c8763a) so the tab matches the page it opens. Note for anyone editing:
-    keep documentation in desc rather than an XML comment. A comment
-    mentioning a CSS custom property by name contains a double hyphen, which
-    is illegal inside an XML comment and silently renders the whole icon
-    unparseable - it still serves 200 with the right content type, and shows
-    nothing at all.
+    The letter is a PATH, not a text element, and that is the load-bearing
+    decision. A favicon renders outside the page's font context, so a text
+    element depends on a font being installed on the reader's machine - the
+    earlier version asked for Georgia and would have fallen back to whatever
+    the system had, differing per visitor. An outline renders identically
+    everywhere and needs nothing installed.
 
-    The letter is an italic serif B: at 16px a letter survives where a needle
-    and thread does not, and the italic slant reads as a tailor's monogram
-    rather than a generic initial. Set one point larger than the roman to
-    compensate, since an italic occupies slightly less optical width. Georgia and Times are the safest widely present
-    serifs; Fraunces is the brand face, but a webfont cannot be relied on
-    inside an icon, which renders outside the page's font context.
+    The glyph is the real Fraunces italic, extracted from the OFL-licensed
+    family already shipped in public/fonts, instantiated at opsz 144 - the
+    display optical size, where the thick-thin contrast is highest. A synthetic
+    slant of the roman was rejected: skewing a high-contrast serif shears the
+    stress angle without rotating it, which reads as a mistake rather than an
+    italic.
+
+    Drawn for 16px. Editing note: keep documentation in desc, never an XML
+    comment - naming a CSS custom property inside a comment introduces a
+    double hyphen, which is illegal in XML and silently renders the icon
+    unparseable while still serving 200.
   </desc>
   <circle cx="32" cy="32" r="32" fill="#1b3e2d"/>
   <circle cx="32" cy="32" r="29" fill="none" stroke="#c8763a" stroke-width="2" opacity="0.85"/>
-  <text x="32" y="33" fill="#f9f9f9" font-family="Georgia, 'Times New Roman', serif"
-        font-style="italic" font-size="37" font-weight="500"
-        text-anchor="middle" dominant-baseline="central">B</text>
+  <path d="M34.45 14.86Q33.73 17.4 32.9 20.39Q32.08 23.37 31.2 26.56Q30.33 29.74 29.46 32.91Q28.59 36.09 27.8 39.07Q27.02 42.06 26.36 44.57Q25.7 47.09 25.22 48.94Q25.02 49.83 25.4 50.39Q25.79 50.94 26.82 51.23Q27.85 51.51 29.53 51.51Q33.9 51.51 36.63 49.04Q39.36 46.57 40.05 42.03Q40.7 37.86 38.7 35.61Q36.7 33.37 32.88 33.37H27.79L27.85 32.89H33.25Q36.16 32.89 38.4 31.44Q40.65 30 42.1 27.36Q43.56 24.71 44.02 21.03Q44.62 16.83 42.93 14.64Q41.25 12.46 38.13 12.46Q36.33 12.46 35.56 13.01Q34.79 13.57 34.45 14.86ZM24.28 12H39.36Q45.19 12 47.99 14.64Q50.79 17.29 50.19 21.91Q49.73 25.29 47.56 27.84Q45.39 30.4 41.92 31.8Q38.45 33.2 34.02 33.2L33.68 33.03Q38.25 33.03 41.32 34.13Q44.39 35.23 45.86 37.29Q47.33 39.34 46.96 42.2Q46.48 46.66 42.4 49.33Q38.33 52 30.56 52H14.02Q13.88 52 13.79 51.96Q13.7 51.91 13.7 51.8Q13.7 51.66 13.8 51.61Q13.9 51.57 14.08 51.54L16.85 51.2Q17.39 51.14 17.68 50.8Q17.96 50.46 18.13 49.89Q18.53 48.63 19.16 46.4Q19.79 44.17 20.58 41.27Q21.36 38.37 22.25 35.16Q23.13 31.94 24.02 28.74Q24.9 25.54 25.68 22.66Q26.45 19.77 27.05 17.53Q27.65 15.29 27.96 14.03Q28.05 13.43 27.85 13.14Q27.65 12.86 27.16 12.83L24.33 12.46Q24.1 12.4 24.03 12.34Q23.96 12.29 23.96 12.2Q23.96 12.09 24.05 12.04Q24.13 12 24.28 12Z" fill="#f9f9f9"/>
 </svg>
