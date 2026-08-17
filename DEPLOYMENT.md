@@ -114,7 +114,7 @@ If you create the service manually instead:
 | Runtime | Node |
 | Build command | `corepack enable && pnpm install --frozen-lockfile && pnpm exec prisma generate && pnpm --filter @atelier-haute/api build` |
 | Start command | `node apps/api/dist/main.js` |
-| Health check path | `/health` |
+| Health check path | `/api/health` |
 
 ### Render environment variables
 
@@ -143,7 +143,7 @@ If you create the service manually instead:
 Deploy the **API first**. The site's build fetches the catalogue, so deploying
 Vercel first means building against nothing.
 
-1. Deploy Render, wait for green, confirm `https://<api>/health` responds.
+1. Deploy Render, wait for green, confirm `https://<api>/api/health` responds.
 2. Set `API_URL` and `NEXT_PUBLIC_API_URL` on Vercel to that URL.
 3. Deploy Vercel.
 4. Set `WEB_ORIGIN` on Render to the Vercel URL. **Redeploy Render** so CORS
@@ -194,6 +194,7 @@ reason. Test admin on the real domain only.
 | Build green, but site shows no contact details, empty FAQ/catalogue | `API_URL` missing or wrong on Vercel — fetchers fell back to empty |
 | Forms fail, console shows CORS | `WEB_ORIGIN` on Render does not exactly match the site origin, **or** Render was not redeployed after setting it |
 | Admin login works then instantly logs out | Cross-site cookie. See the cookie warning above |
+| `Timed out after waiting for internal health check to return a successful response code` | **The health check path is wrong.** Every controller here is mounted under `api/`, health included, so it is **`/api/health`** — `/health` returns 404 and Render polls it forever. The build succeeds and the process boots fine, which makes this look like a runtime crash when it is a one-character config error |
 | API 502 / never becomes healthy | Free instance still waking, or the process failed to boot on a missing `DATABASE_URL_PUBLIC`/`_ADMIN` — check logs for the explicit error |
 | `P1001 Can't reach database server` | Often **intermittent**, not an outage. Retry before investigating — see `logs/decisions.md`, 2026-08-05 |
 
@@ -201,7 +202,7 @@ reason. Test admin on the real domain only.
 
 ## Post-deploy checks
 
-- [ ] `https://<api>/health` responds
+- [ ] `https://<api>/api/health` responds
 - [ ] `/contact` shows address, hours, phone, email
 - [ ] `/faq` lists five questions
 - [ ] `/catalogue/suits` shows three garments
