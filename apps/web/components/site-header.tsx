@@ -19,7 +19,7 @@ export async function SiteHeader(): Promise<React.ReactElement> {
       >
         <Link
           href="/"
-          className="font-[Fraunces] whitespace-nowrap text-lg font-medium uppercase tracking-[0.12em] text-[var(--everglade)] sm:text-xl transition-colors duration-300 hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
+          className="font-[Fraunces] min-w-0 text-base font-medium uppercase tracking-[0.08em] text-[var(--everglade)] sm:whitespace-nowrap sm:text-lg sm:tracking-[0.12em] md:text-xl transition-colors duration-300 hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
         >
           {shopName}
         </Link>
