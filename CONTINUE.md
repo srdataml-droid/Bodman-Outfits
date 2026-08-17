@@ -26,10 +26,15 @@ PR #1 merged today carried three commits:
 
 ## Next, in order
 
-### 1. Connect Render and confirm the API is actually up
+### 1. Connect Render — ✅ THE API IS UP (verified 2026-08-17, indirectly)
 
-Not connected. `/mcp` → **claude.ai Render** (the earlier `/mcp` only
-reconnected headroom and serena, which is why this is still open).
+Still not connected over MCP, but the question it existed to answer is
+**settled**: `https://bodman-outfits-web.vercel.app/catalogue/suits/navy-two-piece`
+returns **200 with real garment data**. That page is API-backed, so the Render
+service is answering and `31d14c2`'s `/api/health` fix is doing its job.
+
+Connect it anyway when convenient (`/mcp` → **claude.ai Render**) to check the
+env-var questions below, which cannot be answered from outside.
 
 Then confirm, in this order, because each answer changes the next question:
 
@@ -42,7 +47,19 @@ Then confirm, in this order, because each answer changes the next question:
 - does `https://<api>/api/health` answer 200? That is the whole point of
   `31d14c2`, and it has never been observed passing
 
-### 2. Seed the database, then verify the new imagery end to end
+### 2. Seed and verify — ✅ DONE (2026-08-17)
+
+The database was **already migrated and seeded**: 9 migrations, 5 garments,
+5 FAQs, shop settings, 1 admin. Nothing needed running. The local 404s were
+only ever a missing local API.
+
+All ten `imageFlat`/`imageOnForm` paths in `Garment` match the installed files
+exactly, and the whole thing was verified on **production**: the garment page
+renders real photography, both images load at 546x728, and the flat-to-on-form
+crossfade works on hover — the first time it has had anything but two identical
+grey placeholders to swap between.
+
+~~Original task below, kept for context.~~
 
 The garment detail pages (`/catalogue/suits/navy-two-piece` and the other
 four) **404 without a database** — they are API-backed. This was the one thing
@@ -70,7 +87,24 @@ Adding rows means writing product copy — a name, a description, alt text — f
 garments nobody has confirmed exist. Either get the real details from the shop
 and add them, or leave the categories imageless-but-honest. Do not invent them.
 
-### 4. Housekeeping that is already decided, just not done
+### 4. Security: Supabase flagged RLS disabled on one table
+
+`public._prisma_migrations` has Row Level Security **disabled**, so anyone with
+the anon key can read or modify it. Every application table already has RLS on.
+
+Supabase's own advice is not to blind-fix it, because enabling RLS with no
+policy blocks all access — and Prisma needs that table to apply migrations. The
+SQL, for you to decide on:
+
+```sql
+ALTER TABLE public._prisma_migrations ENABLE ROW LEVEL SECURITY;
+```
+
+Worth checking first whether the anon key is exposed to the browser at all —
+`apps/web` never imports Prisma and talks only to the API, so the practical
+exposure may be nil.
+
+### 5. Housekeeping that is already decided, just not done
 
 - **Delete the duplicate Vercel project** `bodman-outfits-web-gkny`. It was
   created six minutes after the real one and builds **every push twice** — both
@@ -81,7 +115,7 @@ and add them, or leave the categories imageless-but-honest. Do not invent them.
   record of the deployment-debugging session and are still uncommitted. They
   were deliberately left out of PR #1, which was scoped to imagery and nav.
 
-### 5. Loose ends worth a look, none urgent
+### 6. Loose ends worth a look, none urgent
 
 - Five garments still have placeholder images (`tailored-blazer`, `oxford-` and
   `linen-shirt`, `flat-front-trouser`, `relaxed-chino`, `weekend-overshirt`).
