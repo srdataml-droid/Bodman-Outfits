@@ -70,6 +70,68 @@ PR #1 merged earlier carried three commits:
 - `0509251` 24 real garment images, and a mobile menu
 - `978f53a` the 320px header overflow that the mobile menu work introduced
 
+### Done 2026-08-18, later
+
+- **A script tab icon.** The Fraunces italic B is now a roundhand capital B
+  from Great Vibes (OFL), matched against a reference the shop supplied. Five
+  OFL scripts were rendered against it; a mathematical script from STIX was
+  tried first and rejected as too upright. It carries a 0.6 stroke in the same
+  off-white as the fill - roundhand hairlines fall below one device pixel at
+  16px and drop out, and the stroke is what keeps the letter whole. Tuned by
+  rendering at true 16px, not by eye at display size.
+- **Admin tap targets, and a margin bug found while verifying them.** Every
+  admin control is 44px now, matching the `min-h-11` the public site already
+  used everywhere. The Garments screen was also the one place that forgot
+  `Panel` supplies no padding: its rows had no horizontal padding at all and
+  its loading and empty states were bare `<p>`s rather than `Notice`. Both
+  fixed, re-measured at 390px against a production build.
+- **agbada and kaftan: the open question was based on a stale doc.** Their
+  prices were never unconfirmed - they sit on the category in
+  `apps/web/lib/garments.ts`, ₦70,000 and ₦25,000. See item 3 below.
+
+### Appointment now requires an email, not a phone — CODE DONE, **MIGRATION NOT APPLIED**
+
+Requested 2026-08-18. `Appointment` was the only one of the three request
+types keyed on a phone number; `Enquiry` and `CustomRequest` both already
+required an email and left the phone optional. It is now consistent with them.
+
+Changed: `prisma/schema.prisma`, `appointments.schema.ts`,
+`appointments.service.ts`, `apps/web/lib/appointments.ts`,
+`apps/web/lib/admin-api.ts`, `appointment-form.tsx`, and the admin
+appointments screen, where the `tel:` link needed the null guard the
+enquiries screen already had. Both apps typecheck clean, and the form was
+driven in a real browser: email `required`, phone not, labelled
+"PHONE (optional)".
+
+**Read this before deploying.** The migration
+`20260818110000_appointment_email_required` is written and committed but has
+**deliberately not been applied**, because the order is load-bearing:
+
+1. **Deploy the code first.** Render auto-deploys the API from `main`.
+2. **Then apply the migration.**
+
+Backwards, and the live appointment form breaks: the currently deployed API
+still treats email as optional, so the moment `email` is `NOT NULL` any
+submission without one is a NOT NULL violation and a 500 on a public form.
+`phone DROP NOT NULL` is safe in either order; `email SET NOT NULL` is not.
+
+Note that **the deploy pipeline does not run migrations** - `render.yaml`
+runs `prisma generate`, never `prisma migrate deploy` - so this will not
+happen on its own and there is no automation to race.
+
+Apply it through the Supabase connector, as with the last two: this sandbox
+cannot reach port 5432 (`P1001` on the pooler). The checksum to record in
+`_prisma_migrations` is a plain SHA-256 of `migration.sql`, re-validated
+today by reproducing both recent migrations' recorded hashes exactly:
+
+```
+12c14a53b9df113735c5d16eceed29bfe63f993baeb3c9adad715a01bca8e0c0
+```
+
+`Appointment` held **zero rows** when this was written, so `SET NOT NULL`
+cannot fail on existing data. Re-check that before applying - a single NULL
+email aborts the whole migration.
+
 ---
 
 ## Next, in order
@@ -120,20 +182,24 @@ to look for is the hover crossfade — flat cloth resolving into the garment on
 a form. Both images are now real; before today both were grey placeholders and
 the effect had nothing to show.
 
-### 3. Decide about agbada and kaftan
+### 3. Named pieces in the catalogue — ✅ PREMISE WAS STALE (2026-08-18)
 
-They now have real imagery (`agbada-{flat,on-form}.png`,
-`kaftan-{flat,on-form}.png`) and **no garment rows in `prisma/seed.ts`**. They
-exist only as categories.
+This entry asked for a decision about agbada and kaftan on the grounds that
+their prices were unconfirmed. They are not, and they never were: the prices
+sit on the **category**, in `apps/web/lib/garments.ts` — agbada from ₦70,000
+per item, kaftan from ₦25,000 — and every category page already shows its
+figure.
 
-This is a judgement call, not an oversight, and the seed file says why:
+The entry was also out of date on imagery. It named
+`agbada-{flat,on-form}.png`, but those were deleted when the catalogue was
+emptied of AI-generated pieces. Only the ten `category-*` images remain.
 
-> the five confirmed prices are per category, and a per-garment figure would be
-> an invented fact
-
-Adding rows means writing product copy — a name, a description, alt text — for
-garments nobody has confirmed exist. Either get the real details from the shop
-and add them, or leave the categories imageless-but-honest. Do not invent them.
+So agbada and kaftan are not a special case. `GARMENT_SEED_DATA` is an
+**empty array** and *no* category has a named garment. What is missing is real
+product — a name, a description, real photography — for any category at all.
+That is a shop input, not a code task, and it goes in through the admin
+Garments screen rather than the seed. The category pages remain honest and
+priced in the meantime.
 
 ### 4. Security: Supabase flagged RLS disabled on one table
 

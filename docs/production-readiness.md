@@ -84,19 +84,31 @@ per `logs/decisions.md`) and fall back rather than throw — good — but the
 fallback should say something true. "Still waking up, one moment" is honest;
 an indefinite spinner is not.
 
-### 4. Admin tap targets are below the minimum
+### 4. Admin tap targets — ✅ DONE (2026-08-18)
 
-Measured at 390px on `/admin`:
+Every control measured below now stands at **44px**, re-measured at 390px in
+headless Chrome against a production build.
 
-| control | size |
-|---|---|
-| Garments, FAQs, Shop settings, Account (nav links) | **32px tall** |
-| Log out | **36px tall** |
+| control | was | now |
+|---|---|---|
+| the eight nav links | 32px | **44px** |
+| Log out, and every other Button | 36px | **44px** |
+| text inputs (`inputClass`) | 36px | **44px** |
 
-44px is the smallest a fingertip reliably hits, and it is the number the public
-site's own mobile menu was built to. Width is fine; only height is short. This
-is a small change to the admin nav's padding and a genuinely quick win, because
-order management is the thing most likely to be done from a phone.
+44px is the smallest a fingertip reliably hits, and the public site already
+used it everywhere - `min-h-11` appears throughout the forms, the footer and
+the header. The admin had simply never matched its own site, so the fix was to
+adopt the existing convention rather than invent a number: `min-h-9` became
+`min-h-11` on `Button` and `inputClass`, and the nav links moved from `py-1.5`
+to `inline-flex min-h-11 items-center`.
+
+**A margin bug surfaced while verifying this.** `Panel` deliberately carries no
+padding of its own, and the Garments screen was the one place that forgot to
+add any: its rows had `py-3` and no horizontal padding, so every garment name
+and its buttons sat flush against the panel border, and its loading and empty
+states were bare `<p>` elements rather than the padded `Notice` every sibling
+screen uses. Rows are now `px-4 py-3` and both states go through `Notice`. The
+other screens were checked and are fine - the tables already carry `px-4`.
 
 ### 5. Environment variables are unverified
 
@@ -114,11 +126,24 @@ reading, so this needs the dashboard or a deliberate write.
 
 ## Tier 3 — the product
 
-### 7. agbada and kaftan
+### 7. Named pieces in the catalogue
 
-Real imagery, no garment rows. The seed file's reasoning stands: adding rows
-means inventing product copy and prices nobody has confirmed. Get the real
-details from the shop, or leave the categories honest.
+**Corrected 2026-08-18.** This entry used to single out agbada and kaftan and
+said the blocker was unconfirmed prices. Both halves were wrong.
+
+The prices are confirmed and always were: they live on the category, in
+`apps/web/lib/garments.ts` - agbada from ₦70,000 per item, kaftan from
+₦25,000. Every category page already displays its figure.
+
+And agbada and kaftan are not special. `GARMENT_SEED_DATA` is an **empty
+array**: since the catalogue was emptied of its AI-generated pieces, *no*
+category has a named garment, and the per-garment images this entry referred
+to were deleted with them. Only the ten category images remain.
+
+What is actually missing is real product - a name, a description and real
+photography per piece - which is a shop input, not a code task. Pieces are
+added through the admin Garments screen, which already handles all of it.
+Until then the category pages say the honest thing and quote the real price.
 
 ### 8. A copy pass
 
@@ -135,9 +160,9 @@ Both ran on PR #1.
 ## Order I would take these in
 
 1. Paid Render tier — everything else is cosmetic beside a 12-second cold start
-2. Admin tap targets — smallest change, real daily benefit
+2. ~~Admin tap targets~~ — **done 2026-08-18**, with a margin fix alongside
 3. Honest waking-up states
 4. Frankfurt move — bigger change, needs a window
 5. Environment-variable verification
 6. Monitoring with a named owner
-7. Product work: agbada/kaftan, copy, the duplicate project
+7. Product work: real named pieces, a copy pass, the duplicate project
