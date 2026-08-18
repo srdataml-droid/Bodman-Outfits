@@ -73,8 +73,14 @@ enum AppointmentStatus {
 model Appointment {
   id            String            @id @default(cuid())
   name          String
-  phone         String
-  email         String?
+  /// Required since 2026-08-18, and phone made optional in the same change.
+  /// This used to be the other way round, which made Appointment the only one
+  /// of the three request types keyed on a phone number: Enquiry and
+  /// CustomRequest both already required an email. The confirmation and
+  /// reminder mail an appointment depends on had no guaranteed destination
+  /// while this was nullable.
+  email         String
+  phone         String?
   // Date-only (@db.Date), not a timestamp: the customer picks a calendar
   // day, not an instant, so storing a time component would invent precision
   // they never gave and risk a timezone shifting the date by one day.

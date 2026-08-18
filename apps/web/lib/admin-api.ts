@@ -6,8 +6,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 export interface Appointment {
   id: string;
   name: string;
-  phone: string;
-  email: string | null;
+  email: string;
+  phone: string | null;
   preferredDate: string;
   preferredTime: "morning" | "afternoon" | "evening";
   category: string;

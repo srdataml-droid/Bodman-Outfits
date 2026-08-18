@@ -20,8 +20,8 @@ const MAX_LIST_SIZE = 200;
 interface AppointmentRow {
   id: string;
   name: string;
-  phone: string;
-  email: string | null;
+  email: string;
+  phone: string | null;
   preferredDate: Date;
   preferredTime: (typeof APPOINTMENT_TIMES)[number];
   category: string;
@@ -42,8 +42,8 @@ export class AppointmentsService {
     const appointment = await this.prisma.publicDb.appointment.create({
       data: {
         name: input.name,
-        phone: input.phone,
-        email: input.email ?? null,
+        email: input.email,
+        phone: input.phone ?? null,
         // Anchored to UTC midnight so the stored DATE is exactly the day the
         // customer picked, with no chance of a local timezone shifting it.
         preferredDate: new Date(`${input.preferredDate}T00:00:00.000Z`),
@@ -71,8 +71,8 @@ export class AppointmentsService {
         ["Category", input.category],
         ["Preferred date", input.preferredDate],
         ["Preferred time", input.preferredTime],
-        ["Phone", input.phone],
-        ["Email", input.email ?? "not given"],
+        ["Email", input.email],
+        ["Phone", input.phone ?? "not given"],
         ["Notes", input.notes ?? "none"],
       ],
     });
@@ -106,12 +106,12 @@ export class AppointmentsService {
   // cannot leak into the API response without a deliberate change here —
   // same pattern as ShopSettingsService.toDto and FaqService.toDto.
   private toDto(appointment: AppointmentRow): AppointmentDto {
-    const { id, name, phone, email, preferredTime, category, notes, status } = appointment;
+    const { id, name, email, phone, preferredTime, category, notes, status } = appointment;
     return {
       id,
       name,
-      phone,
       email,
+      phone,
       // Serialised back to the same YYYY-MM-DD calendar day that was
       // submitted, rather than a full timestamp implying a precision the
       // customer never supplied.

@@ -20,8 +20,8 @@ export default function AppointmentsPage(): React.ReactElement {
       ]}
       fields={[
         { label: "Name", render: (r) => r.name },
-        { label: "Phone", render: (r) => <a className="underline" href={`tel:${r.phone}`}>{r.phone}</a> },
-        { label: "Email", render: (r) => (r.email ? <a className="underline" href={`mailto:${r.email}`}>{r.email}</a> : "Not provided") },
+        { label: "Email", render: (r) => <a className="underline" href={`mailto:${r.email}`}>{r.email}</a> },
+        { label: "Phone", render: (r) => (r.phone ? <a className="underline" href={`tel:${r.phone}`}>{r.phone}</a> : "Not provided") },
         { label: "Preferred date", render: (r) => r.preferredDate },
         { label: "Preferred time", render: (r) => <span className="capitalize">{r.preferredTime}</span> },
         { label: "Category", render: (r) => <span className="capitalize">{r.category.replace("-", " ")}</span> },

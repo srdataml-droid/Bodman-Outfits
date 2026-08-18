@@ -4,8 +4,8 @@ export const APPOINTMENT_CATEGORIES = ["suits", "agbada", "kaftan", "casuals", "
 
 export interface AppointmentRequest {
   name: string;
-  phone: string;
-  email?: string;
+  email: string;
+  phone?: string;
   preferredDate: string;
   preferredTime: (typeof APPOINTMENT_TIMES)[number];
   category: (typeof APPOINTMENT_CATEGORIES)[number];

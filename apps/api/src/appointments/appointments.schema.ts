@@ -31,11 +31,12 @@ const optionalText = (max: number) =>
 
 export const createAppointmentSchema = z.object({
   name: z.string().trim().min(1).max(MAX_NAME),
-  phone: z.string().trim().min(1).max(MAX_PHONE),
-  email: optionalText(MAX_EMAIL).refine(
-    (value) => value === undefined || z.string().email().safeParse(value).success,
-    { message: "Invalid email address" },
-  ),
+  // Required since 2026-08-18. Matches Enquiry and CustomRequest, and gives
+  // the confirmation and reminder mail a guaranteed destination.
+  email: z.string().trim().min(1).max(MAX_EMAIL).email(),
+  // Optional since the same change. The form submits "" when left blank, so
+  // empty is normalised to absent rather than stored as an empty string.
+  phone: optionalText(MAX_PHONE),
   // Calendar day, not an instant. The regex enforces the shape; the refine
   // rejects dates that match the shape but do not exist (e.g. 2026-02-31),
   // which Date parsing would otherwise silently roll forward.
@@ -65,8 +66,8 @@ export interface AppointmentReceiptDto {
 export interface AppointmentDto {
   id: string;
   name: string;
-  phone: string;
-  email: string | null;
+  email: string;
+  phone: string | null;
   preferredDate: string;
   preferredTime: (typeof APPOINTMENT_TIMES)[number];
   category: string;

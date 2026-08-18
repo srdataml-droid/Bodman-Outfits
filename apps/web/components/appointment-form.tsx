@@ -72,8 +72,8 @@ export function AppointmentForm({
 
     const request: AppointmentRequest = {
       name: String(data.get("name") ?? ""),
-      phone: String(data.get("phone") ?? ""),
       email: String(data.get("email") ?? ""),
+      phone: String(data.get("phone") ?? ""),
       preferredDate: String(data.get("preferredDate") ?? ""),
       preferredTime: data.get("preferredTime") as AppointmentRequest["preferredTime"],
       category: data.get("category") as AppointmentRequest["category"],
@@ -147,29 +147,29 @@ export function AppointmentForm({
           />
         </div>
         <div className="flex flex-col">
-          <label htmlFor="phone" className="text-sm font-medium tracking-[0.1em] text-[var(--muted-ink)]">
-            PHONE
+          <label htmlFor="email" className="text-sm font-medium tracking-[0.1em] text-[var(--muted-ink)]">
+            EMAIL
           </label>
           <input
-            id="phone"
-            name="phone"
-            type="tel"
+            id="email"
+            name="email"
+            type="email"
             required
-            placeholder="+234 ..."
+            placeholder="email@example.com"
             className="mt-2 min-h-11 border-0 border-b border-[var(--outline)] bg-transparent py-3 text-base text-[var(--ink)] placeholder:text-[rgb(65_72_67_/_45%)] focus:border-[var(--copper)] focus:outline-none"
           />
         </div>
       </div>
 
       <div className="flex flex-col">
-        <label htmlFor="email" className="text-sm font-medium tracking-[0.1em] text-[var(--muted-ink)]">
-          EMAIL <span className="normal-case text-[rgb(65_72_67_/_60%)]">(optional)</span>
+        <label htmlFor="phone" className="text-sm font-medium tracking-[0.1em] text-[var(--muted-ink)]">
+          PHONE <span className="normal-case text-[rgb(65_72_67_/_60%)]">(optional)</span>
         </label>
         <input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="email@example.com"
+          id="phone"
+          name="phone"
+          type="tel"
+          placeholder="+234 ..."
           className="mt-2 min-h-11 border-0 border-b border-[var(--outline)] bg-transparent py-3 text-base text-[var(--ink)] placeholder:text-[rgb(65_72_67_/_45%)] focus:border-[var(--copper)] focus:outline-none"
         />
       </div>
