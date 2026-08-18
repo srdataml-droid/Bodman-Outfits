@@ -30,6 +30,31 @@ nothing here has to be rediscovered.
   computes so `migrate deploy` sees it as applied rather than pending.
 - **`railway.json` deleted** and the `logs/` records committed.
 
+### Done 2026-08-18
+
+- **Commissioning is reachable and sortable.** `/custom-request` was in
+  neither the nav nor the footer; it is now "Commission" in the main nav.
+  The form asks the two questions a tailor asks first - `occasion`, and
+  `neededBy` as a real DATE rather than a sentence inside the description.
+- **And the admin can actually see them.** The commit that added those two
+  fields wrote them, emailed them, and then dropped both on the read path -
+  `Row` and `toDto` in the API service never mentioned them, so the review
+  queue could not show a deadline it had just been told to sort by. Fixed:
+  the API returns both, the queue has a "Needed by" column, the detail panel
+  shows both, and accepting a request into a draft order leads the note with
+  the deadline and occasion, because `Order` has no date field of its own.
+
+`neededBy` is sent as a date-only `YYYY-MM-DD` string, not an ISO timestamp.
+The column is `@db.Date`, and a timestamp renders as the previous day for any
+admin west of UTC. `Appointment.preferredDate` already does it this way; match
+it rather than inventing a second convention.
+
+**Still open on this**: the queue is ordered oldest-first by *arrival*, which
+is what the review-queue design says, and it now displays a deadline it cannot
+sort by. Deliberately not built - sorting an empty queue is guesswork, and the
+right default (arrival or deadline) is a question for the shop once real
+requests exist.
+
 Applied through the Supabase connector rather than `prisma migrate deploy`,
 because this sandbox cannot reach port 5432 - `P1001` on the pooler. The
 checksum method was validated first by reproducing an already-applied
