@@ -74,6 +74,9 @@ export interface CustomRequestDto {
   email: string;
   phone: string | null;
   description: string;
+  occasion: string | null;
+  /** Date-only, `YYYY-MM-DD`, as `Appointment.preferredDate` is sent. */
+  neededBy: string | null;
   category: string | null;
   status: CustomRequestStatus;
   declineReason: string | null;

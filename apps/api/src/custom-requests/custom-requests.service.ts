@@ -17,6 +17,8 @@ interface Row {
   email: string;
   phone: string | null;
   description: string;
+  occasion: string | null;
+  neededBy: Date | null;
   category: string | null;
   status: CustomRequestStatus;
   declineReason: string | null;
@@ -105,6 +107,11 @@ export class CustomRequestsService {
       email: r.email,
       phone: r.phone,
       description: r.description,
+      occasion: r.occasion,
+      // Date-only column, so send the calendar date rather than a timestamp.
+      // A full ISO string would render as the previous day for any admin west
+      // of UTC. Same treatment as `Appointment.preferredDate`.
+      neededBy: r.neededBy ? r.neededBy.toISOString().slice(0, 10) : null,
       category: r.category,
       status: r.status,
       declineReason: r.declineReason,

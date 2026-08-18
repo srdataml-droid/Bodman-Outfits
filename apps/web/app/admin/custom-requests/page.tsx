@@ -79,7 +79,16 @@ export default function CustomRequestsPage(): React.ReactElement {
       // the order with no address, so it could never be told it was ready.
       customerPhone: selected.phone ?? undefined,
       customerEmail: selected.email,
-      notes: `From custom request: ${selected.description.slice(0, 200)}`,
+      // The deadline leads the note. `Order` has no date field of its own, so
+      // without this the one fact that governs the whole job is dropped at
+      // exactly the handoff where the workshop starts needing it.
+      notes: [
+        selected.neededBy ? `Needed by ${selected.neededBy}.` : null,
+        selected.occasion ? `For: ${selected.occasion}.` : null,
+        `From custom request: ${selected.description.slice(0, 200)}`,
+      ]
+        .filter(Boolean)
+        .join(" "),
     });
     setBusy(false);
     if (!r.ok) {
@@ -116,7 +125,7 @@ export default function CustomRequestsPage(): React.ReactElement {
               <table className="w-full border-collapse text-sm" style={{ fontFamily: ADMIN_FONT }}>
                 <thead>
                   <tr className="border-b border-[rgb(27_62_45_/_12%)] text-left">
-                    {["Name", "Idea", "Received", "Status"].map((h) => (
+                    {["Name", "Idea", "Needed by", "Received", "Status"].map((h) => (
                       <th key={h} className="px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--muted-ink)]">{h}</th>
                     ))}
                   </tr>
@@ -136,6 +145,7 @@ export default function CustomRequestsPage(): React.ReactElement {
                     >
                       <td className="px-4 py-3 align-top font-medium">{row.name}</td>
                       <td className="px-4 py-3 align-top text-[var(--muted-ink)]">{row.description.slice(0, 60)}{row.description.length > 60 ? "…" : ""}</td>
+                      <td className="px-4 py-3 align-top whitespace-nowrap text-[var(--muted-ink)]">{row.neededBy ?? "—"}</td>
                       <td className="px-4 py-3 align-top text-[var(--muted-ink)]">{formatDateTime(row.createdAt)}</td>
                       <td className="px-4 py-3 align-top"><StatusPill status={row.status} /></td>
                     </tr>
@@ -156,6 +166,8 @@ export default function CustomRequestsPage(): React.ReactElement {
                 <div><dt className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--muted-ink)]">Email</dt><dd className="mt-1 text-sm"><a className="underline" href={`mailto:${selected.email}`}>{selected.email}</a></dd></div>
                 <div><dt className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--muted-ink)]">Phone</dt><dd className="mt-1 text-sm">{selected.phone ? <a className="underline" href={`tel:${selected.phone}`}>{selected.phone}</a> : "Not provided"}</dd></div>
                 <div><dt className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--muted-ink)]">Closest category</dt><dd className="mt-1 text-sm capitalize">{selected.category ?? "Not sure"}</dd></div>
+                <div><dt className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--muted-ink)]">Needed by</dt><dd className="mt-1 text-sm">{selected.neededBy ?? "No date given"}</dd></div>
+                <div><dt className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--muted-ink)]">Occasion</dt><dd className="mt-1 text-sm">{selected.occasion ?? "Not specified"}</dd></div>
                 <div><dt className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--muted-ink)]">The idea</dt><dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-6">{selected.description}</dd></div>
                 {selected.declineReason ? (
                   <div><dt className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--muted-ink)]">Decline reason</dt><dd className="mt-1 text-sm leading-6">{selected.declineReason}</dd></div>

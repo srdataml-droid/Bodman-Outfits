@@ -64,6 +64,9 @@ export interface CustomRequest {
   email: string;
   phone: string | null;
   description: string;
+  occasion: string | null;
+  /** Date-only, `YYYY-MM-DD`. Render as-is; parsing it shifts the day. */
+  neededBy: string | null;
   category: string | null;
   status: CustomRequestStatus;
   declineReason: string | null;
