@@ -93,7 +93,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={`rounded-lg px-3 py-1.5 text-sm transition-colors duration-150 ${
+                  className={`inline-flex min-h-11 items-center rounded-lg px-3 text-sm transition-colors duration-150 ${
                     active
                       ? "bg-[rgb(27_62_45_/_9%)] font-medium text-[var(--everglade)]"
                       : "text-[var(--muted-ink)] hover:bg-[rgb(27_62_45_/_5%)]"

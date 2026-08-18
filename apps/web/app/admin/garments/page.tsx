@@ -263,17 +263,17 @@ export default function GarmentsPage(): React.ReactElement {
 
       {garments === null ? (
         <Panel>
-          <p className="text-sm text-[var(--muted-ink)]">Loading…</p>
+          <Notice>Loading…</Notice>
         </Panel>
       ) : garments.length === 0 ? (
         <Panel>
-          <p className="text-sm text-[var(--muted-ink)]">No garments yet.</p>
+          <Notice>No garments yet.</Notice>
         </Panel>
       ) : (
         <Panel>
           <ul className="divide-y divide-[rgb(27_62_45_/_10%)]">
             {garments.map((garment) => (
-              <li key={garment.id} className="flex flex-wrap items-center gap-3 py-3">
+              <li key={garment.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-[var(--everglade)]">
                     {garment.name}{" "}

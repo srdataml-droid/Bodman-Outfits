@@ -60,7 +60,7 @@ export function Button({
   title?: string;
 }) {
   const base =
-    "inline-flex min-h-9 items-center justify-center rounded-lg px-3.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--copper)] disabled:pointer-events-none disabled:opacity-50";
+    "inline-flex min-h-11 items-center justify-center rounded-lg px-3.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--copper)] disabled:pointer-events-none disabled:opacity-50";
   const styles = {
     primary: "bg-[var(--everglade)] text-white hover:bg-[var(--everglade-dark)]",
     secondary:
@@ -102,7 +102,7 @@ export function Field({
 }
 
 export const inputClass =
-  "min-h-9 w-full rounded-lg border border-[rgb(27_62_45_/_20%)] bg-white px-3 py-1.5 text-sm text-[var(--ink)] transition-colors duration-150 placeholder:text-[rgb(65_72_67_/_40%)] focus:border-[var(--copper)] focus:outline-none";
+  "min-h-11 w-full rounded-lg border border-[rgb(27_62_45_/_20%)] bg-white px-3 py-1.5 text-sm text-[var(--ink)] transition-colors duration-150 placeholder:text-[rgb(65_72_67_/_40%)] focus:border-[var(--copper)] focus:outline-none";
 
 /**
  * Status pill.
