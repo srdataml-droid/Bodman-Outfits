@@ -89,7 +89,7 @@ PR #1 merged earlier carried three commits:
   prices were never unconfirmed - they sit on the category in
   `apps/web/lib/garments.ts`, ₦70,000 and ₦25,000. See item 3 below.
 
-### Appointment now requires an email, not a phone — CODE DONE, **MIGRATION NOT APPLIED**
+### Appointment now requires an email, not a phone — ✅ SHIPPED AND APPLIED
 
 Requested 2026-08-18. `Appointment` was the only one of the three request
 types keyed on a phone number; `Enquiry` and `CustomRequest` both already
@@ -103,34 +103,41 @@ enquiries screen already had. Both apps typecheck clean, and the form was
 driven in a real browser: email `required`, phone not, labelled
 "PHONE (optional)".
 
-**Read this before deploying.** The migration
-`20260818110000_appointment_email_required` is written and committed but has
-**deliberately not been applied**, because the order is load-bearing:
+**Both halves are done, in the order that mattered.** Recorded because the
+ordering is the whole lesson, not because anything is outstanding:
 
-1. **Deploy the code first.** Render auto-deploys the API from `main`.
-2. **Then apply the migration.**
+1. Code deployed first. Render deploy `dep-da2384psrm7s738csopg` went live
+   2026-08-18 10:31:18 UTC on `f2f3159`.
+2. Migration `20260818110000_appointment_email_required` applied after, at
+   10:33 UTC, through the Supabase connector.
 
-Backwards, and the live appointment form breaks: the currently deployed API
-still treats email as optional, so the moment `email` is `NOT NULL` any
-submission without one is a NOT NULL violation and a 500 on a public form.
-`phone DROP NOT NULL` is safe in either order; `email SET NOT NULL` is not.
+Backwards, the live form breaks: while the running API still treated email as
+optional, a `NOT NULL` column would have turned every submission without one
+into a 500 on a public form. The reverse window is real too and is why the
+migration followed immediately rather than later - once the new code was live
+it accepted a submission with no phone, which the still-`NOT NULL` phone
+column would have rejected.
 
 Note that **the deploy pipeline does not run migrations** - `render.yaml`
-runs `prisma generate`, never `prisma migrate deploy` - so this will not
-happen on its own and there is no automation to race.
+runs `prisma generate`, never `prisma migrate deploy` - so this had to be
+done by hand and there was no automation to race.
 
-Apply it through the Supabase connector, as with the last two: this sandbox
-cannot reach port 5432 (`P1001` on the pooler). The checksum to record in
-`_prisma_migrations` is a plain SHA-256 of `migration.sql`, re-validated
-today by reproducing both recent migrations' recorded hashes exactly:
+**How the deploy was confirmed live, which is the reusable part.** Not by
+waiting a plausible number of seconds: `POST /api/appointments` with an empty
+body returns Zod's `fieldErrors`, and the old code lists `phone` as required
+while the new one lists `email`. A rejected empty payload creates no row and
+sends no mail, so it is a free, exact answer to "is my code live yet".
 
-```
-12c14a53b9df113735c5d16eceed29bfe63f993baeb3c9adad715a01bca8e0c0
-```
+Verified after applying: `email` is `NOT NULL` and `phone` nullable in
+`information_schema`; `atelier_api_public` still holds INSERT on both columns
+and `atelier_api_admin` SELECT/INSERT/UPDATE, so the insert path is intact;
+12 migrations recorded, none unfinished, none rolled back. The checksum
+recorded in `_prisma_migrations` is a plain SHA-256 of `migration.sql`,
+re-validated first by reproducing both previous migrations' hashes exactly.
 
-`Appointment` held **zero rows** when this was written, so `SET NOT NULL`
-cannot fail on existing data. Re-check that before applying - a single NULL
-email aborts the whole migration.
+`Appointment` held zero rows throughout, so `SET NOT NULL` could not fail on
+existing data - re-checked immediately before applying, not just when the
+migration was written.
 
 ---
 
