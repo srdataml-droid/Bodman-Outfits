@@ -22,7 +22,7 @@ export interface AppointmentRequest {
 // The localhost fallback matches the existing convention in the two server
 // libs above, so local development needs no extra configuration. A real
 // deployment MUST set NEXT_PUBLIC_API_URL — see docs/api.md.
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_URL = "";
 
 export type SubmitOutcome =
   | { ok: true; id: string }
@@ -43,7 +43,7 @@ export async function submitAppointment(request: AppointmentRequest): Promise<Su
   const timeout = setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
 
   try {
-    const response = await fetch(`${API_URL}/api/appointments`, {
+    const response = await fetch(`${API_URL}/api/fittings`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
