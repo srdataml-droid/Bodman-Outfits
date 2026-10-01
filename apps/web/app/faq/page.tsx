@@ -5,7 +5,6 @@ import { FaqList } from "../../components/faq-list";
 import { SiteFooter } from "../../components/site-footer";
 import { SiteHeader } from "../../components/site-header";
 import { getFaqEntries } from "../../lib/faq-data";
-import { getShopSettings } from "../../lib/shop-settings";
 import {
   categories,
   formatStartingPrice,
@@ -33,19 +32,7 @@ export const metadata: Metadata = {
 const priceList = [...categories].sort((a, b) => a.price.from - b.price.from);
 
 export default async function FaqPage(): Promise<React.ReactElement> {
-  const [faqEntries, settings] = await Promise.all([getFaqEntries(), getShopSettings()]);
-
-  /*
-   * The Admin-editable pricing note, rendered here because this is the one
-   * place all five figures appear together. Omitted entirely when empty
-   * rather than reserving space for it.
-   *
-   * NOTE the overlap with PRICING_QUALIFIER above it, which already ends
-   * "and is negotiable on larger orders". Both strings are the owner's to
-   * control, but only this one is editable without a deploy. If they ever
-   * say the same thing, the qualifier is the one to trim — not this.
-   */
-  const pricingNote = settings?.pricingNote?.trim() ?? "";
+  const faqEntries = await getFaqEntries();
 
   return (
     <>
@@ -107,31 +94,13 @@ export default async function FaqPage(): Promise<React.ReactElement> {
               and we will price it properly.
             </p>
 
-            {pricingNote ? (
-              <p className="mt-4 border-t border-[rgb(27_62_45_/_10%)] pt-4 text-center text-sm leading-6 text-[var(--muted-ink)]">
-                {pricingNote}
-              </p>
-            ) : null}
           </div>
 
           <div
             className="mt-16 animate-[catalogue-enter_700ms_cubic-bezier(0.16,1,0.3,1)_both] md:mt-20"
             style={{ animationDelay: "150ms" }}
           >
-            {faqEntries ? (
-              <FaqList entries={faqEntries} />
-            ) : (
-              <p className="mx-auto max-w-xl text-center text-base leading-7 text-[var(--muted-ink)]">
-                Our FAQs aren&apos;t loading right now. Please{" "}
-                <Link
-                  href="/contact"
-                  className="font-medium text-[var(--copper)] underline decoration-1 underline-offset-2 transition-colors duration-300 hover:text-[var(--everglade)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
-                >
-                  get in touch
-                </Link>{" "}
-                directly and we&apos;ll answer your question.
-              </p>
-            )}
+            {faqEntries.length > 0 ? <FaqList entries={faqEntries} /> : null}
           </div>
         </section>
 
