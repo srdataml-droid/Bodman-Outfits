@@ -8,6 +8,7 @@ type ScriptResponse = {
   id?: string;
   products?: unknown[];
   requests?: unknown[];
+  faqs?: unknown[];
 };
 
 function endpoint(): string {
@@ -139,4 +140,25 @@ export async function upsertProduct(data: Record<string, unknown>) {
   const body = await scriptPost({ action: "product", ...data });
   if (!body.id) throw new Error("Google Apps Script returned no product ID.");
   return { ...data, id: body.id };
+}
+
+export async function getFaqs() {
+  const body = await scriptGet("faqs");
+  if (!Array.isArray(body.faqs)) {
+    throw new Error("Google Apps Script returned no FAQ list.");
+  }
+
+  return body.faqs
+    .map((raw) => {
+      const row = (raw ?? {}) as Record<string, unknown>;
+      return {
+        id: text(row.id),
+        category: text(row.category) || null,
+        question: text(row.question),
+        answer: text(row.answer),
+        sortOrder: Number(row.sortOrder) || 0,
+      };
+    })
+    .filter((faq) => faq.id && faq.question && faq.answer)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 }
