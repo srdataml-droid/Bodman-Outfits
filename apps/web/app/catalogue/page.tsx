@@ -96,20 +96,14 @@ export default function CataloguePage(): React.ReactElement {
               Each piece is a dialogue between tailor and client.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-[var(--muted-ink)]">
-              Have something in mind the catalogue doesn&apos;t show? Start from your own idea instead.
+              Have something in mind or want help choosing where to begin? Start the conversation with us.
             </p>
-            <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="mt-9 flex items-center justify-center">
               <Link
                 href="/contact"
                 className="inline-flex min-h-11 items-center rounded-xl bg-[var(--everglade)] px-7 py-4 text-sm font-medium tracking-[0.1em] text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--copper)] hover:shadow-[0_14px_30px_rgb(200_118_58_/_24%)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
               >
                 START YOUR BESPOKE JOURNEY
-              </Link>
-              <Link
-                href="/custom-request"
-                className="inline-flex min-h-11 items-center rounded-xl border border-[var(--everglade)] px-7 py-4 text-sm font-medium tracking-[0.1em] text-[var(--everglade)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--copper)] hover:text-[var(--copper)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--copper)]"
-              >
-                SUBMIT A CUSTOM DESIGN
               </Link>
             </div>
           </section>
