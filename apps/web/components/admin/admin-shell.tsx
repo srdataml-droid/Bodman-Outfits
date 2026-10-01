@@ -8,14 +8,8 @@ import { ADMIN_FONT, Button } from "./admin-ui";
 
 const NAV = [
   { href: "/admin/requests", label: "Requests" },
-  { href: "/admin/appointments", label: "Appointments" },
-  { href: "/admin/enquiries", label: "Enquiries" },
-  { href: "/admin/custom-requests", label: "Custom requests" },
-  { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/garments", label: "Garments" },
-  { href: "/admin/faqs", label: "FAQs" },
-  { href: "/admin/shop-settings", label: "Shop settings" },
-  { href: "/admin/account", label: "Account" },
+  { href: "/admin/garments", label: "Products" },
+  { href: "/admin/shop-settings", label: "Settings" },
 ];
 
 /**
@@ -78,10 +72,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <header className="border-b border-[rgb(27_62_45_/_14%)] bg-white">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-6 gap-y-3 px-5 py-3">
           <Link
-            href="/admin/appointments"
+            href="/admin/requests"
             className="font-[Fraunces] text-lg font-medium tracking-[0.02em] text-[var(--everglade)]"
           >
-            Bodman Outfits
+            Bodman's Outfit
             <span className="ml-2 align-middle text-xs font-normal uppercase tracking-[0.14em] text-[var(--copper)]">
               Admin
             </span>
