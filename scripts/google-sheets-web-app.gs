@@ -22,11 +22,20 @@ function doGet(e) {
     if (action === "products") {
       return jsonResponse({
         success: true,
-        products: getProducts()
+        products: getProducts(false)
+      });
+    }
+
+    if (action === "productsAdmin") {
+      requireAdminSecret((e && e.parameter && e.parameter.secret) || "");
+      return jsonResponse({
+        success: true,
+        products: getProducts(true)
       });
     }
 
     if (action === "requests") {
+      requireAdminSecret((e && e.parameter && e.parameter.secret) || "");
       return jsonResponse({
         success: true,
         requests: getRequests()
@@ -59,8 +68,16 @@ function doPost(e) {
 
     if (action === "commission") return createCommission(body);
     if (action === "fitting") return createFitting(body);
-    if (action === "product") return saveProduct(body);
-    if (action === "requestStatus") return updateRequestStatus(body);
+
+    if (action === "product") {
+      requireAdminSecret(body.secret || "");
+      return saveProduct(body);
+    }
+
+    if (action === "requestStatus") {
+      requireAdminSecret(body.secret || "");
+      return updateRequestStatus(body);
+    }
 
     return jsonResponse({ success: false, error: "Unknown action" });
   } catch (error) {
@@ -120,7 +137,7 @@ function createFitting(data) {
   return jsonResponse({ success: true, id: id });
 }
 
-function getProducts() {
+function getProducts(includeInactive) {
   const sheet = SpreadsheetApp
     .openById(PRODUCTS_SHEET_ID)
     .getSheetByName("Products");
@@ -132,7 +149,11 @@ function getProducts() {
 
   return values
     .slice(1)
-    .filter(function(row) { return row[0]; })
+    .filter(function(row) {
+      if (!row[0]) return false;
+      const active = row[11] === true || String(row[11]).toLowerCase() === "true";
+      return includeInactive || active;
+    })
     .map(function(row) {
       return {
         id: String(row[0]),
@@ -322,6 +343,16 @@ function dateText(value) {
     return value.toISOString();
   }
   return String(value);
+}
+
+function requireAdminSecret(provided) {
+  const expected = PropertiesService
+    .getScriptProperties()
+    .getProperty("ADMIN_SECRET");
+
+  if (!expected || String(provided) !== String(expected)) {
+    throw new Error("Unauthorized");
+  }
 }
 
 function jsonResponse(data) {
