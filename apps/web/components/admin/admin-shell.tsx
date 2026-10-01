@@ -7,6 +7,7 @@ import { adminApi } from "../../lib/admin-api";
 import { ADMIN_FONT, Button } from "./admin-ui";
 
 const NAV = [
+  { href: "/admin/requests", label: "Requests" },
   { href: "/admin/appointments", label: "Appointments" },
   { href: "/admin/enquiries", label: "Enquiries" },
   { href: "/admin/custom-requests", label: "Custom requests" },
