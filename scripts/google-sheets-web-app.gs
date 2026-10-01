@@ -5,9 +5,16 @@
  */
 const SCRIPT_SECRET = "REPLACE_WITH_A_LONG_RANDOM_SECRET";
 const PRODUCTS_SPREADSHEET_ID = "1k6_ch5w3foEspqQac4AwdM3ttXi_MmHnCCuYCDrtwxU";
+const REQUESTS_SPREADSHEET_ID = "1Cfs8gkYVxXSySnzmYFTgpBhNxTUvO10FLVMa36_9VZo";
 
 function doGet(e) {
   try {
+    if (e.parameter.resource === "requests") {
+      const ss = SpreadsheetApp.openById(REQUESTS_SPREADSHEET_ID);
+      const commissions = ss.getSheetByName("Commissions").getDataRange().getValues().slice(1).filter(r => r[1]).map(r => ({ type:"commission", createdAt:String(r[0]), id:String(r[1]), name:String(r[2]), email:String(r[3]), phone:String(r[4]), category:String(r[5]), occasion:String(r[6]), neededBy:String(r[7]), description:String(r[8]), status:String(r[9] || "NEW"), notes:String(r[10] || "") }));
+      const fittings = ss.getSheetByName("Fittings").getDataRange().getValues().slice(1).filter(r => r[1]).map(r => ({ type:"fitting", createdAt:String(r[0]), id:String(r[1]), name:String(r[2]), email:String(r[3]), phone:String(r[4]), preferredDate:String(r[5]), preferredTime:String(r[6]), category:String(r[7]), notes:String(r[8]), status:String(r[9] || "NEW") }));
+      return json_({ ok:true, requests: commissions.concat(fittings).sort((a,b) => b.createdAt.localeCompare(a.createdAt)) });
+    }
     if (e.parameter.resource !== "products") return json_({ ok: false, error: "unknown-resource" });
     const sheet = SpreadsheetApp.openById(PRODUCTS_SPREADSHEET_ID).getSheetByName("Products");
     const rows = sheet.getDataRange().getValues().slice(1);
@@ -21,7 +28,7 @@ function doPost(e) {
     const body = JSON.parse(e.postData.contents);
     if (body.secret !== SCRIPT_SECRET) return json_({ ok: false, error: "unauthorized" });
 
-    const ss = SpreadsheetApp.openById(body.spreadsheetId);
+    const ss = SpreadsheetApp.openById(body.spreadsheetId || REQUESTS_SPREADSHEET_ID);
     const now = new Date().toISOString();
     const id = Utilities.getUuid();
 
