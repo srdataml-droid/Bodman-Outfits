@@ -1,7 +1,7 @@
 "use client";
 
 // Browser-visible base URL, same variable the public forms use.
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_URL = "";
 
 export interface Appointment {
   id: string;
@@ -222,11 +222,11 @@ export const adminApi = {
 
   // "all" rather than the public list: the dashboard must show deactivated
   // garments, which the public endpoint deliberately cannot return.
-  garments: () => adminFetch<Garment[]>("/api/garments/all"),
+  garments: () => adminFetch<Garment[]>("/api/products"),
   createGarment: (input: Omit<Garment, "id">) =>
-    adminFetch<Garment>("/api/garments", { method: "POST", body: JSON.stringify(input) }),
+    adminFetch<Garment>("/api/products", { method: "POST", body: JSON.stringify(input) }),
   updateGarment: (id: string, patch: Partial<Omit<Garment, "id">>) =>
-    adminFetch<Garment>(`/api/garments/${id}`, { method: "PUT", body: JSON.stringify(patch) }),
+    adminFetch<Garment>(`/api/products/${id}`, { method: "PUT", body: JSON.stringify(patch) }),
   setGarmentActive: (id: string, active: boolean) =>
     adminFetch<Garment>(`/api/garments/${id}/active`, {
       method: "PATCH",
