@@ -13,7 +13,7 @@ async function writeProduct(
 
   try {
     const { id } = await context.params;
-    const products = await getProducts();
+    const products = await getProducts(true);
     const current = products.find((product) => product.id === id);
     if (!current) {
       return NextResponse.json({ message: "Product not found." }, { status: 404 });
