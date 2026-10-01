@@ -222,14 +222,14 @@ export const adminApi = {
 
   // "all" rather than the public list: the dashboard must show deactivated
   // garments, which the public endpoint deliberately cannot return.
-  garments: () => adminFetch<Garment[]>("/api/products"),
+  garments: () => adminFetch<Garment[]>("/api/products?admin=1"),
   createGarment: (input: Omit<Garment, "id">) =>
     adminFetch<Garment>("/api/products", { method: "POST", body: JSON.stringify(input) }),
   updateGarment: (id: string, patch: Partial<Omit<Garment, "id">>) =>
     adminFetch<Garment>(`/api/products/${id}`, { method: "PUT", body: JSON.stringify(patch) }),
   setGarmentActive: (id: string, active: boolean) =>
     adminFetch<Garment>(`/api/products/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify({ active }),
     }),
   deleteGarment: (id: string) => adminFetch<void>(`/api/garments/${id}`, { method: "DELETE" }),
