@@ -14,7 +14,7 @@ import type { GarmentImagePair } from "./garments";
  * the customer's screen.
  */
 
-const API_URL = process.env.API_URL ?? "http://localhost:4000";
+const API_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "";
 
 // How long to wait before giving up on the API and falling back to an empty
 // catalogue. Kept well under Vercel's per-page build timeout so a cold/asleep
@@ -55,7 +55,7 @@ export async function getGarments(): Promise<GarmentRecord[]> {
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const response = await fetch(`${API_URL}/api/garments`, {
+    const response = await fetch(`${API_URL}/api/products`, {
       // Same 5-minute window as shop settings and FAQs, so an admin edit
       // appears on the public site within five minutes without a deploy.
       next: { revalidate: 300 },
