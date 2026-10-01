@@ -13,7 +13,7 @@ export interface CustomRequestSubmission {
 
 // Browser-visible, same as the other public forms, so the API's per-IP rate
 // limiter sees the real client rather than the web server.
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_URL = "";
 
 export type SubmitOutcome =
   | { ok: true; id: string }
@@ -21,7 +21,7 @@ export type SubmitOutcome =
 
 export async function submitCustomRequest(request: CustomRequestSubmission): Promise<SubmitOutcome> {
   try {
-    const response = await fetch(`${API_URL}/api/custom-requests`, {
+    const response = await fetch(`${API_URL}/api/commissions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
