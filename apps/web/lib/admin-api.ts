@@ -228,8 +228,8 @@ export const adminApi = {
   updateGarment: (id: string, patch: Partial<Omit<Garment, "id">>) =>
     adminFetch<Garment>(`/api/products/${id}`, { method: "PUT", body: JSON.stringify(patch) }),
   setGarmentActive: (id: string, active: boolean) =>
-    adminFetch<Garment>(`/api/garments/${id}/active`, {
-      method: "PATCH",
+    adminFetch<Garment>(`/api/products/${id}`, {
+      method: "PUT",
       body: JSON.stringify({ active }),
     }),
   deleteGarment: (id: string) => adminFetch<void>(`/api/garments/${id}`, { method: "DELETE" }),
