@@ -1,70 +1,297 @@
 /**
- * Bodman's Outfit prototype writer.
- * Paste this into a Google Apps Script project owned by the Google account
- * that owns the operations sheet, set SCRIPT_SECRET, and deploy as a Web App.
+ * Bodman's Outfit prototype API.
+ *
+ * One Apps Script deployment handles both spreadsheets:
+ * - Operations: commissions and fittings
+ * - Products: catalogue products
+ *
+ * Deploy as a Web App:
+ *   Execute as: Me
+ *   Who has access: Anyone
+ *
+ * Keep the /exec URL in Vercel as GOOGLE_APPS_SCRIPT_URL. Do not commit it.
  */
-const SCRIPT_SECRET = "REPLACE_WITH_A_LONG_RANDOM_SECRET";
-const PRODUCTS_SPREADSHEET_ID = "1k6_ch5w3foEspqQac4AwdM3ttXi_MmHnCCuYCDrtwxU";
-const REQUESTS_SPREADSHEET_ID = "1Cfs8gkYVxXSySnzmYFTgpBhNxTUvO10FLVMa36_9VZo";
+
+const OPERATIONS_SHEET_ID = "1Cfs8gkYVxXSySnzmYFTgpBhNxTUvO10FLVMa36_9VZo";
+const PRODUCTS_SHEET_ID = "1k6_ch5w3foEspqQac4AwdM3ttXi_MmHnCCuYCDrtwxU";
 
 function doGet(e) {
   try {
-    if (e.parameter.resource === "requests") {
-      const ss = SpreadsheetApp.openById(REQUESTS_SPREADSHEET_ID);
-      const commissions = ss.getSheetByName("Commissions").getDataRange().getValues().slice(1).filter(r => r[1]).map(r => ({ type:"commission", createdAt:String(r[0]), id:String(r[1]), name:String(r[2]), email:String(r[3]), phone:String(r[4]), category:String(r[5]), occasion:String(r[6]), neededBy:String(r[7]), description:String(r[8]), status:String(r[9] || "NEW"), notes:String(r[10] || "") }));
-      const fittings = ss.getSheetByName("Fittings").getDataRange().getValues().slice(1).filter(r => r[1]).map(r => ({ type:"fitting", createdAt:String(r[0]), id:String(r[1]), name:String(r[2]), email:String(r[3]), phone:String(r[4]), preferredDate:String(r[5]), preferredTime:String(r[6]), category:String(r[7]), notes:String(r[8]), status:String(r[9] || "NEW") }));
-      return json_({ ok:true, requests: commissions.concat(fittings).sort((a,b) => b.createdAt.localeCompare(a.createdAt)) });
+    const action = (e && e.parameter && e.parameter.action) || "";
+
+    if (action === "products") {
+      return jsonResponse({
+        success: true,
+        products: getProducts()
+      });
     }
-    if (e.parameter.resource !== "products") return json_({ ok: false, error: "unknown-resource" });
-    const sheet = SpreadsheetApp.openById(PRODUCTS_SPREADSHEET_ID).getSheetByName("Products");
-    const rows = sheet.getDataRange().getValues().slice(1);
-    const products = rows.filter(r => r[0]).map(r => ({ id:String(r[0]), slug:String(r[1]), category:String(r[2]), name:String(r[3]), detail:String(r[4]), description:String(r[5]), imageFlat:String(r[6]), imageOnForm:String(r[7]), altFlat:String(r[8]), altOnForm:String(r[9]), startingPrice:r[10] === "" ? null : Number(r[10]), active:String(r[11]).toLowerCase() !== "false", sortOrder:Number(r[12] || 0) }));
-    return json_({ ok: true, products: products });
-  } catch (err) { return json_({ ok: false, error: String(err) }); }
+
+    if (action === "requests") {
+      return jsonResponse({
+        success: true,
+        requests: getRequests()
+      });
+    }
+
+    return jsonResponse({
+      success: true,
+      message: "Bodman's Outfit API is running"
+    });
+  } catch (error) {
+    return jsonResponse({
+      success: false,
+      error: error && error.message ? error.message : String(error)
+    });
+  }
 }
 
 function doPost(e) {
   try {
-    const body = JSON.parse(e.postData.contents);
-    if (body.secret !== SCRIPT_SECRET) return json_({ ok: false, error: "unauthorized" });
+    const body = JSON.parse((e && e.postData && e.postData.contents) || "{}");
+    const action = body.action || "";
 
-    const ss = SpreadsheetApp.openById(body.spreadsheetId || REQUESTS_SPREADSHEET_ID);
-    const now = new Date().toISOString();
-    const id = Utilities.getUuid();
+    if (action === "commission") return createCommission(body);
+    if (action === "fitting") return createFitting(body);
+    if (action === "product") return saveProduct(body);
+    if (action === "requestStatus") return updateRequestStatus(body);
 
-    if (body.kind === "commission") {
-      const d = body.data || {};
-      ss.getSheetByName("Commissions").appendRow([
-        now, id, d.name || "", d.email || "", d.phone || "", d.category || "",
-        d.occasion || "", d.neededBy || "", d.description || "", "NEW", ""
-      ]);
-    } else if (body.kind === "fitting") {
-      const d = body.data || {};
-      ss.getSheetByName("Fittings").appendRow([
-        now, id, d.name || "", d.email || "", d.phone || "", d.preferredDate || "",
-        d.preferredTime || "", d.category || "", d.notes || "", "NEW"
-      ]);
-    } else if (body.kind === "product-upsert") {
-      const d = body.data || {};
-      const sheet = SpreadsheetApp.openById(PRODUCTS_SPREADSHEET_ID).getSheetByName("Products");
-      const values = sheet.getDataRange().getValues();
-      const productId = d.id || Utilities.getUuid();
-      const row = [productId, d.slug || "", d.category || "", d.name || "", d.detail || "", d.description || "", d.imageFlat || "", d.imageOnForm || "", d.altFlat || "", d.altOnForm || "", d.startingPrice == null ? "" : d.startingPrice, d.active !== false, d.sortOrder || 0, now];
-      let target = -1;
-      for (let i = 1; i < values.length; i++) if (String(values[i][0]) === String(productId)) target = i + 1;
-      if (target > 0) sheet.getRange(target, 1, 1, row.length).setValues([row]); else sheet.appendRow(row);
-      return json_({ ok: true, id: productId });
-    } else {
-      return json_({ ok: false, error: "unknown-kind" });
-    }
-
-    return json_({ ok: true, id: id });
-  } catch (err) {
-    return json_({ ok: false, error: String(err) });
+    return jsonResponse({ success: false, error: "Unknown action" });
+  } catch (error) {
+    return jsonResponse({
+      success: false,
+      error: error && error.message ? error.message : String(error)
+    });
   }
 }
 
-function json_(value) {
-  return ContentService.createTextOutput(JSON.stringify(value))
+function createCommission(data) {
+  const sheet = SpreadsheetApp
+    .openById(OPERATIONS_SHEET_ID)
+    .getSheetByName("Commissions");
+
+  if (!sheet) throw new Error("Commissions sheet not found");
+
+  const id = Utilities.getUuid();
+  sheet.appendRow([
+    new Date(),
+    id,
+    data.name || "",
+    data.email || "",
+    data.phone || "",
+    data.category || "",
+    data.occasion || "",
+    data.neededBy || "",
+    data.description || "",
+    "pending_review",
+    ""
+  ]);
+
+  return jsonResponse({ success: true, id: id });
+}
+
+function createFitting(data) {
+  const sheet = SpreadsheetApp
+    .openById(OPERATIONS_SHEET_ID)
+    .getSheetByName("Fittings");
+
+  if (!sheet) throw new Error("Fittings sheet not found");
+
+  const id = Utilities.getUuid();
+  sheet.appendRow([
+    new Date(),
+    id,
+    data.name || "",
+    data.email || "",
+    data.phone || "",
+    data.preferredDate || "",
+    data.preferredTime || "",
+    data.category || "",
+    data.notes || "",
+    "pending"
+  ]);
+
+  return jsonResponse({ success: true, id: id });
+}
+
+function getProducts() {
+  const sheet = SpreadsheetApp
+    .openById(PRODUCTS_SHEET_ID)
+    .getSheetByName("Products");
+
+  if (!sheet) throw new Error("Products sheet not found");
+
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) return [];
+
+  return values
+    .slice(1)
+    .filter(function(row) { return row[0]; })
+    .map(function(row) {
+      return {
+        id: String(row[0]),
+        slug: String(row[1] || ""),
+        category: String(row[2] || ""),
+        name: String(row[3] || ""),
+        detail: String(row[4] || ""),
+        description: String(row[5] || ""),
+        imageFlat: String(row[6] || ""),
+        imageOnForm: String(row[7] || ""),
+        altFlat: String(row[8] || ""),
+        altOnForm: String(row[9] || ""),
+        startingPrice: row[10] === "" || row[10] == null ? null : Number(row[10]),
+        active: row[11] === true || String(row[11]).toLowerCase() === "true",
+        sortOrder: Number(row[12]) || 0,
+        updatedAt: row[13] || ""
+      };
+    })
+    .sort(function(a, b) { return a.sortOrder - b.sortOrder; });
+}
+
+function getRequests() {
+  const spreadsheet = SpreadsheetApp.openById(OPERATIONS_SHEET_ID);
+  const commissionsSheet = spreadsheet.getSheetByName("Commissions");
+  const fittingsSheet = spreadsheet.getSheetByName("Fittings");
+
+  if (!commissionsSheet || !fittingsSheet) {
+    throw new Error("Operations tabs not found");
+  }
+
+  const commissions = commissionsSheet
+    .getDataRange()
+    .getValues()
+    .slice(1)
+    .filter(function(row) { return row[1]; })
+    .map(function(row) {
+      return {
+        type: "commission",
+        createdAt: dateText(row[0]),
+        id: String(row[1] || ""),
+        name: String(row[2] || ""),
+        email: String(row[3] || ""),
+        phone: String(row[4] || ""),
+        category: String(row[5] || ""),
+        occasion: String(row[6] || ""),
+        neededBy: dateText(row[7]),
+        description: String(row[8] || ""),
+        status: String(row[9] || "pending_review"),
+        notes: String(row[10] || "")
+      };
+    });
+
+  const fittings = fittingsSheet
+    .getDataRange()
+    .getValues()
+    .slice(1)
+    .filter(function(row) { return row[1]; })
+    .map(function(row) {
+      return {
+        type: "fitting",
+        createdAt: dateText(row[0]),
+        id: String(row[1] || ""),
+        name: String(row[2] || ""),
+        email: String(row[3] || ""),
+        phone: String(row[4] || ""),
+        preferredDate: dateText(row[5]),
+        preferredTime: String(row[6] || ""),
+        category: String(row[7] || ""),
+        notes: String(row[8] || ""),
+        status: String(row[9] || "pending")
+      };
+    });
+
+  return commissions.concat(fittings).sort(function(a, b) {
+    return b.createdAt.localeCompare(a.createdAt);
+  });
+}
+
+function saveProduct(data) {
+  const sheet = SpreadsheetApp
+    .openById(PRODUCTS_SHEET_ID)
+    .getSheetByName("Products");
+
+  if (!sheet) throw new Error("Products sheet not found");
+
+  const id = data.id || Utilities.getUuid();
+  const values = sheet.getDataRange().getValues();
+  let rowNumber = -1;
+
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === String(id)) {
+      rowNumber = i + 1;
+      break;
+    }
+  }
+
+  const row = [
+    id,
+    data.slug || "",
+    data.category || "",
+    data.name || "",
+    data.detail || "",
+    data.description || "",
+    data.imageFlat || "",
+    data.imageOnForm || "",
+    data.altFlat || "",
+    data.altOnForm || "",
+    data.startingPrice == null || data.startingPrice === "" ? "" : Number(data.startingPrice),
+    data.active !== false,
+    Number(data.sortOrder) || 0,
+    new Date()
+  ];
+
+  if (rowNumber === -1) {
+    sheet.appendRow(row);
+  } else {
+    sheet.getRange(rowNumber, 1, 1, row.length).setValues([row]);
+  }
+
+  return jsonResponse({ success: true, id: id });
+}
+
+function updateRequestStatus(data) {
+  const type = data.type;
+  const allowed = type === "commission"
+    ? ["pending_review", "accepted", "declined"]
+    : type === "fitting"
+      ? ["pending", "confirmed", "declined"]
+      : [];
+
+  if (allowed.indexOf(data.status) === -1) {
+    throw new Error("Invalid request status");
+  }
+
+  const sheetName = type === "commission" ? "Commissions" : "Fittings";
+  const sheet = SpreadsheetApp
+    .openById(OPERATIONS_SHEET_ID)
+    .getSheetByName(sheetName);
+
+  if (!sheet) throw new Error(sheetName + " sheet not found");
+
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][1]) === String(data.id)) {
+      sheet.getRange(i + 1, 10).setValue(data.status);
+      return jsonResponse({
+        success: true,
+        id: data.id,
+        status: data.status
+      });
+    }
+  }
+
+  throw new Error("Request not found");
+}
+
+function dateText(value) {
+  if (!value) return "";
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return value.toISOString();
+  }
+  return String(value);
+}
+
+function jsonResponse(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
