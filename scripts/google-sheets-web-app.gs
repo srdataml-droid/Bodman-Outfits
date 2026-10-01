@@ -33,6 +33,13 @@ function doGet(e) {
       });
     }
 
+    if (action === "faqs") {
+      return jsonResponse({
+        success: true,
+        faqs: getFaqs()
+      });
+    }
+
     return jsonResponse({
       success: true,
       message: "Bodman's Outfit API is running"
@@ -202,6 +209,33 @@ function getRequests() {
   return commissions.concat(fittings).sort(function(a, b) {
     return b.createdAt.localeCompare(a.createdAt);
   });
+}
+
+function getFaqs() {
+  const sheet = SpreadsheetApp
+    .openById(OPERATIONS_SHEET_ID)
+    .getSheetByName("FAQs");
+
+  if (!sheet) throw new Error("FAQs sheet not found");
+
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) return [];
+
+  return values
+    .slice(1)
+    .filter(function(row) {
+      return row[0] && String(row[5]).toLowerCase() !== "false";
+    })
+    .map(function(row) {
+      return {
+        id: String(row[0] || ""),
+        category: String(row[1] || ""),
+        question: String(row[2] || ""),
+        answer: String(row[3] || ""),
+        sortOrder: Number(row[4]) || 0
+      };
+    })
+    .sort(function(a, b) { return a.sortOrder - b.sortOrder; });
 }
 
 function saveProduct(data) {
