@@ -10,7 +10,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
     }
 
-    const products = await getProducts();
+    const products = await getProducts(admin);
     return NextResponse.json(
       admin ? products : products.filter((product) => product.active),
     );
