@@ -20,8 +20,9 @@ interface GarmentFigureProps {
  *    costs nothing.
  * 2. It is bound to `group-focus-visible` as well as hover, so the second
  *    image is reachable by keyboard and not hover-only. Touch devices have no
- *    hover at all, so the flat image is the one that must stand on its own,
- *    which is why it is the resting state rather than the reverse.
+ *    hover at all, so they default to the on-form image. From the md breakpoint
+ *    upward the flat image is the resting state and hover/focus reveals the
+ *    on-form image.
  *
  * The `onForm` image is marked aria-hidden: both images show the same
  * garment, so announcing the second adds noise for a screen reader without
@@ -43,7 +44,7 @@ export function GarmentFigure({
         fill
         priority={priority}
         sizes={sizes}
-        className="object-cover opacity-100 group-hover:opacity-0 group-focus-visible:opacity-0"
+        className="object-cover opacity-0 transition-opacity duration-300 md:opacity-100 md:group-hover:opacity-0 md:group-focus-visible:opacity-0"
       />
       <Image
         src={images.onForm}
@@ -54,7 +55,7 @@ export function GarmentFigure({
         // Starts a hair larger and settles to rest, so the garment reads as
         // stepping forward rather than simply appearing. 1.03 is small enough
         // to register as weight rather than as a zoom effect.
-        className="scale-[1.03] object-cover opacity-0 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100"
+        className="scale-100 object-cover opacity-100 transition-[opacity,transform] duration-300 md:scale-[1.03] md:opacity-0 md:group-hover:scale-100 md:group-hover:opacity-100 md:group-focus-visible:scale-100 md:group-focus-visible:opacity-100"
       />
     </div>
   );
