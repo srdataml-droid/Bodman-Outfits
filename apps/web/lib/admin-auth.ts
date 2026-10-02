@@ -4,9 +4,12 @@ import { cookies } from "next/headers";
 const COOKIE_NAME = "bodmans_admin";
 
 function credentials() {
-  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const password = process.env.ADMIN_PASSWORD;
-  if (!email || !password) return null;
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase() || null;
+  const password =
+    process.env.ADMIN_PASSWORD ||
+    process.env.GOOGLE_APPS_SCRIPT_ADMIN_SECRET;
+
+  if (!password) return null;
   return { email, password };
 }
 
@@ -35,15 +38,20 @@ export function verifyAdminCredentials(email: string, password: string): boolean
   if (!expected) return false;
 
   const normalizedEmail = email.trim().toLowerCase();
-  return safeEqual(normalizedEmail, expected.email) && safeEqual(password, expected.password);
+  if (!normalizedEmail || !safeEqual(password, expected.password)) return false;
+
+  return expected.email ? safeEqual(normalizedEmail, expected.email) : true;
 }
 
 export async function createAdminSession(email: string): Promise<void> {
   const expected = credentials();
   if (!expected) throw new Error("Admin credentials are not configured.");
 
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) throw new Error("Admin email is required.");
+
   const store = await cookies();
-  store.set(COOKIE_NAME, sessionValue(email.trim().toLowerCase(), expected.password), {
+  store.set(COOKIE_NAME, sessionValue(normalizedEmail, expected.password), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -75,11 +83,15 @@ export async function getAdminSession(): Promise<{ email: string } | null> {
   if (!encodedEmail || !suppliedSignature) return null;
 
   try {
-    const email = Buffer.from(encodedEmail, "base64url").toString("utf8").trim().toLowerCase();
+    const email = Buffer.from(encodedEmail, "base64url")
+      .toString("utf8")
+      .trim()
+      .toLowerCase();
     const expectedSignature = signature(email, expected.password);
-    if (!safeEqual(email, expected.email) || !safeEqual(suppliedSignature, expectedSignature)) {
-      return null;
-    }
+
+    if (!safeEqual(suppliedSignature, expectedSignature)) return null;
+    if (expected.email && !safeEqual(email, expected.email)) return null;
+
     return { email };
   } catch {
     return null;
