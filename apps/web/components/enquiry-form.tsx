@@ -6,7 +6,6 @@ import { submitEnquiry, type EnquiryRequest, type SubmitOutcome } from "../lib/e
 const subjectOptions = [
   { value: "bespoke", label: "Bespoke Suit / Corporate Order" },
   { value: "fitting", label: "Booking a Fitting" },
-  { value: "custom-request", label: "Custom Design Request" },
   { value: "general", label: "General Enquiry" },
 ] as const;
 
@@ -14,9 +13,6 @@ type SubmitState = "idle" | "submitting" | "sent";
 
 type FailureReason = Extract<SubmitOutcome, { ok: false }>["reason"];
 
-// Distinct wording per failure. A single generic message would leave the
-// customer unsure whether the atelier actually received their message, which
-// is the only thing they need to know.
 const failureMessages: Record<FailureReason, string> = {
   invalid: "Please check the details above and try again.",
   "rate-limited": "That's a few messages in quick succession. Please wait a moment, then try again.",
@@ -50,7 +46,6 @@ export function EnquiryForm(): React.ReactElement {
       form.reset();
       return;
     }
-    // Stay on the filled-in form so nothing the customer typed is lost.
     setStatus("idle");
     setError(outcome.reason);
   }
