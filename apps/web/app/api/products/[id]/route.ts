@@ -1,32 +1,55 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "../../../../lib/admin-auth";
-import { getProducts, upsertProduct } from "../../../../lib/google-sheets";
+import {
+  getProducts,
+  upsertProduct,
+} from "../../../../lib/google-sheets";
 import { validateProductInput } from "../../../../lib/product-validation";
 
 async function writeProduct(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  if (!(await getAdminSession())) {
-    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  const session = await getAdminSession();
+  if (!session) {
+    return NextResponse.json(
+      { message: "Unauthorized." },
+      { status: 401 },
+    );
   }
 
   try {
     const { id } = await context.params;
-    const products = await getProducts(true);
+    const products = await getProducts(true, session.secret);
     const current = products.find((product) => product.id === id);
+
     if (!current) {
-      return NextResponse.json({ message: "Product not found." }, { status: 404 });
+      return NextResponse.json(
+        { message: "Product not found." },
+        { status: 404 },
+      );
     }
 
     const patch = (await request.json()) as Record<string, unknown>;
-    const merged: Record<string, unknown> = { ...current, ...patch, id };
+    const merged: Record<string, unknown> = {
+      ...current,
+      ...patch,
+      id,
+    };
+
     const validationError = validateProductInput(merged);
     if (validationError) {
-      return NextResponse.json({ message: validationError }, { status: 400 });
+      return NextResponse.json(
+        { message: validationError },
+        { status: 400 },
+      );
     }
 
-    const product = await upsertProduct(merged);
+    const product = await upsertProduct(
+      merged,
+      session.secret,
+    );
+
     return NextResponse.json(product);
   } catch {
     return NextResponse.json(
