@@ -103,8 +103,8 @@ export default function GarmentsPage(): React.ReactElement {
   return (
     <>
       <PageTitle
-        title="Garments"
-        description="The catalogue pieces shown on the public site. Deactivating hides a piece from customers without deleting it, so its copy and images survive. Changes appear publicly within about five minutes."
+        title="Products"
+        description="Products shown in the public catalogue. Hiding a product removes it from the customer site without deleting its details."
       />
 
       {error ? (
@@ -115,14 +115,14 @@ export default function GarmentsPage(): React.ReactElement {
 
       {!editing ? (
         <div className="mb-4">
-          <Button onClick={startCreate}>Add a garment</Button>
+          <Button onClick={startCreate}>Add a product</Button>
         </div>
       ) : null}
 
       {editing ? (
         <Panel className="mb-6">
           <h2 className="mb-4 text-sm font-medium tracking-[0.08em] text-[var(--everglade)]">
-            {editingId ? "Edit garment" : "New garment"}
+            {editingId ? "Edit product" : "New product"}
           </h2>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -173,16 +173,9 @@ export default function GarmentsPage(): React.ReactElement {
             />
           </Field>
 
-          {/*
-            There is no image upload yet, so these are typed paths. The API
-            rejects anything that is not a site-relative /images/… path with a
-            known extension, which is the only thing preventing a typo from
-            becoming a broken catalogue card.
-          */}
           <p className="mt-4 text-xs leading-5 text-[rgb(65_72_67_/_75%)]">
-            Images are entered as paths to files already in{" "}
-            <code>apps/web/public/images/catalogue/</code>. Upload is not built yet. Both images must
-            be 512×640 (4:5) or the hover crossfade will jump.
+            For this prototype, use an existing <code>/images/...</code> path or an HTTPS image URL.
+            Direct image upload can be added later.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Flat image path">
@@ -267,7 +260,7 @@ export default function GarmentsPage(): React.ReactElement {
         </Panel>
       ) : garments.length === 0 ? (
         <Panel>
-          <Notice>No garments yet.</Notice>
+          <Notice>No products yet.</Notice>
         </Panel>
       ) : (
         <Panel>

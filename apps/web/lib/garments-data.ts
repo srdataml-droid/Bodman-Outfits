@@ -1,27 +1,5 @@
 import type { GarmentImagePair } from "./garments";
-
-/**
- * Catalogue garments, read from the API rather than the static list that used
- * to live in `garments.ts`.
- *
- * CATEGORIES STILL COME FROM CODE. They carry the five confirmed prices, the
- * item-vs-outfit price unit and signed-off copy; only garments became
- * admin-editable. See the Garment model comment in prisma/schema.prisma.
- *
- * Every function here returns empty (or null) rather than throwing when the
- * API is unreachable, matching `getShopSettings`. A backend outage should
- * render a catalogue with no pieces and an honest empty state, not a 500 on
- * the customer's screen.
- */
-
-const API_URL = process.env.API_URL ?? "http://localhost:4000";
-
-// How long to wait before giving up on the API and falling back to an empty
-// catalogue. Kept well under Vercel's per-page build timeout so a cold/asleep
-// backend degrades gracefully instead of hanging the whole build — this is
-// what previously crashed every /catalogue/[category] page during static
-// generation. Same fix already applied to shop-settings.ts.
-const FETCH_TIMEOUT_MS = 5000;
+import { getProducts } from "./google-sheets";
 
 export interface GarmentRecord {
   id: string;
@@ -51,22 +29,13 @@ export function garmentImages(garment: GarmentRecord): GarmentImagePair {
 }
 
 export async function getGarments(): Promise<GarmentRecord[]> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-
   try {
-    const response = await fetch(`${API_URL}/api/garments`, {
-      // Same 5-minute window as shop settings and FAQs, so an admin edit
-      // appears on the public site within five minutes without a deploy.
-      next: { revalidate: 300 },
-      signal: controller.signal,
-    });
-    if (!response.ok) return [];
-    return (await response.json()) as GarmentRecord[];
+    const products = await getProducts();
+    return products
+      .filter((product) => product.active)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
   } catch {
     return [];
-  } finally {
-    clearTimeout(timeout);
   }
 }
 
