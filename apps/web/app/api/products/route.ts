@@ -6,13 +6,24 @@ import { validateProductInput } from "../../../lib/product-validation";
 export async function GET(request: Request) {
   try {
     const admin = new URL(request.url).searchParams.get("admin") === "1";
-    if (admin && !(await getAdminSession())) {
-      return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+
+    if (admin) {
+      const session = await getAdminSession();
+      if (!session) {
+        return NextResponse.json(
+          { message: "Unauthorized." },
+          { status: 401 },
+        );
+      }
+
+      return NextResponse.json(
+        await getProducts(true, session.secret),
+      );
     }
 
-    const products = await getProducts(admin);
+    const products = await getProducts(false);
     return NextResponse.json(
-      admin ? products : products.filter((product) => product.active),
+      products.filter((product) => product.active),
     );
   } catch {
     return NextResponse.json([], { status: 503 });
@@ -20,20 +31,31 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!(await getAdminSession())) {
-    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  const session = await getAdminSession();
+  if (!session) {
+    return NextResponse.json(
+      { message: "Unauthorized." },
+      { status: 401 },
+    );
   }
 
   try {
     const data = (await request.json()) as Record<string, unknown>;
     const validationError = validateProductInput(data);
+
     if (validationError) {
-      return NextResponse.json({ message: validationError }, { status: 400 });
+      return NextResponse.json(
+        { message: validationError },
+        { status: 400 },
+      );
     }
 
-    const product = await upsertProduct(data);
+    const product = await upsertProduct(data, session.secret);
     return NextResponse.json(product, { status: 201 });
   } catch {
-    return NextResponse.json({ message: "Products are temporarily unavailable." }, { status: 503 });
+    return NextResponse.json(
+      { message: "Products are temporarily unavailable." },
+      { status: 503 },
+    );
   }
 }
