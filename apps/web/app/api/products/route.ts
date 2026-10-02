@@ -3,10 +3,16 @@ import { getAdminSession } from "../../../lib/admin-auth";
 import { getProducts, upsertProduct } from "../../../lib/google-sheets";
 import { validateProductInput } from "../../../lib/product-validation";
 
-export async function GET(request: Request) {
-  try {
-    const admin = new URL(request.url).searchParams.get("admin") === "1";
+function adminErrorMessage(error: unknown): string {
+  return error instanceof Error && error.message
+    ? error.message
+    : "Products are temporarily unavailable.";
+}
 
+export async function GET(request: Request) {
+  const admin = new URL(request.url).searchParams.get("admin") === "1";
+
+  try {
     if (admin) {
       const session = await getAdminSession();
       if (!session) {
@@ -25,7 +31,14 @@ export async function GET(request: Request) {
     return NextResponse.json(
       products.filter((product) => product.active),
     );
-  } catch {
+  } catch (error) {
+    if (admin) {
+      return NextResponse.json(
+        { message: adminErrorMessage(error) },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json([], { status: 503 });
   }
 }
@@ -52,9 +65,9 @@ export async function POST(request: Request) {
 
     const product = await upsertProduct(data, session.secret);
     return NextResponse.json(product, { status: 201 });
-  } catch {
+  } catch (error) {
     return NextResponse.json(
-      { message: "Products are temporarily unavailable." },
+      { message: adminErrorMessage(error) },
       { status: 503 },
     );
   }
