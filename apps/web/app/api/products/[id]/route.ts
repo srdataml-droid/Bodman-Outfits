@@ -6,6 +6,12 @@ import {
 } from "../../../../lib/google-sheets";
 import { validateProductInput } from "../../../../lib/product-validation";
 
+function adminErrorMessage(error: unknown): string {
+  return error instanceof Error && error.message
+    ? error.message
+    : "Products are temporarily unavailable.";
+}
+
 async function writeProduct(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -51,9 +57,9 @@ async function writeProduct(
     );
 
     return NextResponse.json(product);
-  } catch {
+  } catch (error) {
     return NextResponse.json(
-      { message: "Products are temporarily unavailable." },
+      { message: adminErrorMessage(error) },
       { status: 503 },
     );
   }
