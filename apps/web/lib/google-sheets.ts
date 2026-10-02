@@ -1,5 +1,11 @@
-const APPS_SCRIPT_URL = process.env.GOOGLE_APPS_SCRIPT_URL;
-const APPS_SCRIPT_ADMIN_SECRET = process.env.GOOGLE_APPS_SCRIPT_ADMIN_SECRET;
+const DEFAULT_APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbzD4gM2YHv7fnnmq7b0TSdLTe6gccJ5uqyVkzU3_LhvZr86wNwQJ2eDR5uY36My_u1l/exec";
+
+const APPS_SCRIPT_URL =
+  process.env.GOOGLE_APPS_SCRIPT_URL?.trim() || DEFAULT_APPS_SCRIPT_URL;
+
+const APPS_SCRIPT_ADMIN_SECRET =
+  process.env.GOOGLE_APPS_SCRIPT_ADMIN_SECRET?.trim() || "";
 
 export type SheetKind = "commission" | "fitting";
 
@@ -13,9 +19,7 @@ type ScriptResponse = {
 };
 
 function endpoint(): string {
-  const url = APPS_SCRIPT_URL?.trim();
-  if (!url) throw new Error("Google Apps Script is not configured.");
-  return url;
+  return APPS_SCRIPT_URL;
 }
 
 async function readJson(response: Response): Promise<ScriptResponse> {
@@ -26,31 +30,50 @@ async function readJson(response: Response): Promise<ScriptResponse> {
   } catch {
     throw new Error("Google Apps Script returned an invalid response.");
   }
+
   if (!response.ok || body.success === false) {
-    throw new Error(body.error || `Google Apps Script request failed (${response.status}).`);
+    throw new Error(
+      body.error || `Google Apps Script request failed (${response.status}).`,
+    );
   }
+
   return body;
 }
 
-function adminSecret(): string {
-  const secret = APPS_SCRIPT_ADMIN_SECRET?.trim();
-  if (!secret) throw new Error("Google Apps Script admin secret is not configured.");
-  return secret;
+function resolveAdminSecret(secret?: string): string {
+  const value = secret?.trim() || APPS_SCRIPT_ADMIN_SECRET;
+  if (!value) {
+    throw new Error("Admin secret is required.");
+  }
+  return value;
 }
 
-async function scriptGet(action: string, admin = false): Promise<ScriptResponse> {
+async function scriptGet(
+  action: string,
+  secret?: string,
+): Promise<ScriptResponse> {
   const url = new URL(endpoint());
   url.searchParams.set("action", action);
-  if (admin) url.searchParams.set("secret", adminSecret());
-  const response = await fetch(url, { cache: "no-store", redirect: "follow" });
+  if (secret) {
+    url.searchParams.set("secret", resolveAdminSecret(secret));
+  }
+
+  const response = await fetch(url, {
+    cache: "no-store",
+    redirect: "follow",
+  });
+
   return readJson(response);
 }
 
 async function scriptPost(
   payload: Record<string, unknown>,
-  admin = false,
+  secret?: string,
 ): Promise<ScriptResponse> {
-  const body = admin ? { ...payload, secret: adminSecret() } : payload;
+  const body = secret
+    ? { ...payload, secret: resolveAdminSecret(secret) }
+    : payload;
+
   const response = await fetch(endpoint(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -58,6 +81,7 @@ async function scriptPost(
     cache: "no-store",
     redirect: "follow",
   });
+
   return readJson(response);
 }
 
@@ -71,19 +95,35 @@ function numberOrNull(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+export async function verifyAppsScriptAdminSecret(
+  secret: string,
+): Promise<boolean> {
+  try {
+    await scriptGet("requests", secret);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function appendToOperationsSheet(
   kind: SheetKind,
   data: Record<string, unknown>,
 ): Promise<string> {
   const body = await scriptPost({ action: kind, ...data });
-  if (!body.id) throw new Error("Google Apps Script returned no request ID.");
+  if (!body.id) {
+    throw new Error("Google Apps Script returned no request ID.");
+  }
   return body.id;
 }
 
-export async function getRequests() {
-  const body = await scriptGet("requests", true);
+export async function getRequests(secret?: string) {
+  const body = await scriptGet("requests", resolveAdminSecret(secret));
+
   if (!Array.isArray(body.requests)) {
-    throw new Error("The Apps Script deployment does not expose requests yet.");
+    throw new Error(
+      "The Apps Script deployment does not expose requests yet.",
+    );
   }
 
   return body.requests
@@ -115,12 +155,22 @@ export async function setRequestStatus(
   type: "commission" | "fitting",
   id: string,
   status: string,
+  secret?: string,
 ): Promise<void> {
-  await scriptPost({ action: "requestStatus", type, id, status }, true);
+  await scriptPost(
+    { action: "requestStatus", type, id, status },
+    resolveAdminSecret(secret),
+  );
 }
 
-export async function getProducts(includeInactive = false) {
-  const body = await scriptGet(includeInactive ? "productsAdmin" : "products", includeInactive);
+export async function getProducts(
+  includeInactive = false,
+  secret?: string,
+) {
+  const body = includeInactive
+    ? await scriptGet("productsAdmin", resolveAdminSecret(secret))
+    : await scriptGet("products");
+
   if (!Array.isArray(body.products)) {
     throw new Error("Google Apps Script returned no products list.");
   }
@@ -140,7 +190,9 @@ export async function getProducts(includeInactive = false) {
         altFlat: text(row.altFlat),
         altOnForm: text(row.altOnForm),
         startingPrice: numberOrNull(row.startingPrice),
-        active: row.active !== false && text(row.active).toLowerCase() !== "false",
+        active:
+          row.active !== false &&
+          text(row.active).toLowerCase() !== "false",
         sortOrder: Number(row.sortOrder) || 0,
       };
     })
@@ -148,14 +200,25 @@ export async function getProducts(includeInactive = false) {
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-export async function upsertProduct(data: Record<string, unknown>) {
-  const body = await scriptPost({ action: "product", ...data }, true);
-  if (!body.id) throw new Error("Google Apps Script returned no product ID.");
+export async function upsertProduct(
+  data: Record<string, unknown>,
+  secret?: string,
+) {
+  const body = await scriptPost(
+    { action: "product", ...data },
+    resolveAdminSecret(secret),
+  );
+
+  if (!body.id) {
+    throw new Error("Google Apps Script returned no product ID.");
+  }
+
   return { ...data, id: body.id };
 }
 
 export async function getFaqs() {
   const body = await scriptGet("faqs");
+
   if (!Array.isArray(body.faqs)) {
     throw new Error("Google Apps Script returned no FAQ list.");
   }
