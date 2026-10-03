@@ -69,7 +69,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f4f5f4]" style={{ fontFamily: ADMIN_FONT }}>
       <header className="border-b border-[rgb(27_62_45_/_14%)] bg-white">
-        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-6 gap-y-3 px-5 py-3">
+        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6 lg:px-8">
           <Link
             href="/admin/requests"
             className="font-[Fraunces] text-lg font-medium tracking-[0.02em] text-[var(--everglade)]"
@@ -79,7 +79,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               Admin
             </span>
           </Link>
-          <nav className="flex flex-wrap items-center gap-1">
+          <nav className="order-3 flex w-full flex-wrap items-center gap-1 sm:order-none sm:w-auto">
             {NAV.map((item) => {
               const active = pathname?.startsWith(item.href);
               return (
@@ -98,8 +98,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
-          <div className="ml-auto flex items-center gap-3">
-            {email ? <span className="text-xs text-[var(--muted-ink)]">{email}</span> : null}
+          <div className="ml-auto flex min-w-0 items-center gap-3">
+            {email ? <span className="hidden truncate text-xs text-[var(--muted-ink)] lg:inline">{email}</span> : null}
             <Button
               variant="secondary"
               onClick={() => {
@@ -114,7 +114,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-[1180px] px-5 py-8">{children}</main>
+      <main className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">{children}</main>
     </div>
   );
 }

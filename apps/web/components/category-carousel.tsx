@@ -109,7 +109,7 @@ export function CategoryCarousel(): React.ReactElement {
         }
       }}
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-[rgb(210_180_140_/_45%)] bg-white sm:aspect-[3/2] lg:aspect-[4/5]">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-[rgb(210_180_140_/_45%)] bg-white">
         {categories.map((category, i) => {
           const isActive = i === index;
           return (
@@ -132,7 +132,7 @@ export function CategoryCarousel(): React.ReactElement {
                 fill
                 priority={i === 0}
                 sizes="(min-width: 1024px) 40vw, 100vw"
-                className="object-cover"
+                className="object-cover object-top"
               />
               {/* Scrim so the label stays legible whatever the photograph
                   underneath turns out to be. */}

@@ -44,7 +44,7 @@ export function GarmentFigure({
         fill
         priority={priority}
         sizes={sizes}
-        className="object-cover opacity-0 transition-opacity duration-300 md:opacity-100 md:group-hover:opacity-0 md:group-focus-visible:opacity-0"
+        className="object-cover object-top opacity-0 transition-opacity duration-300 motion-reduce:transition-none md:opacity-100 md:group-hover:opacity-0 md:group-focus-visible:opacity-0"
       />
       <Image
         src={images.onForm}
@@ -52,7 +52,7 @@ export function GarmentFigure({
         aria-hidden="true"
         fill
         sizes={sizes}
-        className="scale-100 object-cover opacity-100 transition-[opacity,transform] duration-300 md:scale-[1.03] md:opacity-0 md:group-hover:scale-100 md:group-hover:opacity-100 md:group-focus-visible:scale-100 md:group-focus-visible:opacity-100"
+        className="scale-100 object-cover object-top opacity-100 transition-[opacity,transform] duration-300 motion-reduce:transition-none md:scale-[1.02] md:opacity-0 md:group-hover:scale-100 md:group-hover:opacity-100 md:group-focus-visible:scale-100 md:group-focus-visible:opacity-100"
       />
     </div>
   );

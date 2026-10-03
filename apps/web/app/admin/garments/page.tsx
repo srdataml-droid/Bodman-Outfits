@@ -120,12 +120,12 @@ export default function GarmentsPage(): React.ReactElement {
       ) : null}
 
       {editing ? (
-        <Panel className="mb-6">
+        <Panel className="mb-6 space-y-6 p-4 sm:p-6">
           <h2 className="mb-4 text-sm font-medium tracking-[0.08em] text-[var(--everglade)]">
             {editingId ? "Edit product" : "New product"}
           </h2>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
             <Field label="Name">
               <input
                 className={inputClass}
@@ -177,7 +177,7 @@ export default function GarmentsPage(): React.ReactElement {
             For this prototype, use an existing <code>/images/...</code> path or an HTTPS image URL.
             Direct image upload can be added later.
           </p>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
             <Field label="Flat image path">
               <input
                 className={inputClass}
@@ -210,7 +210,7 @@ export default function GarmentsPage(): React.ReactElement {
             </Field>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
             <Field label="Starting price override (naira, optional)">
               <input
                 className={inputClass}
@@ -243,7 +243,7 @@ export default function GarmentsPage(): React.ReactElement {
             </Field>
           </div>
 
-          <div className="mt-5 flex gap-2">
+          <div className="flex flex-wrap gap-3 border-t border-[var(--outline)] pt-5">
             <Button onClick={() => void save()} disabled={busy}>
               {busy ? "Saving…" : "Save"}
             </Button>
@@ -266,7 +266,7 @@ export default function GarmentsPage(): React.ReactElement {
         <Panel>
           <ul className="divide-y divide-[rgb(27_62_45_/_10%)]">
             {garments.map((garment) => (
-              <li key={garment.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+              <li key={garment.id} className="flex flex-wrap items-center gap-3 px-4 py-4 sm:px-6">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-[var(--everglade)]">
                     {garment.name}{" "}

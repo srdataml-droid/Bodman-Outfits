@@ -20,7 +20,7 @@ export const ADMIN_FONT = "ui-sans-serif, system-ui, -apple-system, Segoe UI, Ro
 
 export function PageTitle({ title, description }: { title: string; description?: string }) {
   return (
-    <div className="mb-8">
+    <div className="mb-6 sm:mb-8">
       <h1 className="font-[Fraunces] text-3xl font-medium tracking-[-0.02em] text-[var(--everglade)]">
         {title}
       </h1>
@@ -60,7 +60,7 @@ export function Button({
   title?: string;
 }) {
   const base =
-    "inline-flex min-h-11 items-center justify-center rounded-lg px-3.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--copper)] disabled:pointer-events-none disabled:opacity-50";
+    "inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--copper)] disabled:pointer-events-none disabled:opacity-50";
   const styles = {
     primary: "bg-[var(--everglade)] text-white hover:bg-[var(--everglade-dark)]",
     secondary:
@@ -91,7 +91,7 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <label className="flex flex-col gap-1.5" style={{ fontFamily: ADMIN_FONT }}>
+    <label className="flex min-w-0 flex-col gap-2" style={{ fontFamily: ADMIN_FONT }}>
       <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted-ink)]">
         {label}
       </span>
@@ -102,7 +102,7 @@ export function Field({
 }
 
 export const inputClass =
-  "min-h-11 w-full rounded-lg border border-[rgb(27_62_45_/_20%)] bg-white px-3 py-1.5 text-sm text-[var(--ink)] transition-colors duration-150 placeholder:text-[rgb(65_72_67_/_40%)] focus:border-[var(--copper)] focus:outline-none";
+  "min-h-12 w-full min-w-0 rounded-lg border border-[rgb(27_62_45_/_20%)] bg-white px-4 py-2.5 text-base sm:text-sm text-[var(--ink)] transition-[border-color,box-shadow] duration-150 placeholder:text-[rgb(65_72_67_/_50%)] focus:border-[var(--copper)] focus:outline-none focus:ring-2 focus:ring-[rgb(200_118_58_/_14%)]";
 
 /**
  * Status pill.
