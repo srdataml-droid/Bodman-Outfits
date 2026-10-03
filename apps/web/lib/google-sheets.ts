@@ -181,16 +181,21 @@ export async function getProducts(
     body = await scriptGet("products");
   } else {
     const adminSecret = resolveAdminSecret(secret);
-
+    // Some older deployments answer unknown actions with a successful
+    // health-check object. A valid list, including [], is the only signal
+    // that an action is supported.
     try {
-      body = await scriptGet("productsAdmin", adminSecret);
+      const response = await scriptGet("productsAdmin", adminSecret);
+      if (!Array.isArray(response.products)) throw new Error("No products list");
+      body = response;
     } catch {
       try {
-        body = await scriptPost({ action: "adminProducts" }, adminSecret);
+        const response = await scriptPost({ action: "adminProducts" }, adminSecret);
+        if (!Array.isArray(response.products)) throw new Error("No products list");
+        body = response;
       } catch {
-        // Last-resort compatibility path for older deployments: active
-        // products are still enough to let an empty catalogue load and
-        // allow the admin to create its first item.
+        // Older deployments can still show active products while their
+        // admin-specific action is unavailable.
         body = await scriptGet("products");
       }
     }
