@@ -32,6 +32,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   return {
     title: category.name,
     description: category.description,
+    alternates: { canonical: `/catalogue/${category.slug}` },
+    openGraph: { title: `${category.name} | Bodman Outfits`, description: category.description, url: `/catalogue/${category.slug}` },
   };
 }
 

@@ -5,10 +5,13 @@ import { SiteFooter } from "../../components/site-footer";
 import { SiteHeader } from "../../components/site-header";
 import { WhatsAppIcon } from "../../components/whatsapp-icon";
 import { getShopSettings, getWhatsAppLink } from "../../lib/shop-settings";
+import { SITE_URL } from "../../lib/site-url";
 
 export const metadata: Metadata = {
   title: "Get in Touch",
   description: "Start a conversation with Bodman Outfits. Send an enquiry or reach us directly on WhatsApp.",
+  alternates: { canonical: "/contact" },
+  openGraph: { title: "Get in Touch | Bodman Outfits", description: "Send an enquiry or visit the Bodman Outfits studio in Surulere, Lagos.", url: "/contact" },
 };
 
 export default async function ContactPage(): Promise<React.ReactElement> {
@@ -41,9 +44,29 @@ export default async function ContactPage(): Promise<React.ReactElement> {
   });
 
   const hasStudioDetails = Boolean(address || phone || email || hours.length);
+  const businessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: settings.shopName,
+    url: `${SITE_URL}/contact`,
+    description: "Bespoke tailoring in Surulere, Lagos.",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: settings.address,
+      addressLocality: settings.cityCountry.split(",")[0]?.trim(),
+      addressRegion: settings.cityCountry.split(",")[1]?.trim(),
+      addressCountry: "NG",
+    },
+  };
 
   return (
     <>
+      {settings.address.trim() ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema).replace(/</g, "\\u003c") }}
+        />
+      ) : null}
       <SiteHeader />
       <main>
         <section className="mx-auto max-w-[1280px] px-5 pb-28 pt-16 md:px-16 md:pb-32 md:pt-28">

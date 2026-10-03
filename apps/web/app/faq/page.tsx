@@ -15,6 +15,8 @@ import {
 export const metadata: Metadata = {
   title: "FAQ",
   description: "Answers to common questions about ordering, measurements, and timelines at Bodman Outfits.",
+  alternates: { canonical: "/faq" },
+  openGraph: { title: "FAQ | Bodman Outfits", description: "Answers to common questions about ordering, measurements, and timelines at Bodman Outfits.", url: "/faq" },
 };
 
 /**

@@ -16,6 +16,8 @@ import {
 export const metadata: Metadata = {
   title: "The Catalogue",
   description: "A curated collection of Bodman Outfits signature silhouettes.",
+  alternates: { canonical: "/catalogue" },
+  openGraph: { title: "The Catalogue | Bodman Outfits", description: "A curated collection of Bodman Outfits signature silhouettes.", url: "/catalogue" },
 };
 
 export default function CataloguePage(): React.ReactElement {

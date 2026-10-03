@@ -3,14 +3,24 @@ import type { ReactNode } from "react";
 import "./globals.css";
 import { WhatsAppFloatingButton } from "../components/whatsapp-floating-button";
 import { getShopName, getWhatsAppLink } from "../lib/shop-settings";
+import { SITE_URL } from "../lib/site-url";
 
 // Async so the browser tab title uses the Admin-editable shop name rather
 // than a constant baked in at build time.
 export async function generateMetadata(): Promise<Metadata> {
   const shopName = await getShopName();
   return {
-    title: { default: shopName, template: `%s | ${shopName}` },
-    description: "Bespoke tailoring from Lagos.",
+    metadataBase: new URL(SITE_URL),
+    title: { default: `${shopName} | Bespoke Tailoring in Lagos`, template: `%s | ${shopName}` },
+    description: "Bespoke suits, agbada, kaftans and modern menswear tailored in Surulere, Lagos. Book a fitting with Bodman Outfits.",
+    openGraph: {
+      type: "website",
+      locale: "en_NG",
+      siteName: shopName,
+      title: `${shopName} | Bespoke Tailoring in Lagos`,
+      description: "Bespoke tailoring in Surulere, Lagos. Explore suits, agbada, kaftans and modern menswear.",
+      url: SITE_URL,
+    },
     /*
      * Declared rather than left to the file convention. `app/icon.svg` is
      * served correctly at /icon.svg, but the automatic <link rel="icon"> was

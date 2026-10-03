@@ -11,6 +11,8 @@ import { getShopSettings, getWhatsAppLink } from "../../lib/shop-settings";
 export const metadata: Metadata = {
   title: "Book an Appointment",
   description: "Request a fitting or consultation appointment with Bodman Outfits.",
+  alternates: { canonical: "/appointment" },
+  openGraph: { title: "Book an Appointment | Bodman Outfits", description: "Request a fitting or consultation appointment with Bodman Outfits.", url: "/appointment" },
 };
 
 /*

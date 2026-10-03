@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { StaggerText } from "../components/stagger-text";
 import { CategoryCarousel } from "../components/category-carousel";
 import { GarmentFigure } from "../components/garment-figure";
@@ -7,6 +8,10 @@ import { ScrollReveal } from "../components/scroll-reveal";
 import { SiteFooter } from "../components/site-footer";
 import { SiteHeader } from "../components/site-header";
 import { categories } from "../lib/garments";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function HomePage(): React.ReactElement {
   return (

@@ -8,6 +8,7 @@ import { StaggerText } from "../../components/stagger-text";
 export const metadata: Metadata = {
   title: "Saved",
   description: "The garments you have saved on this device at Bodman Outfits.",
+  robots: { index: false, follow: false },
 };
 
 export default async function SavedPage(): Promise<React.ReactElement> {

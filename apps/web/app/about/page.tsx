@@ -8,6 +8,8 @@ import { SiteHeader } from "../../components/site-header";
 export const metadata: Metadata = {
   title: "Heritage",
   description: "How Bodman Outfits approaches menswear tailoring in Lagos.",
+  alternates: { canonical: "/about" },
+  openGraph: { title: "Heritage | Bodman Outfits", description: "How Bodman Outfits approaches menswear tailoring in Lagos.", url: "/about" },
 };
 
 const craftPrinciples = [

@@ -33,6 +33,8 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
   return {
     title: garment.name,
     description: garment.description,
+    alternates: { canonical: `/catalogue/${categorySlug}/${itemSlug}` },
+    openGraph: { title: `${garment.name} | Bodman Outfits`, description: garment.description, url: `/catalogue/${categorySlug}/${itemSlug}` },
   };
 }
 
