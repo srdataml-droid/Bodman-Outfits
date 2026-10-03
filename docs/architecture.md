@@ -1,5 +1,11 @@
 # Architecture
 
+## Product photos in the Sheets prototype
+
+Product records remain in Google Sheets, while public product photos use a dedicated public Vercel Blob store connected to the web project. Admin Products accepts a phone or computer photo, resizes it in the browser to at most 1600 pixels, converts it to JPEG, and uploads it directly to Blob. The returned URL is stored in the product record when the admin saves. The existing `/images/...` paths remain valid for bundled catalogue assets.
+
+The upload-token route checks the live Apps Script admin secret before issuing a token, restricts uploads to the `products/` path and JPEG/WebP under 5 MB, and never exposes `BLOB_READ_WRITE_TOKEN` to the browser. Public Blob access is intentional because the catalogue images are public; customer photos and private documents must not use this store. Connecting the Blob store in Vercel creates the server-only `BLOB_READ_WRITE_TOKEN` for Production and Preview. Replacing or cancelling an upload can leave an unused blob, so storage cleanup is a separate maintenance task.
+
 Purpose: Describe the system's technical design, major components, boundaries, integrations, deployment model, and key architectural decisions.
 
 ## Decision Log

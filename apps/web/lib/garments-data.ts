@@ -21,8 +21,8 @@ export interface GarmentRecord {
 /** Adapts a record to the shape `GarmentFigure` already expects. */
 export function garmentImages(garment: GarmentRecord): GarmentImagePair {
   return {
-    flat: garment.imageFlat,
-    onForm: garment.imageOnForm,
+    flat: garment.imageFlat || garment.imageOnForm,
+    onForm: garment.imageOnForm || garment.imageFlat,
     altFlat: garment.altFlat,
     altOnForm: garment.altOnForm,
   };

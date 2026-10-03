@@ -1,5 +1,7 @@
 "use client";
 
+import { upload } from "@vercel/blob/client";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import {
   adminApi,
@@ -26,6 +28,42 @@ const BLANK: Draft = {
   sortOrder: 0,
 };
 
+type ImageField = "imageFlat" | "imageOnForm";
+
+async function prepareImage(file: File): Promise<File> {
+  if (file.size > 20 * 1024 * 1024) {
+    throw new Error("Choose a photo smaller than 20 MB.");
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = new window.Image();
+    image.src = objectUrl;
+    await image.decode();
+
+    const scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(image.naturalWidth * scale);
+    canvas.height = Math.round(image.naturalHeight * scale);
+    if (!canvas.width || !canvas.height) throw new Error("This photo could not be read.");
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("This browser could not prepare the photo.");
+    context.fillStyle = "#fff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    if (!blob || blob.size > 5 * 1024 * 1024) throw new Error("This photo is too large to upload.");
+    return new File([blob], "product-photo.jpg", { type: "image/jpeg" });
+  } catch (error) {
+    if (error instanceof Error && /too large|smaller than|could not prepare|could not be read/i.test(error.message)) {
+      throw error;
+    }
+    throw new Error("This phone photo could not be opened. Try a JPEG or PNG copy.");
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export default function GarmentsPage(): React.ReactElement {
   const handleAuthError = useSessionAwareError();
   const [garments, setGarments] = useState<Garment[] | null>(null);
@@ -34,6 +72,8 @@ export default function GarmentsPage(): React.ReactElement {
   const [draft, setDraft] = useState<Draft>(BLANK);
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [uploadingField, setUploadingField] = useState<ImageField | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const result = await adminApi.garments();
@@ -68,6 +108,24 @@ export default function GarmentsPage(): React.ReactElement {
     setEditingId(null);
     setDraft(BLANK);
     setError(null);
+    setUploadError(null);
+  }
+
+  async function uploadImage(field: ImageField, file: File): Promise<void> {
+    setUploadingField(field);
+    setUploadError(null);
+    try {
+      const prepared = await prepareImage(file);
+      const blob = await upload(`products/${crypto.randomUUID()}.jpg`, prepared, {
+        access: "public",
+        handleUploadUrl: "/api/products/images/upload",
+      });
+      setDraft((current) => ({ ...current, [field]: blob.url }));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Photo upload failed. Try again.");
+    } finally {
+      setUploadingField(null);
+    }
   }
 
   async function save(): Promise<void> {
@@ -173,12 +231,28 @@ export default function GarmentsPage(): React.ReactElement {
             />
           </Field>
 
-          <p className="mt-4 text-xs leading-5 text-[rgb(65_72_67_/_75%)]">
-            For this prototype, use an existing <code>/images/...</code> path or an HTTPS image URL.
-            Direct image upload can be added later.
+          <p className="mt-4 text-sm leading-6 text-[var(--muted-ink)]">
+            Choose photos from your phone or computer. Photos are resized before upload; save the product afterward to publish them.
           </p>
+          {uploadError ? <Notice tone="error">{uploadError}</Notice> : null}
           <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
             <Field label="Flat image path">
+              <input
+                type="file"
+                accept="image/*"
+                aria-label="Upload flat product photo"
+                disabled={busy || uploadingField !== null}
+                className="mb-3 block w-full text-sm text-[var(--muted-ink)] file:mr-3 file:rounded-lg file:border file:border-[var(--outline)] file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-[var(--everglade)]"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (file) void uploadImage("imageFlat", file);
+                }}
+              />
+              {uploadingField === "imageFlat" ? <p className="mb-2 text-sm">Uploading photo…</p> : null}
+              {draft.imageFlat ? (
+                <Image src={draft.imageFlat} alt="Flat product photo preview" width={120} height={150} className="mb-3 h-[150px] w-[120px] rounded-lg object-cover" />
+              ) : null}
               <input
                 className={inputClass}
                 placeholder="/images/catalogue/navy-two-piece-flat.png"
@@ -187,6 +261,22 @@ export default function GarmentsPage(): React.ReactElement {
               />
             </Field>
             <Field label="On-form image path">
+              <input
+                type="file"
+                accept="image/*"
+                aria-label="Upload on-form product photo"
+                disabled={busy || uploadingField !== null}
+                className="mb-3 block w-full text-sm text-[var(--muted-ink)] file:mr-3 file:rounded-lg file:border file:border-[var(--outline)] file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-[var(--everglade)]"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (file) void uploadImage("imageOnForm", file);
+                }}
+              />
+              {uploadingField === "imageOnForm" ? <p className="mb-2 text-sm">Uploading photo…</p> : null}
+              {draft.imageOnForm ? (
+                <Image src={draft.imageOnForm} alt="On-form product photo preview" width={120} height={150} className="mb-3 h-[150px] w-[120px] rounded-lg object-cover" />
+              ) : null}
               <input
                 className={inputClass}
                 placeholder="/images/catalogue/navy-two-piece-on-form.png"
@@ -244,10 +334,10 @@ export default function GarmentsPage(): React.ReactElement {
           </div>
 
           <div className="flex flex-wrap gap-3 border-t border-[var(--outline)] pt-5">
-            <Button onClick={() => void save()} disabled={busy}>
+            <Button onClick={() => void save()} disabled={busy || uploadingField !== null}>
               {busy ? "Saving…" : "Save"}
             </Button>
-            <Button variant="secondary" onClick={cancel} disabled={busy}>
+            <Button variant="secondary" onClick={cancel} disabled={busy || uploadingField !== null}>
               Cancel
             </Button>
           </div>
