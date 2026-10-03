@@ -83,8 +83,8 @@ export default function RequestsPage() {
           <Notice>No requests yet.</Notice>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm max-md:block">
-              <thead className="max-md:sr-only">
+            <table className="w-full text-sm max-lg:block">
+              <thead className="max-lg:sr-only">
                 <tr className="border-b text-left">
                   {["Type", "Customer", "Contact", "Details", "Received", "Status"].map((h) => (
                     <th key={h} className="px-4 py-3">
@@ -93,32 +93,32 @@ export default function RequestsPage() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="max-md:block max-md:divide-y max-md:divide-[var(--outline)]">
+              <tbody className="max-lg:block max-lg:divide-y max-lg:divide-[var(--outline)]">
                 {rows.map((row) => (
-                  <tr key={row.type + row.id} className="border-b align-top max-md:block max-md:px-4 max-md:py-5">
-                    <td className="px-4 py-3 capitalize max-md:block max-md:px-0 max-md:py-0 max-md:text-xs max-md:font-semibold max-md:uppercase max-md:tracking-wider max-md:text-[var(--copper)]">{row.type}</td>
-                    <td className="px-4 py-3 font-medium max-md:block max-md:px-0 max-md:py-1 max-md:text-base">{row.name}</td>
-                    <td className="break-words px-4 py-3 max-md:block max-md:px-0 max-md:py-1">
+                  <tr key={row.type + row.id} className="border-b align-top max-lg:block max-lg:px-4 max-lg:py-5">
+                    <td className="px-4 py-3 capitalize max-lg:block max-lg:px-0 max-lg:py-0 max-lg:text-xs max-lg:font-semibold max-lg:uppercase max-lg:tracking-wider max-lg:text-[var(--copper)]">{row.type}</td>
+                    <td className="px-4 py-3 font-medium max-lg:block max-lg:px-0 max-lg:py-1 max-lg:text-base">{row.name}</td>
+                    <td className="break-words px-4 py-3 max-lg:block max-lg:px-0 max-lg:py-1">
                       <a className="underline" href={`mailto:${row.email}`}>
                         {row.email}
                       </a>
                       {row.phone ? <div>{row.phone}</div> : null}
                     </td>
-                    <td className="max-w-sm break-words px-4 py-3 max-md:block max-md:px-0 max-md:py-2">
+                    <td className="max-w-sm break-words px-4 py-3 max-lg:block max-lg:px-0 max-lg:py-2">
                       {row.type === "commission"
                         ? row.description || "—"
-                        : `${row.preferredDate || "—"} · ${row.preferredTime || "—"}`}
+                        : `${row.preferredDate?.slice(0, 10) || "—"} · ${row.preferredTime || "—"}`}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 max-md:block max-md:px-0 max-md:py-1 max-md:text-xs max-md:text-[var(--muted-ink)]">
+                    <td className="whitespace-nowrap px-4 py-3 max-lg:block max-lg:px-0 max-lg:py-1 max-lg:text-xs max-lg:text-[var(--muted-ink)]">
                       {row.createdAt ? new Date(row.createdAt).toLocaleString() : "—"}
                     </td>
-                    <td className="px-4 py-3 max-md:block max-md:px-0 max-md:pb-0 max-md:pt-3">
+                    <td className="px-4 py-3 max-lg:block max-lg:px-0 max-lg:pb-0 max-lg:pt-3">
                       <select
                         disabled={busy === row.id}
                         value={row.status}
                         onChange={(event) => void changeStatus(row, event.target.value)}
                         aria-label={`Status for ${row.name}`}
-                        className={`${inputClass} md:min-w-32`}
+                        className={`${inputClass} lg:min-w-32`}
                       >
                         {(row.type === "commission"
                           ? ["pending_review", "accepted", "declined"]
