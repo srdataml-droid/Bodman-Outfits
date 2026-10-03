@@ -232,15 +232,16 @@ export default function GarmentsPage(): React.ReactElement {
           </Field>
 
           <p className="mt-4 text-sm leading-6 text-[var(--muted-ink)]">
-            Choose photos from your phone or computer. Photos are resized before upload; save the product afterward to publish them.
+            Choose photos from your phone or computer. One photo is enough; a second can show the garment on a form. Save the product afterward to publish it.
           </p>
           {uploadError ? <Notice tone="error">{uploadError}</Notice> : null}
           <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-            <Field label="Flat image path">
+            <div className="flex min-w-0 flex-col gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted-ink)]">Product photo</span>
               <input
                 type="file"
                 accept="image/*"
-                aria-label="Upload flat product photo"
+                aria-label="Upload product photo"
                 disabled={busy || uploadingField !== null}
                 className="mb-3 block w-full text-sm text-[var(--muted-ink)] file:mr-3 file:rounded-lg file:border file:border-[var(--outline)] file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-[var(--everglade)]"
                 onChange={(event) => {
@@ -251,20 +252,25 @@ export default function GarmentsPage(): React.ReactElement {
               />
               {uploadingField === "imageFlat" ? <p className="mb-2 text-sm">Uploading photo…</p> : null}
               {draft.imageFlat ? (
-                <Image src={draft.imageFlat} alt="Flat product photo preview" width={120} height={150} className="mb-3 h-[150px] w-[120px] rounded-lg object-cover" />
+                <Image src={draft.imageFlat} alt="Product photo preview" width={120} height={150} className="mb-3 h-[150px] w-[120px] rounded-lg object-cover" />
               ) : null}
-              <input
-                className={inputClass}
-                placeholder="/images/catalogue/navy-two-piece-flat.png"
-                value={draft.imageFlat}
-                onChange={(e) => setDraft({ ...draft, imageFlat: e.target.value })}
-              />
-            </Field>
-            <Field label="On-form image path">
+              <details className="text-sm text-[var(--muted-ink)]">
+                <summary className="cursor-pointer">Use an existing image URL instead</summary>
+                <input
+                  aria-label="Product image URL"
+                  className={`${inputClass} mt-2`}
+                  placeholder="/images/catalogue/navy-two-piece-flat.png"
+                  value={draft.imageFlat}
+                  onChange={(e) => setDraft({ ...draft, imageFlat: e.target.value })}
+                />
+              </details>
+            </div>
+            <div className="flex min-w-0 flex-col gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted-ink)]">Second photo (optional)</span>
               <input
                 type="file"
                 accept="image/*"
-                aria-label="Upload on-form product photo"
+                aria-label="Upload second product photo"
                 disabled={busy || uploadingField !== null}
                 className="mb-3 block w-full text-sm text-[var(--muted-ink)] file:mr-3 file:rounded-lg file:border file:border-[var(--outline)] file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-[var(--everglade)]"
                 onChange={(event) => {
@@ -275,15 +281,19 @@ export default function GarmentsPage(): React.ReactElement {
               />
               {uploadingField === "imageOnForm" ? <p className="mb-2 text-sm">Uploading photo…</p> : null}
               {draft.imageOnForm ? (
-                <Image src={draft.imageOnForm} alt="On-form product photo preview" width={120} height={150} className="mb-3 h-[150px] w-[120px] rounded-lg object-cover" />
+                <Image src={draft.imageOnForm} alt="Second product photo preview" width={120} height={150} className="mb-3 h-[150px] w-[120px] rounded-lg object-cover" />
               ) : null}
-              <input
-                className={inputClass}
-                placeholder="/images/catalogue/navy-two-piece-on-form.png"
-                value={draft.imageOnForm}
-                onChange={(e) => setDraft({ ...draft, imageOnForm: e.target.value })}
-              />
-            </Field>
+              <details className="text-sm text-[var(--muted-ink)]">
+                <summary className="cursor-pointer">Use an existing image URL instead</summary>
+                <input
+                  aria-label="Second product image URL"
+                  className={`${inputClass} mt-2`}
+                  placeholder="/images/catalogue/navy-two-piece-on-form.png"
+                  value={draft.imageOnForm}
+                  onChange={(e) => setDraft({ ...draft, imageOnForm: e.target.value })}
+                />
+              </details>
+            </div>
             <Field label="Flat image description (for screen readers)">
               <input
                 className={inputClass}
