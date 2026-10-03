@@ -35,9 +35,26 @@ const priceList = [...categories].sort((a, b) => a.price.from - b.price.from);
 
 export default async function FaqPage(): Promise<React.ReactElement> {
   const faqEntries = await getFaqEntries();
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqEntries
+      .filter((entry) => entry.question.trim() && entry.answer.trim())
+      .map((entry) => ({
+        "@type": "Question",
+        name: entry.question,
+        acceptedAnswer: { "@type": "Answer", text: entry.answer },
+      })),
+  };
 
   return (
     <>
+      {faqSchema.mainEntity.length > 0 ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
+        />
+      ) : null}
       <SiteHeader />
       <main>
         <section className="mx-auto max-w-[1280px] px-5 pb-20 pt-16 md:px-16 md:pb-28 md:pt-28">
