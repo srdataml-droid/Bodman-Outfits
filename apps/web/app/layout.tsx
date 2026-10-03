@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const shopName = await getShopName();
   return {
     metadataBase: new URL(SITE_URL),
+    verification: { google: "SJ2BNPLq6xTJpQU0y8-UpCtljlT6nSroCl1qQpLyBY0" },
     title: { default: `${shopName} | Bespoke Tailoring in Lagos`, template: `%s | ${shopName}` },
     description: "Bespoke suits, agbada, kaftans and modern menswear tailored in Surulere, Lagos. Book a fitting with Bodman Outfits.",
     openGraph: {
