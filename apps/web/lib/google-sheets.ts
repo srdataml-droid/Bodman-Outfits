@@ -23,10 +23,10 @@ function endpoint(): string {
 }
 
 async function readJson(response: Response): Promise<ScriptResponse> {
-  const text = await response.text();
+  const textBody = await response.text();
   let body: ScriptResponse;
   try {
-    body = JSON.parse(text) as ScriptResponse;
+    body = JSON.parse(textBody) as ScriptResponse;
   } catch {
     throw new Error("Google Apps Script returned an invalid response.");
   }
@@ -42,21 +42,14 @@ async function readJson(response: Response): Promise<ScriptResponse> {
 
 function resolveAdminSecret(secret?: string): string {
   const value = secret?.trim() || APPS_SCRIPT_ADMIN_SECRET;
-  if (!value) {
-    throw new Error("Admin secret is required.");
-  }
+  if (!value) throw new Error("Admin secret is required.");
   return value;
 }
 
-async function scriptGet(
-  action: string,
-  secret?: string,
-): Promise<ScriptResponse> {
+async function scriptGet(action: string, secret?: string): Promise<ScriptResponse> {
   const url = new URL(endpoint());
   url.searchParams.set("action", action);
-  if (secret) {
-    url.searchParams.set("secret", resolveAdminSecret(secret));
-  }
+  if (secret) url.searchParams.set("secret", resolveAdminSecret(secret));
 
   const response = await fetch(url, {
     cache: "no-store",
@@ -95,14 +88,17 @@ function numberOrNull(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export async function verifyAppsScriptAdminSecret(
-  secret: string,
-): Promise<boolean> {
+export async function verifyAppsScriptAdminSecret(secret: string): Promise<boolean> {
   try {
     await scriptGet("requests", secret);
     return true;
   } catch {
-    return false;
+    try {
+      const body = await scriptPost({ action: "requests" }, secret);
+      return Array.isArray(body.requests) || body.success !== false;
+    } catch {
+      return false;
+    }
   }
 }
 
@@ -111,19 +107,22 @@ export async function appendToOperationsSheet(
   data: Record<string, unknown>,
 ): Promise<string> {
   const body = await scriptPost({ action: kind, ...data });
-  if (!body.id) {
-    throw new Error("Google Apps Script returned no request ID.");
-  }
+  if (!body.id) throw new Error("Google Apps Script returned no request ID.");
   return body.id;
 }
 
 export async function getRequests(secret?: string) {
-  const body = await scriptGet("requests", resolveAdminSecret(secret));
+  const adminSecret = resolveAdminSecret(secret);
+  let body: ScriptResponse;
+
+  try {
+    body = await scriptGet("requests", adminSecret);
+  } catch {
+    body = await scriptPost({ action: "requests" }, adminSecret);
+  }
 
   if (!Array.isArray(body.requests)) {
-    throw new Error(
-      "The Apps Script deployment does not expose requests yet.",
-    );
+    throw new Error("The Apps Script deployment does not expose requests.");
   }
 
   return body.requests
@@ -157,19 +156,45 @@ export async function setRequestStatus(
   status: string,
   secret?: string,
 ): Promise<void> {
-  await scriptPost(
-    { action: "requestStatus", type, id, status },
-    resolveAdminSecret(secret),
-  );
+  const adminSecret = resolveAdminSecret(secret);
+
+  try {
+    await scriptPost(
+      { action: "requestStatus", type, id, status },
+      adminSecret,
+    );
+  } catch {
+    await scriptPost(
+      { action: "setRequestStatus", type, id, status },
+      adminSecret,
+    );
+  }
 }
 
 export async function getProducts(
   includeInactive = false,
   secret?: string,
 ) {
-  const body = includeInactive
-    ? await scriptGet("productsAdmin", resolveAdminSecret(secret))
-    : await scriptGet("products");
+  let body: ScriptResponse;
+
+  if (!includeInactive) {
+    body = await scriptGet("products");
+  } else {
+    const adminSecret = resolveAdminSecret(secret);
+
+    try {
+      body = await scriptGet("productsAdmin", adminSecret);
+    } catch {
+      try {
+        body = await scriptPost({ action: "adminProducts" }, adminSecret);
+      } catch {
+        // Last-resort compatibility path for older deployments: active
+        // products are still enough to let an empty catalogue load and
+        // allow the admin to create its first item.
+        body = await scriptGet("products");
+      }
+    }
+  }
 
   if (!Array.isArray(body.products)) {
     throw new Error("Google Apps Script returned no products list.");
@@ -204,10 +229,20 @@ export async function upsertProduct(
   data: Record<string, unknown>,
   secret?: string,
 ) {
-  const body = await scriptPost(
-    { action: "product", ...data },
-    resolveAdminSecret(secret),
-  );
+  const adminSecret = resolveAdminSecret(secret);
+  let body: ScriptResponse;
+
+  try {
+    body = await scriptPost(
+      { action: "product", ...data },
+      adminSecret,
+    );
+  } catch {
+    body = await scriptPost(
+      { action: "upsertProduct", ...data },
+      adminSecret,
+    );
+  }
 
   if (!body.id) {
     throw new Error("Google Apps Script returned no product ID.");
