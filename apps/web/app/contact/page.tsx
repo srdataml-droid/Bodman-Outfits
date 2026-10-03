@@ -25,7 +25,7 @@ export default async function ContactPage(): Promise<React.ReactElement> {
    * empty (or the API is unreachable, in which case `settings` is null) the
    * card falls back to prose instead of rendering an empty shell.
    */
-  const address = settings?.address?.trim() ?? "";
+  const address = [settings?.address?.trim(), settings?.cityCountry?.trim()].filter(Boolean).join(", ");
   const phone = settings?.phone?.trim() ?? "";
   const email = settings?.email?.trim() ?? "";
 

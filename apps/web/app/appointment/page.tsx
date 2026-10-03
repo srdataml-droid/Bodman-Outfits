@@ -6,7 +6,7 @@ import { SiteHeader } from "../../components/site-header";
 import { WhatsAppIcon } from "../../components/whatsapp-icon";
 import { getCategory } from "../../lib/garments";
 import { getGarment } from "../../lib/garments-data";
-import { getWhatsAppLink } from "../../lib/shop-settings";
+import { getShopSettings, getWhatsAppLink } from "../../lib/shop-settings";
 
 export const metadata: Metadata = {
   title: "Book an Appointment",
@@ -33,10 +33,12 @@ function firstValue(value: string | string[] | undefined): string | undefined {
 export default async function AppointmentPage({
   searchParams,
 }: AppointmentPageProps): Promise<React.ReactElement> {
-  const [whatsappLink, params] = await Promise.all([
+  const [whatsappLink, settings, params] = await Promise.all([
     getWhatsAppLink("Hello Bodman Outfits, I'd like to book a fitting appointment."),
+    getShopSettings(),
     searchParams,
   ]);
+  const address = [settings?.address?.trim(), settings?.cityCountry?.trim()].filter(Boolean).join(", ");
 
   const categorySlug = firstValue(params.category);
   const garmentSlug = firstValue(params.garment);
@@ -112,6 +114,12 @@ export default async function AppointmentPage({
                   calendar slot, so tell us what works and we will build the day around it.
                 </p>
               </div>
+              {address ? (
+                <div className="rounded-2xl border border-[var(--outline)] p-8">
+                  <h3 className="font-[Fraunces] text-2xl font-medium text-[var(--everglade)]">Find the studio</h3>
+                  <address className="mt-3 text-base leading-7 not-italic text-[var(--muted-ink)]">{address}</address>
+                </div>
+              ) : null}
             </aside>
           </div>
         </section>

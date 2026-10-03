@@ -7,6 +7,7 @@ export async function SiteFooter(): Promise<React.ReactElement> {
   // Tagline is also Admin-editable. Omitted rather than substituted if the
   // API is unreachable, since an invented tagline is worse than none.
   const tagline = settings?.tagline?.trim() ?? "";
+  const address = [settings?.address?.trim(), settings?.cityCountry?.trim()].filter(Boolean).join(", ");
   return (
     <footer className="border-t border-[var(--outline)] bg-white">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-5 py-16 md:grid-cols-[1.1fr_auto] md:items-end md:px-16 md:py-24">
@@ -16,6 +17,12 @@ export async function SiteFooter(): Promise<React.ReactElement> {
           </p>
           {tagline ? (
             <p className="mt-3 max-w-xs text-base leading-7 text-[var(--muted-ink)]">{tagline}</p>
+          ) : null}
+          {address ? (
+            <address className="mt-5 max-w-sm text-sm leading-6 not-italic text-[var(--muted-ink)]">
+              <span className="block font-medium text-[var(--everglade)]">Visit us</span>
+              {address}
+            </address>
           ) : null}
         </div>
         <div className="flex flex-wrap gap-x-7 gap-y-3 text-sm leading-6 text-[var(--muted-ink)]">
