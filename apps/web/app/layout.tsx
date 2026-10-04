@@ -11,6 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const shopName = await getShopName();
   return {
     metadataBase: new URL(SITE_URL),
+    applicationName: shopName,
+    manifest: "/manifest.webmanifest",
     verification: { google: "SJ2BNPLq6xTJpQU0y8-UpCtljlT6nSroCl1qQpLyBY0" },
     title: { default: `${shopName} | Bespoke Tailoring in Lagos`, template: `%s | ${shopName}` },
     description: "Bespoke suits, agbada, kaftans and modern menswear tailored in Surulere, Lagos. Book a fitting with Bodman Outfits.",
@@ -22,18 +24,15 @@ export async function generateMetadata(): Promise<Metadata> {
       description: "Bespoke tailoring in Surulere, Lagos. Explore suits, agbada, kaftans and modern menswear.",
       url: SITE_URL,
     },
-    /*
-     * Declared rather than left to the file convention. `app/icon.svg` is
-     * served correctly at /icon.svg, but the automatic <link rel="icon"> was
-     * not being emitted into the head on this Next version, so the tab stayed
-     * blank while the file itself was fine. Naming it here is one line, is
-     * visible to whoever reads this next, and does not depend on convention
-     * detection surviving a version bump.
-     */
+    // Explicit links cover Google Search, browser tabs, and iOS home screens.
     icons: {
-      icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-      shortcut: "/icon.svg",
-      apple: "/icon.svg",
+      icon: [
+        { url: "/icons/favicon-48.png", type: "image/png", sizes: "48x48" },
+        { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+        { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+      ],
+      shortcut: "/icons/favicon-48.png",
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
     },
   };
 }
@@ -42,6 +41,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#1b3e2d",
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
